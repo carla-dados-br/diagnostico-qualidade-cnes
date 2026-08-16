@@ -86,4 +86,10 @@ Nenhuma conformidade legal ou recomendação clínica é alegada.
 
 ## Autoria
 
-Projeto conduzido em formação, como parte da construção de carreira em Dados para Saúde. As decisões de escopo, tratamento e interpretação estão documentadas em `docs/`, cada uma com a justificativa.
+**Carla Rodrigues de Moraes**
+Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
+
+As decisões de escopo, tratamento e interpretação estão documentadas em `docs/`,
+cada uma com a justificativa.
+
+[LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
