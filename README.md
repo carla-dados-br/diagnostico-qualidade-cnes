@@ -45,12 +45,17 @@ Fase 1, exploração e extração, em andamento.
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
 - [x] Recorte definido e validado contra dado real
 - [x] Primeira extração de amostra
-- [ ] Dicionário de dados dos campos selecionados
-- [ ] Indicadores de completude calculados
+- [x] Verificação de estrutura das 14 tabelas do conjunto, chaves de junção e granularidade confirmadas
+- [x] Primeiro indicador de completude calculado (`id_regiao_saude`)
+- [ ] Dicionário de dados completo dos campos selecionados
 - [ ] Limpeza e tratamento em Python, com log de decisões
-- [ ] Indicadores de consistência, atualidade e unicidade
+- [ ] Três regras de consistência aplicadas (Fase 3)
+- [ ] Indicadores de atualidade e unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
+- [ ] Mapeamento para recursos FHIR
+
+A verificação de estrutura (`docs/achados-verificacao-estrutura.md`) revelou achados que mudaram o escopo do projeto — entre eles, a presença de dado pessoal de profissional de saúde na tabela `profissional`, retirada do escopo por esse motivo. Detalhes completos no documento de arquitetura (`docs/projeto-portfolio-cnes-qualidade-dados-v2.md`).
 
 ## Tecnologias
 
@@ -86,10 +91,4 @@ Nenhuma conformidade legal ou recomendação clínica é alegada.
 
 ## Autoria
 
-**Carla Rodrigues de Moraes**
-Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
-
-As decisões de escopo, tratamento e interpretação estão documentadas em `docs/`,
-cada uma com a justificativa.
-
-[LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
+Projeto conduzido em formação, como parte da construção de carreira em Dados para Saúde. As decisões de escopo, tratamento e interpretação estão documentadas em `docs/`, cada uma com a justificativa.
