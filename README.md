@@ -41,11 +41,11 @@ O diagnóstico usa quatro dimensões como categorias fixas de análise:
 
 Três regras, escolhidas para cobrir níveis técnicos distintos:
 
-| Regra | Tabelas | O que exige |
-|---|---|---|
-| Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação de datas dentro da tabela |
-| Divergência de quantidade de leitos entre `leito` e `habilitacao` | `leito` + `habilitacao` | junção com agregação prévia |
-| Leito de UTI cadastrado sem habilitação correspondente | `leito` + `habilitacao` | junção e critério clínico de correspondência |
+| Regra | Tabelas | O que exige | Status |
+|---|---|---|---|
+| Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação de datas dentro da tabela | Concluída |
+| Divergência de quantidade de leitos entre `leito` e `habilitacao` | `leito` + `habilitacao` | junção com agregação prévia | Concluída |
+| Leito de UTI cadastrado sem habilitação correspondente | `leito` + `habilitacao` | junção e critério clínico de correspondência | Pendente |
 
 A definição de quais habilitações correspondem a cada tipo de UTI é decisão clínica, não técnica, e fica justificada na documentação.
 
@@ -60,9 +60,15 @@ A verificação da estrutura do conjunto, feita antes de a análise começar, j�
 
 Detalhamento em [`docs/achados-verificacao-estrutura.md`](docs/achados-verificacao-estrutura.md).
 
+A aplicação dos indicadores e das duas primeiras regras de consistência revelou achados adicionais, com investigação completa em `docs/dicionario-de-dados.md`:
+
+- **Nulo mascarado como texto.** O campo `id_regiao_saude` não usa `NULL` para representar ausência de valor — usa o texto literal `"nan"`. Uma checagem baseada só em `IS NULL` indicava 0% de incompletude; a checagem correta revelou 54,69%.
+- **Sentinela de prazo indeterminado.** Em `habilitacao`, 89,76% dos registros usam `ano_competencia_final = 9999` para representar "sem prazo definido", em vez de um campo nulo. A regra de habilitação vencida precisou excluir esse sentinela antes de comparar datas.
+- **Divergência sistemática entre fontes.** Nenhum dos 768 estabelecimentos avaliáveis tem `leito.quantidade_total` igual a `habilitacao.quantidade_leitos`. A divergência é sempre na mesma direção (leito ≥ habilitação), o que sugere que os dois campos medem conceitos diferentes, não erro aleatório de digitação.
+
 ## Status
 
-Fase 1 concluída. Fase 2 em preparação.
+Fase 1 concluída. Fase 3 em andamento.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
@@ -70,10 +76,13 @@ Fase 1 concluída. Fase 2 em preparação.
 - [x] Primeira extração de amostra
 - [x] Estrutura do conjunto verificada: 14 tabelas, chaves de junção e granularidade
 - [x] Escopo revisado a partir da estrutura real ([versão 2](docs/projeto-portfolio-cnes-qualidade-dados-v2.md))
-- [ ] Dicionário de dados derivado da tabela oficial
+- [x] Indicador de completude calculado (`id_regiao_saude`)
+- [x] Regra de consistência: habilitação vencida ainda registrada
+- [x] Regra de consistência: divergência de quantidade de leitos entre fontes
+- [ ] Regra de consistência: leito de UTI sem habilitação correspondente
+- [ ] Dicionário de dados completo dos campos selecionados
 - [ ] Limpeza e tratamento em Python, com log de decisões
-- [ ] Indicadores de completude, atualidade e unicidade
-- [ ] Três regras de consistência aplicadas
+- [ ] Indicadores de atualidade e unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
 - [ ] Mapeamento validado para recursos FHIR
@@ -85,7 +94,12 @@ SQL (Google BigQuery), Python (pandas), Power BI, Git, FHIR.
 ## Estrutura do repositório
 
 ```
-├── sql/          consultas de exploração, verificação e extração
+├── sql/
+│   ├── 01-exploracao-fase1.sql
+│   ├── 02-verificacao-estrutura.sql
+│   ├── 03-completude-id_regiao_saude.sql
+│   ├── 04-consistencia-habilitacao-vencida.sql
+│   └── 05-consistencia-divergencia-leitos.sql
 ├── docs/         decisões documentadas, achados, dicionário de dados e escopo
 ├── python/       tratamento e cálculo de indicadores (a partir da Fase 2)
 ├── dashboard/    arquivos e capturas do painel (a partir da Fase 4)
