@@ -68,7 +68,7 @@ A aplicação dos indicadores e das duas primeiras regras de consistência revel
 
 ## Status
 
-Fase 1 concluída. Fase 3 em andamento.
+Fase 1 concluída. Fase 3 em andamento, executada de forma exploratória diretamente em SQL — os tratamentos pontuais necessários (exclusão de sentinelas e checagem de mascaramento de nulos) foram realizados dentro das próprias queries de consistência. A Fase 2 (dicionário de dados completo e tratamento formal em Python) ainda não foi realizada e permanece pendente antes da consolidação final do projeto.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
@@ -80,8 +80,8 @@ Fase 1 concluída. Fase 3 em andamento.
 - [x] Regra de consistência: habilitação vencida ainda registrada
 - [x] Regra de consistência: divergência de quantidade de leitos entre fontes
 - [ ] Regra de consistência: leito de UTI sem habilitação correspondente
-- [ ] Dicionário de dados completo dos campos selecionados
-- [ ] Limpeza e tratamento em Python, com log de decisões
+- [ ] Dicionário de dados completo dos campos selecionados (Fase 2)
+- [ ] Limpeza e tratamento formal em Python, com log de decisões (Fase 2)
 - [ ] Indicadores de atualidade e unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
