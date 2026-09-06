@@ -157,4 +157,55 @@ Cerca de 1 em cada 5 estabelecimentos do recorte não teve nenhuma atualização
 
 ---
 
-*Próximo: campos críticos de completude restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`) e indicador de distribuição regional.*
+---
+
+## Distribuição Regional — Incompletude de `id_regiao_saude` por Município
+
+- **Unidade de análise:** `id_municipio` (código do estabelecimento).
+- **Completude do agrupador:** verificada antes da análise — 0 nulo, 0 texto `"nan"`, 0 string vazia; 644 municípios distintos no recorte (SP tem 645 municípios oficiais).
+- **Critério de inclusão:** municípios com volume ≥ 20 estabelecimentos, para evitar que amostras pequenas distorçam o ranking (um município com 1 estabelecimento incompleto apareceria como "100% incompleto").
+- **Métrica escolhida:** em vez de contar estabelecimentos por território, mede-se como a incompletude de `id_regiao_saude` (54,69% no agregado do estado, ver seção `id_regiao_saude` acima) se distribui entre os municípios — respondendo diretamente à pergunta de negócio sobre variação territorial da qualidade do cadastro.
+
+### Achado principal: disparidade municipal real
+
+Extremos observados (municípios com volume relevante):
+
+| Município | Estabelecimentos | % Incompleto |
+|---|---|---|
+| Caieiras | 122 | 99,18% |
+| São Caetano do Sul | 960 | 98,44% |
+| Santo André | 1.136 | 98,24% |
+| São Paulo (capital) | 28.059 | 96,11% |
+| ... | ... | ... |
+| Ribeirão Preto | 2.877 | 2,16% |
+| São José do Rio Preto | 1.539 | 1,43% |
+| Presidente Prudente | 1.225 | 0,24% |
+| Osvaldo Cruz | 119 | 0% |
+| Adamantina | 200 | 0% |
+
+**Hipótese testada e rejeitada:** a hipótese inicial de que municípios maiores/capital concentrariam o problema não se sustentou — São Paulo (capital) está entre os piores, mas municípios pequenos e médios não-capitais (Caieiras, Cajamar, Bertioga) têm incompletude ainda maior.
+
+### Distribuição completa por faixas (correção metodológica)
+
+Os extremos acima sugeriam, à primeira vista, uma distribuição bimodal (dois grupos opostos). A distribuição completa, testada antes de aceitar essa hipótese, mostra outro padrão:
+
+| Faixa de incompletude | Municípios |
+|---|---|
+| 0–25% | 100 |
+| 25–50% | 67 |
+| 50–75% | 111 |
+| 75–100% | 69 |
+
+Total: 347 municípios com volume ≥ 20 estabelecimentos.
+
+- **Interpretação:** existe heterogeneidade municipal relevante e contínua — os municípios se distribuem por todas as faixas, com concentração um pouco maior em 50–75%, não em dois blocos isolados.
+- **O que não podemos concluir:** que existem dois grupos distintos de municípios, ou que a diferença decorre de um processo operacional específico. Os extremos permanecem como evidência da amplitude da disparidade, não como evidência de bimodalidade.
+- **Hipótese operacional (não confirmada, a investigar):** o padrão de extremos observado nos primeiros rankings é compatível com a hipótese de que alguns municípios usam processos de cadastro/exportação diferentes de outros, mas essa causa não foi verificada nos dados disponíveis.
+- **Caso de referência:** Ribeirão Preto (2,16% de incompletude, 2.877 estabelecimentos) está entre os municípios de melhor completude, sem que se possa extrapolar causalidade a partir apenas dessa observação.
+- **Próxima investigação sugerida:** identificar quais características dos municípios ou dos estabelecimentos estão associadas aos diferentes níveis de completude observados.
+
+- **Query de referência:** ver `sql/09-distribuicao-regional.sql`
+
+---
+
+*Fase 3 concluída: completude (2 campos), consistência (3 regras), atualidade (1 indicador) e distribuição regional (1 indicador). Próximo: campos críticos de completude restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`).*
