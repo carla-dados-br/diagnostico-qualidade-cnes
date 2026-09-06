@@ -126,4 +126,35 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
 
 ---
 
-*Próximo campo a investigar: a definir entre `id_municipio`, `tipo_gestao` ou `cnpj_mantenedora`.*
+---
+
+## `ano_atualizacao` / `mes_atualizacao` — Indicador de Atualidade Cadastral
+
+- **Tipo:** INT64 (ambos)
+- **O que representa:** competência (ano/mês) da última alteração cadastral do estabelecimento. Base para a dimensão de qualidade "Atualidade" (distinta de Completude e Consistência, já medidas em outros campos).
+- **Padrão de ausência investigado:** nenhum nulo encontrado (0 de 110.362). Intervalo de valores: 2015 a 2025, sem sentinela aparente (diferente do padrão `9999`/`99` encontrado em `habilitacao`).
+
+### Achado observacional (não uma regra de qualidade, mas relevante para interpretação)
+
+2.971 estabelecimentos (2,7%) têm `ano_atualizacao`/`mes_atualizacao` **posterior** à própria competência do arquivo (2025-11) — ou seja, aparecem como atualizados em dezembro/2025 dentro de um arquivo referente a novembro/2025. Hipótese plausível, não confirmada pelos dados: defasagem no processo de publicação/consolidação da fonte, semelhante à defasagem já registrada em `docs/decisao-recorte.md`. Documentado como observação, não como causa estabelecida.
+
+### Decisão metodológica: regra de atualidade
+
+- **Data de referência:** 2025-11 — a competência do próprio snapshot analisado, não a data de execução da análise. Essa escolha torna o indicador uma característica do snapshot, reproduzível por qualquer pessoa que rode a mesma query sobre o mesmo arquivo, independentemente de quando a análise for executada.
+- **Janela de atualidade:** 24 meses anteriores à competência de referência (limite: 2023-11, incluído como "ainda atualizado").
+- **Justificativa:** 24 meses é uma convenção metodológica deste projeto, adotada por representar um intervalo operacional razoável para avaliar atualidade de um cadastro nacional de estabelecimentos de saúde, evitando classificar como desatualizados registros ainda dentro de um ciclo bienal de manutenção. **Não é uma definição normativa do DATASUS sobre prazo de validade cadastral** — nenhuma fonte oficial desse tipo foi verificada; o corte é uma decisão do projeto, documentada como tal.
+- **Categorias:** "atualizado" (competência ≥ 2023-11), "desatualizado" (< 2023-11), "não informado" (ausência de ano/mês) — tratada separadamente, sem ser somada aos desatualizados.
+
+### Resultado (SP, nov/2025)
+
+| Total de estabelecimentos | Atualizados | Desatualizados | Não informado | % Desatualizado |
+|---|---|---|---|---|
+| 110.362 | 87.494 | 22.868 | 0 | 20,72% |
+
+Cerca de 1 em cada 5 estabelecimentos do recorte não teve nenhuma atualização cadastral nos 24 meses anteriores à competência de referência.
+
+- **Query de referência:** ver `sql/08-atualidade-cadastral.sql`
+
+---
+
+*Próximo: campos críticos de completude restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`) e indicador de distribuição regional.*
