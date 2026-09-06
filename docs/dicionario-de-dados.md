@@ -108,5 +108,22 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
 - **Query de referência:** ver `sql/06-consistencia-uti-sem-habilitacao.sql`
 
 ---
+---
 
-*Fase 3 (regras de consistência) concluída com as três regras previstas. Próximo: indicadores gerais restantes (completude de outros campos, atualidade, distribuição regional).*
+## `tipo_unidade`
+
+- **Tipo:** STRING (código numérico armazenado como texto)
+- **O que representa:** classifica o tipo de estabelecimento de saúde (posto de saúde, hospital geral, farmácia, unidade móvel, central de regulação, entre 44 categorias catalogadas nacionalmente). Campo-base para qualquer segmentação do cadastro por tipo de unidade.
+- **Padrão de ausência investigado:** três formas testadas (`NULL`, texto `"nan"`, string vazia `""`) — nenhuma encontrada.
+- **Resultado (SP, nov/2025):**
+
+  | Total de estabelecimentos | Nulo | Texto "nan" | String vazia | % Incompleto |
+  |---|---|---|---|---|
+  | 110.362 | 0 | 0 | 0 | 0% |
+
+- **Distinção importante em relação a outros achados deste dicionário:** diferente de `id_regiao_saude` (54,69% mascarado) e dos sentinelas de `habilitacao`, este resultado de 0% de incompletude foi **confirmado por investigação prévia** — os 38 valores distintos usados no recorte foram inspecionados individualmente antes do cálculo da métrica, e todos correspondem a códigos válidos do dicionário oficial. O zero aqui reflete ausência real de problema, não ausência de verificação.
+- **Query de referência:** ver `sql/07-completude-tipo_unidade.sql`
+
+---
+
+*Próximo campo a investigar: a definir entre `id_municipio`, `tipo_gestao` ou `cnpj_mantenedora`.*
