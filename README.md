@@ -28,24 +28,24 @@ Justificativa completa em [`docs/decisao-recorte.md`](docs/decisao-recorte.md).
 
 ## Dimensões de qualidade
 
-O diagnóstico usa quatro dimensões como categorias fixas de análise:
+O diagnóstico usa quatro dimensões como categorias fixas de análise. As quatro já têm pelo menos um indicador calculado.
 
-| Dimensão | O que mede |
-|---|---|
-| Completude | Campos obrigatórios efetivamente preenchidos |
-| Consistência | Valores que se contradizem entre campos ou entre tabelas |
-| Atualidade | Tempo desde a última alteração cadastral |
-| Unicidade | Duplicidade de registro para o mesmo estabelecimento |
+| Dimensão | O que mede | Status |
+|---|---|---|
+| Completude | Campos obrigatórios efetivamente preenchidos | 2 campos medidos |
+| Consistência | Valores que se contradizem entre campos ou entre tabelas | 3 regras concluídas |
+| Atualidade | Tempo desde a última alteração cadastral | Concluída |
+| Distribuição regional | Como a qualidade do cadastro varia entre municípios | Concluída |
 
 ## Regras de consistência aplicadas
 
-Três regras, escolhidas para cobrir níveis técnicos distintos:
+Três regras, escolhidas para cobrir níveis técnicos distintos — todas concluídas:
 
 | Regra | Tabelas | O que exige | Status |
 |---|---|---|---|
 | Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação de datas dentro da tabela | Concluída |
 | Divergência de quantidade de leitos entre `leito` e `habilitacao` | `leito` + `habilitacao` | junção com agregação prévia | Concluída |
-| Leito de UTI cadastrado sem habilitação correspondente | `leito` + `habilitacao` | junção e critério clínico de correspondência | Pendente |
+| Leito de UTI cadastrado sem habilitação correspondente | `leito` + `habilitacao` | junção e critério clínico de correspondência (de-para semântico validado empiricamente) | Concluída |
 
 A definição de quais habilitações correspondem a cada tipo de UTI é decisão clínica, não técnica, e fica justificada na documentação.
 
@@ -60,29 +60,34 @@ A verificação da estrutura do conjunto, feita antes de a análise começar, j�
 
 Detalhamento em [`docs/achados-verificacao-estrutura.md`](docs/achados-verificacao-estrutura.md).
 
-A aplicação dos indicadores e das duas primeiras regras de consistência revelou achados adicionais, com investigação completa em `docs/dicionario-de-dados.md`:
+A aplicação dos indicadores e das regras de consistência revelou achados adicionais, com investigação completa em [`docs/dicionario-de-dados.md`](docs/dicionario-de-dados.md):
 
 - **Nulo mascarado como texto.** O campo `id_regiao_saude` não usa `NULL` para representar ausência de valor — usa o texto literal `"nan"`. Uma checagem baseada só em `IS NULL` indicava 0% de incompletude; a checagem correta revelou 54,69%.
 - **Sentinela de prazo indeterminado.** Em `habilitacao`, 89,76% dos registros usam `ano_competencia_final = 9999` para representar "sem prazo definido", em vez de um campo nulo. A regra de habilitação vencida precisou excluir esse sentinela antes de comparar datas.
 - **Divergência sistemática entre fontes.** Nenhum dos 768 estabelecimentos avaliáveis tem `leito.quantidade_total` igual a `habilitacao.quantidade_leitos`. A divergência é sempre na mesma direção (leito ≥ habilitação), o que sugere que os dois campos medem conceitos diferentes, não erro aleatório de digitação.
+- **Metade dos leitos de UTI sem habilitação correspondente.** 553 de 1.103 combinações estabelecimento+categoria de UTI (50,1%) não têm habilitação formal correspondente, totalizando 7.312 leitos. O de-para entre os códigos de leito e de habilitação foi validado empiricamente, não apenas por nome parecido.
+- **Um campo genuinamente completo.** `tipo_unidade` apresentou 0% de incompletude, testado contra três formas de ausência (nulo, texto "nan", string vazia) e confirmado por inspeção prévia dos 38 valores distintos em uso — diferente dos zeros enganosos encontrados em outros campos.
+- **Um em cada cinco estabelecimentos desatualizado.** Usando uma janela de 24 meses anteriores à própria competência do arquivo (não à data de execução da análise, para manter o indicador reproduzível), 20,72% dos estabelecimentos não tiveram atualização cadastral recente.
+- **Disparidade municipal real, mas não bimodal.** A incompletude de `id_regiao_saude` varia de 0% (ex.: Osvaldo Cruz) a mais de 99% (ex.: Caieiras) entre municípios de porte comparável. A hipótese inicial de dois grupos opostos foi testada contra a distribuição completa e rejeitada: os 347 municípios avaliados se espalham pelas quatro faixas de incompletude, sem concentração em extremos.
 
 ## Status
 
-Fase 1 concluída. Fase 3 em andamento, executada de forma exploratória diretamente em SQL — os tratamentos pontuais necessários (exclusão de sentinelas e checagem de mascaramento de nulos) foram realizados dentro das próprias queries de consistência. A Fase 2 (dicionário de dados completo e tratamento formal em Python) ainda não foi realizada e permanece pendente antes da consolidação final do projeto.
+Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, distribuição regional) têm ao menos um indicador calculado e documentado, executado de forma exploratória diretamente em SQL. A Fase 2 (dicionário de dados completo de todos os campos selecionados e tratamento formal em Python) permanece pendente antes da consolidação final do projeto — os tratamentos pontuais necessários até aqui (exclusão de sentinelas, checagem de mascaramento de nulos) foram feitos dentro das próprias queries.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
 - [x] Recorte definido e validado contra dado real
-- [x] Primeira extração de amostra
 - [x] Estrutura do conjunto verificada: 14 tabelas, chaves de junção e granularidade
 - [x] Escopo revisado a partir da estrutura real ([versão 2](docs/projeto-portfolio-cnes-qualidade-dados-v2.md))
-- [x] Indicador de completude calculado (`id_regiao_saude`)
+- [x] Indicadores de completude: `id_regiao_saude` (54,69% incompleto), `tipo_unidade` (0%, verificado)
 - [x] Regra de consistência: habilitação vencida ainda registrada
 - [x] Regra de consistência: divergência de quantidade de leitos entre fontes
-- [ ] Regra de consistência: leito de UTI sem habilitação correspondente
-- [ ] Dicionário de dados completo dos campos selecionados (Fase 2)
+- [x] Regra de consistência: leito de UTI sem habilitação correspondente
+- [x] Indicador de atualidade cadastral (20,72% desatualizado, corte de 24 meses documentado)
+- [x] Indicador de distribuição regional (disparidade municipal documentada)
+- [ ] Dicionário de dados completo dos campos selecionados restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`) (Fase 2)
 - [ ] Limpeza e tratamento formal em Python, com log de decisões (Fase 2)
-- [ ] Indicadores de atualidade e unicidade
+- [ ] Indicador de unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
 - [ ] Mapeamento validado para recursos FHIR
@@ -99,7 +104,11 @@ SQL (Google BigQuery), Python (pandas), Power BI, Git, FHIR.
 │   ├── 02-verificacao-estrutura.sql
 │   ├── 03-completude-id_regiao_saude.sql
 │   ├── 04-consistencia-habilitacao-vencida.sql
-│   └── 05-consistencia-divergencia-leitos.sql
+│   ├── 05-consistencia-divergencia-leitos.sql
+│   ├── 06-consistencia-uti-sem-habilitacao.sql
+│   ├── 07-completude-tipo_unidade.sql
+│   ├── 08-atualidade-cadastral.sql
+│   └── 09-distribuicao-regional.sql
 ├── docs/         decisões documentadas, achados, dicionário de dados e escopo
 ├── python/       tratamento e cálculo de indicadores (a partir da Fase 2)
 ├── dashboard/    arquivos e capturas do painel (a partir da Fase 4)
@@ -127,6 +136,8 @@ O documento de escopo tem histórico de versões. A versão 2 registra o que mud
 O conjunto `br_ms_cnes` contém uma tabela `profissional` com nome, cartão nacional de saúde e município de residência — dado pessoal de profissional de saúde em base pública. Essa tabela ficou fora do escopo desta versão. Nenhum dado pessoal é extraído, tratado ou versionado neste repositório. A decisão está registrada em `docs/`.
 
 **Alcance do mapeamento FHIR.** O projeto mapeia dados para recursos FHIR e valida o resultado. Não envolve submissão à RNDS, que exige certificação digital e credenciais indisponíveis em projeto de portfólio.
+
+**Convenções metodológicas próprias.** Alguns cortes (como a janela de 24 meses do indicador de atualidade) são decisões deste projeto, não definições normativas do DATASUS. Cada convenção está documentada com sua justificativa em `docs/dicionario-de-dados.md`.
 
 Nenhuma conformidade legal ou recomendação clínica é alegada.
 
