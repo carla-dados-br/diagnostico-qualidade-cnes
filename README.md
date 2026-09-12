@@ -72,7 +72,7 @@ A aplicação dos indicadores e das regras de consistência revelou achados adic
 
 ## Status
 
-Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado, executado de forma exploratória diretamente em SQL. A Fase 2 (dicionário de dados completo de todos os campos selecionados e tratamento formal em Python) permanece pendente antes da consolidação final do projeto — os tratamentos pontuais necessários até aqui (exclusão de sentinelas, checagem de mascaramento de nulos) foram feitos dentro das próprias queries.
+Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado. Fase 2 concluída para os indicadores de completude e unicidade — pipeline formal em Python (`python/fase2-limpeza-tratamento.ipynb`) reproduzindo, com paridade confirmada, os resultados já validados em SQL; duas divergências reais entre SQL e Python foram encontradas e corrigidas no processo (tipo de `id_municipio`, métrica de `id_regiao_saude`). Reprodução das 3 regras de consistência e do indicador de atualidade em Python (tabelas `leito` e `habilitacao`) fica como extensão futura, fora do escopo desta etapa.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
@@ -87,7 +87,7 @@ Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (comp
 - [x] Indicador de distribuição regional (disparidade municipal documentada, extensão de completude)
 - [x] Indicadores de completude: `id_municipio` (100%), `tipo_gestao` (100%, domínio observado menor que o esperado), `cnpj_mantenedora` (100% completo entre estabelecimentos "Mantidos"; 88,89% vazio bruto, ausência esperada por regra de negócio)
 - [x] Indicador de unicidade (0 duplicados em `id_estabelecimento_cnes`, 110.362 registros)
-- [ ] Limpeza e tratamento formal em Python, com log de decisões (Fase 2)
+- [x] Limpeza e tratamento formal em Python (`python/fase2-limpeza-tratamento.ipynb`), com paridade SQL×Python confirmada para completude e unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
 - [ ] Mapeamento validado para recursos FHIR
