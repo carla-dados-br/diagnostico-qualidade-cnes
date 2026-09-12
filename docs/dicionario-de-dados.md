@@ -161,7 +161,7 @@ Cerca de 1 em cada 5 estabelecimentos do recorte não teve nenhuma atualização
 
 ## Distribuição Regional — Incompletude de `id_regiao_saude` por Município
 
-- **Unidade de análise:** `id_municipio` (código do estabelecimento).
+- **Unidade de análise:** `id_municipio` (código do município, IBGE).
 - **Completude do agrupador:** verificada antes da análise — 0 nulo, 0 texto `"nan"`, 0 string vazia; 644 municípios distintos no recorte (SP tem 645 municípios oficiais).
 - **Critério de inclusão:** municípios com volume ≥ 20 estabelecimentos, para evitar que amostras pequenas distorçam o ranking (um município com 1 estabelecimento incompleto apareceria como "100% incompleto").
 - **Métrica escolhida:** em vez de contar estabelecimentos por território, mede-se como a incompletude de `id_regiao_saude` (54,69% no agregado do estado, ver seção `id_regiao_saude` acima) se distribui entre os municípios — respondendo diretamente à pergunta de negócio sobre variação territorial da qualidade do cadastro.
@@ -207,5 +207,97 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
 - **Query de referência:** ver `sql/09-distribuicao-regional.sql`
 
 ---
+---
 
-*Fase 3 concluída: completude (2 campos), consistência (3 regras), atualidade (1 indicador) e distribuição regional (1 indicador). Próximo: campos críticos de completude restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`).*
+## `id_municipio`
+
+- **Tipo:** INT64
+- **O que representa:** código do município (IBGE, 7 dígitos: 2 primeiros identificam a UF, 5 seguintes o município) onde está localizado o estabelecimento. Chave de agrupamento territorial, usada também na análise de Distribuição Regional acima.
+- **Padrão de ausência investigado:** verificação estrutural (dígitos + prefixo) e verificação por `COUNT(DISTINCT)`, feitas de forma independente e comparadas entre si.
+- **Resultado (SP, nov/2025):**
+
+  | Total de estabelecimentos | Municípios distintos | Nulo | Texto "nan" | String vazia | Dígitos fora do padrão (7) |
+  |---|---|---|---|---|---|
+  | 110.362 | 644 | 0 | 0 | 0 | 0 |
+
+  Todos os 644 valores distintos começam com o prefixo `35` (código IBGE de São Paulo).
+
+- **Interpretação do total de municípios:** São Paulo tem 645 municípios oficiais (IBGE); o recorte cobre 644. O município ausente não teve nenhum estabelecimento de saúde cadastrado nesta competência — não é um problema de completude do campo (nenhum estabelecimento existente ficou sem código), e fica registrado como pendência de investigação (qual município é esse, e se o padrão se repete em outras competências) para a Fase 5.
+- **Nota metodológica:** uma primeira contagem de linhas de um arquivo exportado, feita com `wc -l`, indicou 643 em vez de 644 — erro de contagem por ausência de quebra de linha final no CSV, não um problema no dado. Corrigido comparando com uma segunda verificação (`COUNT(DISTINCT id_municipio)`) antes de aceitar a conclusão.
+- **Query de referência:** ver `sql/10-completude-id_municipio.sql`
+
+---
+
+## `tipo_gestao`
+
+- **Tipo:** STRING (1 caractere)
+- **O que representa:** esfera administrativa responsável pela gestão do estabelecimento.
+- **Domínio observado no recorte (SP, nov/2025):**
+
+  | Valor | Significado | Estabelecimentos |
+  |---|---|---|
+  | `M` | Gestão municipal | 109.733 |
+  | `E` | Gestão estadual | 629 |
+
+  Soma = 110.362, o total exato do recorte — 0% de ausência.
+
+- **Domínio teórico vs. domínio observado:** conhecimento prévio (não verificado em fonte oficial nesta sessão) indica que o domínio completo do campo inclui também `D` (dupla gestão) e `S` (sem gestão), nenhum dos dois presente neste recorte. Ausência de uma categoria do domínio teórico não é a mesma coisa que ausência de dado — é o domínio teórico sendo maior que o domínio observado neste recorte específico.
+- **Query de referência:** ver `sql/11-completude-tipo_gestao.sql`
+
+---
+
+## `cnpj_mantenedora`
+
+- **Tipo:** STRING
+- **O que representa:** CNPJ da entidade mantenedora do estabelecimento, quando o estabelecimento depende de outra instituição para sua manutenção.
+- **Padrão de ausência inicial (SP, nov/2025):**
+
+  | Total de estabelecimentos | Vazio | % Vazio | Com CNPJ válido (14 dígitos) | Mantenedoras distintas |
+  |---|---|---|---|---|
+  | 110.362 | 98.098 | 88,89% | 12.264 | 743 |
+
+  Nenhum valor malformado — ou vazio, ou 14 dígitos completos.
+
+- **Achado central — o vazio bruto não é a métrica de completude correta:** segundo o Manual Técnico do CNES, `cnpj_mantenedora` só é de preenchimento obrigatório quando o estabelecimento tem situação "Mantido" — estabelecimentos "Individuais" legitimamente não preenchem este campo. Medir completude contra o total geral do recorte mistura ausência esperada com ausência real.
+- **Campo de classificação identificado:** não existe, entre as 204 colunas de `estabelecimento`, um campo chamado literalmente "situação" ou "individual/mantido". O candidato identificado por nome foi `tipo_grau_dependencia`, cuja distribuição (`1` com 98.098, `3` com 12.264) coincide exatamente com os totais de vazio/preenchido de `cnpj_mantenedora`.
+- **Confirmação por tabela cruzada (não apenas coincidência de totais agregados):**
+
+  | `tipo_grau_dependencia` | Status de `cnpj_mantenedora` | Estabelecimentos |
+  |---|---|---|
+  | `1` | vazio | 98.098 |
+  | `3` | preenchido | 12.264 |
+
+  Nenhuma combinação cruzada (`1` + preenchido, ou `3` + vazio) ocorre — correspondência perfeita, sem exceção, em 110.362 registros.
+
+- **Métrica de completude, em duas camadas:**
+
+  | Camada | Resultado |
+  |---|---|
+  | Completude bruta (todos os estabelecimentos) | 11,11% preenchido, 88,89% vazio |
+  | Completude condicional (só entre os que deveriam ter CNPJ, `tipo_grau_dependencia = 3`) | **100% preenchido, 0% de ausência real** |
+
+  Reportar só a completude bruta seria enganoso — na direção oposta, mas equivalente em gravidade, ao erro que `id_regiao_saude` teria causado se medido só por `IS NULL`.
+
+- **Limite da confirmação:** o significado exato dos códigos `1` e `3` de `tipo_grau_dependencia` (isto é, qual rótulo oficial — "Individual", "Mantido" — corresponde a qual código) não foi confirmado em nenhuma fonte oficial que os nomeie diretamente. A confirmação usada aqui é evidência empírica (correspondência perfeita e sem exceção com `cnpj_mantenedora`), não leitura de documentação.
+- **Query de referência:** ver `sql/12-completude-cnpj_mantenedora.sql`
+
+---
+
+## Unicidade — `id_estabelecimento_cnes`
+
+- **Tipo:** STRING
+- **O que representa:** identificador único do estabelecimento no CNES. Combinado com `ano` e `mes`, forma a chave de relacionamento do projeto entre todas as tabelas (Fase 1) — necessária porque a mesma tabela contém múltiplas competências (fotografias mensais) do mesmo estabelecimento.
+- **Escopo do teste de unicidade:** como o recorte já fixa `ano = 2025` e `mes = 11` no filtro, essas duas partes da chave composta já são constantes dentro da consulta. A duplicidade testada, portanto, é sobre `id_estabelecimento_cnes` isolado, dentro deste recorte específico.
+- **Resultado (SP, nov/2025):**
+
+  | Total de estabelecimentos | `id_estabelecimento_cnes` duplicados |
+  |---|---|
+  | 110.362 | 0 |
+
+  Nenhum identificador se repete — `id_estabelecimento_cnes` funciona como chave única de fato dentro deste recorte, sem exceção.
+
+- **Query de referência:** ver `sql/13-unicidade-id_estabelecimento_cnes.sql`
+
+---
+
+*Fase 3 concluída: completude (5 campos: `id_regiao_saude`, `tipo_unidade`, `id_municipio`, `tipo_gestao`, `cnpj_mantenedora`), consistência (3 regras), atualidade (1 indicador), distribuição regional (1 indicador, extensão de completude) e unicidade (1 indicador). As quatro dimensões de qualidade fixas do projeto — completude, consistência, atualidade, unicidade — estão cobertas por pelo menos um indicador cada.*
