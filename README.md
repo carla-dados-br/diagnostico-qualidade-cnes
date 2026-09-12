@@ -35,7 +35,7 @@ O diagnóstico usa quatro dimensões como categorias fixas de análise. As quatr
 | Completude | Campos obrigatórios efetivamente preenchidos | 2 campos medidos |
 | Consistência | Valores que se contradizem entre campos ou entre tabelas | 3 regras concluídas |
 | Atualidade | Tempo desde a última alteração cadastral | Concluída |
-| Distribuição regional | Como a qualidade do cadastro varia entre municípios | Concluída |
+| Unicidade | Se cada estabelecimento aparece uma única vez no recorte | Concluída |
 
 ## Regras de consistência aplicadas
 
@@ -72,7 +72,7 @@ A aplicação dos indicadores e das regras de consistência revelou achados adic
 
 ## Status
 
-Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, distribuição regional) têm ao menos um indicador calculado e documentado, executado de forma exploratória diretamente em SQL. A Fase 2 (dicionário de dados completo de todos os campos selecionados e tratamento formal em Python) permanece pendente antes da consolidação final do projeto — os tratamentos pontuais necessários até aqui (exclusão de sentinelas, checagem de mascaramento de nulos) foram feitos dentro das próprias queries.
+Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado, executado de forma exploratória diretamente em SQL. A Fase 2 (dicionário de dados completo de todos os campos selecionados e tratamento formal em Python) permanece pendente antes da consolidação final do projeto — os tratamentos pontuais necessários até aqui (exclusão de sentinelas, checagem de mascaramento de nulos) foram feitos dentro das próprias queries.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
@@ -84,10 +84,10 @@ Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (comp
 - [x] Regra de consistência: divergência de quantidade de leitos entre fontes
 - [x] Regra de consistência: leito de UTI sem habilitação correspondente
 - [x] Indicador de atualidade cadastral (20,72% desatualizado, corte de 24 meses documentado)
-- [x] Indicador de distribuição regional (disparidade municipal documentada)
-- [ ] Dicionário de dados completo dos campos selecionados restantes (`id_municipio`, `tipo_gestao`, `cnpj_mantenedora`) (Fase 2)
+- [x] Indicador de distribuição regional (disparidade municipal documentada, extensão de completude)
+- [x] Indicadores de completude: `id_municipio` (100%), `tipo_gestao` (100%, domínio observado menor que o esperado), `cnpj_mantenedora` (100% completo entre estabelecimentos "Mantidos"; 88,89% vazio bruto, ausência esperada por regra de negócio)
+- [x] Indicador de unicidade (0 duplicados em `id_estabelecimento_cnes`, 110.362 registros)
 - [ ] Limpeza e tratamento formal em Python, com log de decisões (Fase 2)
-- [ ] Indicador de unicidade
 - [ ] Painel publicado
 - [ ] Proposta de regras mínimas de governança
 - [ ] Mapeamento validado para recursos FHIR
