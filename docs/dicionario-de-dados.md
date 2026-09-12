@@ -122,7 +122,7 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
   |---|---|---|---|---|
   | 110.362 | 0 | 0 | 0 | 0% |
 
-- **Distinção importante em relação a outros achados deste dicionário:** diferente de `id_regiao_saude` (54,69% mascarado) e dos sentinelas de `habilitacao`, este resultado de 0% de incompletude foi **confirmado por investigação prévia** — os 38 valores distintos usados no recorte foram inspecionados individualmente antes do cálculo da métrica, e todos correspondem a códigos válidos do dicionário oficial. O zero aqui reflete ausência real de problema, não ausência de verificação.
+- **Distinção importante em relação a outros achados deste dicionário:** diferente de `id_regiao_saude` (54,70% mascarado) e dos sentinelas de `habilitacao`, este resultado de 0% de incompletude foi **confirmado por investigação prévia** — os 38 valores distintos usados no recorte foram inspecionados individualmente antes do cálculo da métrica, e todos correspondem a códigos válidos do dicionário oficial. O zero aqui reflete ausência real de problema, não ausência de verificação.
 - **Query de referência:** ver `sql/07-completude-tipo_unidade.sql`
 
 ---
@@ -165,7 +165,7 @@ Cerca de 1 em cada 5 estabelecimentos do recorte não teve nenhuma atualização
 - **Unidade de análise:** `id_municipio` (código do município, IBGE).
 - **Completude do agrupador:** verificada antes da análise — 0 nulo, 0 texto `"nan"`, 0 string vazia; 644 municípios distintos no recorte (SP tem 645 municípios oficiais).
 - **Critério de inclusão:** municípios com volume ≥ 20 estabelecimentos, para evitar que amostras pequenas distorçam o ranking (um município com 1 estabelecimento incompleto apareceria como "100% incompleto").
-- **Métrica escolhida:** em vez de contar estabelecimentos por território, mede-se como a incompletude de `id_regiao_saude` (54,69% no agregado do estado, ver seção `id_regiao_saude` acima) se distribui entre os municípios — respondendo diretamente à pergunta de negócio sobre variação territorial da qualidade do cadastro.
+- **Métrica escolhida:** em vez de contar estabelecimentos por território, mede-se como a incompletude de `id_regiao_saude` (54,70% no agregado do estado, ver seção `id_regiao_saude` acima) se distribui entre os municípios — respondendo diretamente à pergunta de negócio sobre variação territorial da qualidade do cadastro.
 
 ### Achado principal: disparidade municipal real
 
@@ -199,6 +199,7 @@ Os extremos acima sugeriam, à primeira vista, uma distribuição bimodal (dois 
 
 Total: 347 municípios com volume ≥ 20 estabelecimentos.
 
+- **Ressalva de atualização (12/09/2026):** após a comparação entre SQL e Python (Fase 2), foram identificados 5 registros adicionais com string vazia (`""`) em `id_regiao_saude`, não contemplados na investigação SQL original. A métrica estadual de incompletude foi atualizada de 60.361 (54,69%) para 60.366 (54,70%). A correção não altera o ranking dos municípios nem a distribuição por faixas dos 347 municípios analisados — 5 registros são insuficientes para mudar esses resultados —, mas 54,70% deve ser usado como referência atualizada no projeto.
 - **Interpretação:** existe heterogeneidade municipal relevante e contínua — os municípios se distribuem por todas as faixas, com concentração um pouco maior em 50–75%, não em dois blocos isolados.
 - **O que não podemos concluir:** que existem dois grupos distintos de municípios, ou que a diferença decorre de um processo operacional específico. Os extremos permanecem como evidência da amplitude da disparidade, não como evidência de bimodalidade.
 - **Hipótese operacional (não confirmada, a investigar):** o padrão de extremos observado nos primeiros rankings é compatível com a hipótese de que alguns municípios usam processos de cadastro/exportação diferentes de outros, mas essa causa não foi verificada nos dados disponíveis.
