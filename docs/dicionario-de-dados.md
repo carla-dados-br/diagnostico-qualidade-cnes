@@ -10,15 +10,16 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 
 - **Tipo:** STRING
 - **O que representa:** código da região de saúde à qual o estabelecimento está vinculado, usado para planejamento e alocação de recursos regionais.
-- **Padrão de ausência identificado:** o campo não usa `NULL` para representar ausência de valor. Em vez disso, parte dos registros traz o texto literal `"nan"` armazenado como string.
-- **Impacto:** uma verificação de completude baseada apenas em `IS NULL` retorna 0% de incompletude neste campo — resultado enganoso. A verificação correta precisa somar `IS NULL` **e** `= 'nan'`.
+- **Padrão de ausência identificado:** o campo não usa `NULL` para representar ausência de valor. Em vez disso, parte dos registros traz o texto literal `"nan"` armazenado como string, e uma pequena parcela traz string vazia (`""`).
+- **Impacto:** uma verificação de completude baseada apenas em `IS NULL` retorna 0% de incompletude neste campo — resultado enganoso. A verificação correta precisa somar `IS NULL`, `= 'nan'` **e** `= ''` (string vazia).
 - **Hipótese de causa:** provável resíduo de um processo de tratamento de dados (ex.: exportação via pandas/Python, onde `NaN` é a representação padrão de ausência) que converteu o valor ausente em texto antes de gravar na base, em vez de preservá-lo como nulo.
 - **Métrica de completude (SP, nov/2025):**
 
   | Total de estabelecimentos | Incompletos (NULL + "nan") | % Incompleto |
   |---|---|---|
-  | 110.362 | 60.361 | 54,69% |
+  | 110.362 | 60.366 | 54,70% |
 
+- **Correção de métrica (12/09/2026):** a investigação original (Fase 1/3) testou apenas `NULL` e o texto `"nan"`, sem testar string vazia. Reproduzir a normalização em Python (Fase 2), testando as três formas de uma vez, revelou 5 registros adicionais — confirmados na fonte original com `COUNT(*) WHERE id_regiao_saude = ''`. Métrica corrigida de 60.361 (54,69%) para 60.366 (54,70%). Achado direto do valor de reproduzir a mesma análise em ferramenta diferente (etapa "comparação SQL × Python" da Fase 2).
 - **Query de referência:** ver `sql/03-completude-id_regiao_saude.sql`
 - **Recomendação de tratamento (Fase 2):** ao limpar os dados em Python, converter explicitamente o texto `"nan"` para `NULL`/`NaN` reconhecido pelo pandas, antes de qualquer cálculo de completude ou agregação.
 
@@ -211,7 +212,7 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
 
 ## `id_municipio`
 
-- **Tipo:** INT64
+- **Tipo:** STRING (código de 7 dígitos, numérico em aparência mas armazenado como texto)
 - **O que representa:** código do município (IBGE, 7 dígitos: 2 primeiros identificam a UF, 5 seguintes o município) onde está localizado o estabelecimento. Chave de agrupamento territorial, usada também na análise de Distribuição Regional acima.
 - **Padrão de ausência investigado:** verificação estrutural (dígitos + prefixo) e verificação por `COUNT(DISTINCT)`, feitas de forma independente e comparadas entre si.
 - **Resultado (SP, nov/2025):**
@@ -223,6 +224,7 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
   Todos os 644 valores distintos começam com o prefixo `35` (código IBGE de São Paulo).
 
 - **Interpretação do total de municípios:** São Paulo tem 645 municípios oficiais (IBGE); o recorte cobre 644. O município ausente não teve nenhum estabelecimento de saúde cadastrado nesta competência — não é um problema de completude do campo (nenhum estabelecimento existente ficou sem código), e fica registrado como pendência de investigação (qual município é esse, e se o padrão se repete em outras competências) para a Fase 5.
+- **Correção de tipo (12/09/2026):** esta seção documentava o campo como `INT64`. Verificação direta em `INFORMATION_SCHEMA.COLUMNS`, feita na Fase 2 (Python), confirmou que o tipo real é `STRING`. As queries de completude já tratavam o campo corretamente como texto (via `CAST(... AS STRING)`), então a métrica de completude não muda — só a documentação do tipo estava errada.
 - **Nota metodológica:** uma primeira contagem de linhas de um arquivo exportado, feita com `wc -l`, indicou 643 em vez de 644 — erro de contagem por ausência de quebra de linha final no CSV, não um problema no dado. Corrigido comparando com uma segunda verificação (`COUNT(DISTINCT id_municipio)`) antes de aceitar a conclusão.
 - **Query de referência:** ver `sql/10-completude-id_municipio.sql`
 
