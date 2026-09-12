@@ -281,7 +281,7 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
 
   Reportar só a completude bruta seria enganoso — na direção oposta, mas equivalente em gravidade, ao erro que `id_regiao_saude` teria causado se medido só por `IS NULL`.
 
-- **Limite da confirmação:** o significado exato dos códigos `1` e `3` de `tipo_grau_dependencia` (isto é, qual rótulo oficial — "Individual", "Mantido" — corresponde a qual código) não foi confirmado em nenhuma fonte oficial que os nomeie diretamente. A confirmação usada aqui é evidência empírica (correspondência perfeita e sem exceção com `cnpj_mantenedora`), não leitura de documentação.
+- **Confirmação oficial dos códigos (12/09/2026):** consulta direta à tabela `dicionario` do BigQuery (`basedosdados.br_ms_cnes.dicionario`, filtrando por `nome_coluna = 'tipo_grau_dependencia'`) confirmou os rótulos oficiais: `1` = "individual", `3` = "mantida". Domínio oficial do campo é exatamente `{1, 3}` — sem categorias adicionais. Isso substitui a suposição anterior, que se apoiava só em correspondência empírica com `cnpj_mantenedora` (perfeita e sem exceção, mas sem nome oficial confirmado).
 - **Query de referência:** ver `sql/12-completude-cnpj_mantenedora.sql`
 
 ---
