@@ -72,7 +72,7 @@ A aplicação dos indicadores e das regras de consistência revelou achados adic
 
 ## Status
 
-Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado. Fase 2 concluída para os indicadores de completude e unicidade — pipeline formal em Python (`python/fase2-limpeza-tratamento.ipynb`) reproduzindo, com paridade confirmada, os resultados já validados em SQL; duas divergências reais entre SQL e Python foram encontradas e corrigidas no processo (tipo de `id_municipio`, métrica de `id_regiao_saude`). Reprodução das 3 regras de consistência e do indicador de atualidade em Python (tabelas `leito` e `habilitacao`) fica como extensão futura, fora do escopo desta etapa.
+Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado. Fase 2 concluída para os indicadores de completude e unicidade — pipeline formal em Python (`python/fase2-limpeza-tratamento.ipynb`) reproduzindo, com paridade confirmada, os resultados já validados em SQL; duas divergências reais entre SQL e Python foram encontradas e corrigidas no processo (tipo de `id_municipio`, métrica de `id_regiao_saude`). Reprodução das 3 regras de consistência e do indicador de atualidade em Python (tabelas `leito` e `habilitacao`) fica como extensão futura, fora do escopo desta etapa. Fase 4 concluída — três gráficos publicados no Power BI Service (completude por campo, atualidade cadastral, distribuição regional), exportados como PDF e versionados em `dashboard/`. Cada gráfico ficou em um relatório separado, devido à limitação da versão Web do Power BI em mesclar múltiplas fontes de dados sem o Desktop.
 
 - [x] Ambiente configurado, BigQuery Sandbox
 - [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
@@ -88,7 +88,7 @@ Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (comp
 - [x] Indicadores de completude: `id_municipio` (100%), `tipo_gestao` (100%, domínio observado menor que o esperado), `cnpj_mantenedora` (100% completo entre estabelecimentos "Mantidos"; 88,89% vazio bruto, ausência esperada por regra de negócio)
 - [x] Indicador de unicidade (0 duplicados em `id_estabelecimento_cnes`, 110.362 registros)
 - [x] Limpeza e tratamento formal em Python (`python/fase2-limpeza-tratamento.ipynb`), com paridade SQL×Python confirmada para completude e unicidade
-- [ ] Painel publicado
+- [x] Painel publicado (3 gráficos: completude por campo, atualidade cadastral, distribuição regional)
 - [ ] Proposta de regras mínimas de governança
 - [ ] Mapeamento validado para recursos FHIR
 
