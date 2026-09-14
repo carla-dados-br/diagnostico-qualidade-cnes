@@ -32,7 +32,7 @@ O diagnóstico usa quatro dimensões como categorias fixas de análise. As quatr
 
 | Dimensão | O que mede | Status |
 |---|---|---|
-| Completude | Campos obrigatórios efetivamente preenchidos | 2 campos medidos |
+| Completude | Campos críticos avaliados quanto à presença e às regras de preenchimento | 5 campos avaliados |
 | Consistência | Valores que se contradizem entre campos ou entre tabelas | 3 regras concluídas |
 | Atualidade | Tempo desde a última alteração cadastral | Concluída |
 | Unicidade | Se cada estabelecimento aparece uma única vez no recorte | Concluída |
@@ -89,7 +89,7 @@ Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (comp
 - [x] Indicador de unicidade (0 duplicados em `id_estabelecimento_cnes`, 110.362 registros)
 - [x] Limpeza e tratamento formal em Python (`python/fase2-limpeza-tratamento.ipynb`), com paridade SQL×Python confirmada para completude e unicidade
 - [x] Painel publicado (3 gráficos: completude por campo, atualidade cadastral, distribuição regional)
-- [ ] Proposta de regras mínimas de governança
+- [x] Proposta de regras mínimas de governança (`docs/framework-governanca.md`)
 - [ ] Mapeamento validado para recursos FHIR
 
 ## Tecnologias
@@ -108,7 +108,11 @@ SQL (Google BigQuery), Python (pandas), Power BI, Git, FHIR.
 │   ├── 06-consistencia-uti-sem-habilitacao.sql
 │   ├── 07-completude-tipo_unidade.sql
 │   ├── 08-atualidade-cadastral.sql
-│   └── 09-distribuicao-regional.sql
+│   ├── 09-distribuicao-regional.sql
+│   ├── 10-completude-id_municipio.sql
+│   ├── 11-completude-tipo_gestao.sql
+│   ├── 12-completude-cnpj_mantenedora.sql
+│   └── 13-unicidade-id_estabelecimento_cnes.sql
 ├── docs/         decisões documentadas, achados, dicionário de dados e escopo
 ├── python/       tratamento e cálculo de indicadores (a partir da Fase 2)
 ├── dashboard/    arquivos e capturas do painel (a partir da Fase 4)
