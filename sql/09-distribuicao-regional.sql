@@ -39,9 +39,9 @@ WITH incompletude_por_municipio AS (
   SELECT
     id_municipio,
     COUNT(*) AS total_estabelecimentos,
-    COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan') AS total_incompletos,
+    COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan' OR id_regiao_saude = '') AS total_incompletos,
     ROUND(
-      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan') / COUNT(*) * 100
+      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan' OR id_regiao_saude = '') / COUNT(*) * 100
     , 2) AS percentual_incompleto
   FROM `basedosdados.br_ms_cnes.estabelecimento`
   WHERE sigla_uf = 'SP'
@@ -60,7 +60,7 @@ SELECT
 FROM incompletude_por_municipio AS i
 JOIN `basedosdados.br_bd_diretorios_brasil.municipio` AS m
   ON i.id_municipio = m.id_municipio
-ORDER BY i.percentual_incompleto DESC
+ORDER BY i.percentual_incompleto DESC, i.id_municipio ASC
 LIMIT 20;
 
 
@@ -69,16 +69,20 @@ LIMIT 20;
 -- padrao a partir de uma unica ponta da distribuicao.
 -- Resultado: extremo oposto verdadeiro - varios municipios com 0% de
 -- incompletude (Osvaldo Cruz, Adamantina, Novo Horizonte, entre outros).
--- Ribeiro Preto aparece como caso de referencia favoravel (2,16%),
--- bem abaixo da media geral do estado (54,69%).
+-- Ribeiro Preto aparece como caso de referencia favoravel (2,16%).
+-- A media estadual era 54,69% na Fase 1 e foi corrigida para 54,70%
+-- apos a reproducao em Python identificar 5 strings vazias adicionais.
+-- A composicao dos grupos de 20 municipios com maior e menor incompletude
+-- permanece a mesma, assim como a distribuicao por faixas dos 347 municipios.
+-- Entretanto, houve reordenacao de posicoes no ranking municipal geral.
 -- -----------------------------------------------------------------------
 WITH incompletude_por_municipio AS (
   SELECT
     id_municipio,
     COUNT(*) AS total_estabelecimentos,
-    COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan') AS total_incompletos,
+    COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan' OR id_regiao_saude = '') AS total_incompletos,
     ROUND(
-      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan') / COUNT(*) * 100
+      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan' OR id_regiao_saude = '') / COUNT(*) * 100
     , 2) AS percentual_incompleto
   FROM `basedosdados.br_ms_cnes.estabelecimento`
   WHERE sigla_uf = 'SP'
@@ -96,7 +100,7 @@ SELECT
 FROM incompletude_por_municipio AS i
 JOIN `basedosdados.br_bd_diretorios_brasil.municipio` AS m
   ON i.id_municipio = m.id_municipio
-ORDER BY i.percentual_incompleto ASC
+ORDER BY i.percentual_incompleto ASC, i.id_municipio ASC
 LIMIT 20;
 
 
@@ -115,7 +119,7 @@ WITH incompletude_por_municipio AS (
     id_municipio,
     COUNT(*) AS total_estabelecimentos,
     ROUND(
-      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan') / COUNT(*) * 100
+      COUNTIF(id_regiao_saude IS NULL OR id_regiao_saude = 'nan' OR id_regiao_saude = '') / COUNT(*) * 100
     , 2) AS percentual_incompleto
   FROM `basedosdados.br_ms_cnes.estabelecimento`
   WHERE sigla_uf = 'SP'
