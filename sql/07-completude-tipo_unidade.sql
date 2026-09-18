@@ -7,8 +7,17 @@
 -- 1. Valores distintos do campo no recorte, ANTES de calcular qualquer
 -- metrica - habito de investigacao adotado apos o achado de nulo
 -- mascarado em id_regiao_saude (ver sql/03).
--- Resultado: 38 valores distintos, todos codigos numericos validos,
--- nenhum "nan", vazio ou fora do padrao observado.
+-- Resultado observado: 38 valores distintos, todos numericos,
+-- sem "nan", vazio ou valor fora do padrao de formato observado.
+--
+-- ATUALIZACAO POSTERIOR (Fase 6):
+-- 37 dos 38 codigos observados possuem correspondencia na tabela dicionario.
+-- O codigo 16, presente em 5 estabelecimentos no recorte SP/2025-11,
+-- nao possui correspondencia nessa fonte auxiliar.
+-- O teste de proveniencia encontrou TP_UNID = 16 para os mesmos 5 CNES
+-- na origem consultada via PySUS. O significado semantico permanece
+-- nao confirmado.
+-- Ver: docs/investigacao-proveniencia-tipo-unidade-16.md
 -- -----------------------------------------------------------------------
 SELECT DISTINCT tipo_unidade
 FROM `basedosdados.br_ms_cnes.estabelecimento`

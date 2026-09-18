@@ -109,7 +109,6 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
 - **Query de referência:** ver `sql/06-consistencia-uti-sem-habilitacao.sql`
 
 ---
----
 
 ## `tipo_unidade`
 
@@ -212,7 +211,6 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
 
 - **Query de referência:** ver `sql/09-distribuicao-regional.sql`
 
----
 ---
 
 ## `id_municipio`

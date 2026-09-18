@@ -400,14 +400,16 @@ FROM `basedosdados.br_ms_cnes.estabelecimento`
 WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11
 ORDER BY tipo_unidade;
 ```
-**Resultado:** 38 valores distintos, todos códigos numéricos válidos.
+**Resultado observado na investigação original:** 38 valores distintos, todos numéricos e sem ausência aparente pelo formato.
+
+> **Atualização posterior — Fase 6:** a investigação semântica mostrou que 37 dos 38 códigos observados possuem correspondência na tabela `dicionario`. O código `16`, presente em 5 estabelecimentos no recorte SP + novembro/2025, não possui correspondência nessa fonte auxiliar. O teste de proveniência encontrou `TP_UNID = 16` para os mesmos 5 CNES na origem consultada via PySUS, mas seu significado semântico permanece não confirmado. Ver [`investigacao-proveniencia-tipo-unidade-16.md`](investigacao-proveniencia-tipo-unidade-16.md).
 
 **Query 2 — tradução via dicionário:**
 ```sql
 SELECT chave, valor FROM `basedosdados.br_ms_cnes.dicionario`
 WHERE nome_coluna = 'tipo_unidade' ORDER BY chave;
 ```
-**Resultado:** 44 códigos catalogados nacionalmente (posto de saúde, hospital geral, farmácia etc.), 38 em uso no recorte.
+**Resultado:** 44 códigos estão registrados na tabela `dicionario`. No recorte foram observados 38 códigos distintos de `tipo_unidade`: 37 possuem correspondência nessa tabela e o código `16` não possui correspondência.
 
 **Query 3 — métrica de completude:**
 ```sql
