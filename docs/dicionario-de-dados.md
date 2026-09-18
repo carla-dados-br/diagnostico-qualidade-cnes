@@ -114,7 +114,7 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
 ## `tipo_unidade`
 
 - **Tipo:** STRING (código numérico armazenado como texto)
-- **O que representa:** classifica o tipo de estabelecimento de saúde (posto de saúde, hospital geral, farmácia, unidade móvel, central de regulação, entre 44 categorias catalogadas nacionalmente). Campo-base para qualquer segmentação do cadastro por tipo de unidade.
+- **O que representa:** classifica o tipo de estabelecimento de saúde (posto de saúde, hospital geral, farmácia, unidade móvel, central de regulação, entre outras categorias). Campo-base para segmentação do cadastro por tipo de unidade. A correspondência entre os códigos observados e a tabela `dicionario` é analisada separadamente abaixo.
 - **Padrão de ausência investigado:** três formas testadas (`NULL`, texto `"nan"`, string vazia `""`) — nenhuma encontrada.
 - **Resultado (SP, nov/2025):**
 
@@ -122,7 +122,11 @@ Metade das combinações de leito de UTI por estabelecimento não tem nenhuma ha
   |---|---|---|---|---|
   | 110.362 | 0 | 0 | 0 | 0% |
 
-- **Distinção importante em relação a outros achados deste dicionário:** diferente de `id_regiao_saude` (54,70% mascarado) e dos sentinelas de `habilitacao`, este resultado de 0% de incompletude foi **confirmado por investigação prévia** — os 38 valores distintos usados no recorte foram inspecionados individualmente antes do cálculo da métrica, e todos correspondem a códigos válidos do dicionário oficial. O zero aqui reflete ausência real de problema, não ausência de verificação.
+- **Distinção entre completude e consistência de domínio:** o campo apresentou 0% de incompletude nas três formas de ausência testadas (`NULL`, texto `"nan"` e string vazia). Entretanto, investigação posterior realizada durante a preparação do mapeamento FHIR mostrou que completude não implica validade semântica do domínio.
+- **Anomalia semântica identificada:** dos 38 códigos distintos observados no recorte, 37 possuem correspondência na tabela `dicionario`. O código `16`, presente em 5 estabelecimentos, não possui correspondência nessa fonte auxiliar.
+- **Teste de proveniência:** os mesmos 5 estabelecimentos apresentam `TP_UNID = 16` no conjunto CNES/ST/SP/2025-11 obtido por meio do PySUS 2.11.1 com `source="origin"`. Portanto, não foi encontrada evidência de que a transformação observada entre a origem consultada e a Base dos Dados tenha introduzido o valor.
+- **Semântica:** o significado do código `16` permanece não confirmado. Não deve ser inferido ou associado a um `coding.display` no mapeamento FHIR sem evidência terminológica apropriada.
+- **Investigação completa:** ver [`investigacao-proveniencia-tipo-unidade-16.md`](investigacao-proveniencia-tipo-unidade-16.md).
 - **Query de referência:** ver `sql/07-completude-tipo_unidade.sql`
 
 ---
