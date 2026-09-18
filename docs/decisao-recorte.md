@@ -41,4 +41,4 @@ ORDER BY ano DESC, mes DESC
 
 ## Origem
 
-Fonte: [Base dos Dados](https://basedosdados.org) — dataset público `br_ms_cnes`, acessado via Google BigQuery (Sandbox, projeto `storied-shore-480202-t4`).
+Fonte: [Base dos Dados](https://basedosdados.org) — dataset público `br_ms_cnes`, acessado via Google BigQuery (Sandbox). O projeto Google Cloud é uma configuração do ambiente de execução.

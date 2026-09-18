@@ -1,0 +1,10 @@
+# Dependencias principais do notebook executado no Google Colab.
+# Versoes registradas no ambiente de reproducao em 2026-09-18.
+#
+# O PySUS nao faz parte deste ambiente: a investigacao de proveniencia
+# foi executada separadamente via Docker.
+
+pandas==2.2.3
+numpy==2.1.3
+google-cloud-bigquery==3.44.0
+db-dtypes==1.7.1

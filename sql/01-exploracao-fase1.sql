@@ -3,7 +3,7 @@
 --          Estabelecimentos de Saúde (CNES/DATASUS)
 -- FASE 1 — Exploração e extração
 -- Fonte: Base dos Dados (basedosdados.br_ms_cnes.estabelecimento)
--- Ambiente: BigQuery Sandbox (gratuito), projeto storied-shore-480202-t4
+-- Ambiente: Google BigQuery Sandbox
 -- =====================================================================
 
 

@@ -1,0 +1,65 @@
+# ============================================================
+# Projeto CNES — arquivos locais, temporarios e sensiveis
+# ============================================================
+
+# ------------------------------------------------------------
+# Variaveis de ambiente e segredos locais
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------
+# Credenciais e chaves
+# Nao ignorar *.json globalmente: a Fase 6 versionara JSON FHIR
+# ------------------------------------------------------------
+*credentials*.json
+*credential*.json
+*service-account*.json
+*service_account*.json
+client_secret*.json
+application_default_credentials.json
+*.pem
+*.key
+
+# ------------------------------------------------------------
+# Python
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ------------------------------------------------------------
+# Ambientes virtuais
+# ------------------------------------------------------------
+.venv/
+venv/
+env/
+
+# ------------------------------------------------------------
+# Jupyter
+# ------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ------------------------------------------------------------
+# Dados locais e arquivos de trabalho
+# Os dados publicos devem ser reproduzidos a partir da fonte,
+# nao versionados como extracoes locais neste repositorio.
+# ------------------------------------------------------------
+*.csv
+*.parquet
+*.db
+*.sqlite
+*.sqlite3
+
+# ------------------------------------------------------------
+# Arquivos temporarios de editores e sistema operacional
+# ------------------------------------------------------------
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

@@ -445,6 +445,65 @@ Atividades já realizadas dentro da Fase 6:
 
 ---
 
+## Como reproduzir o projeto
+
+O projeto utiliza ambientes diferentes conforme a etapa executada.
+
+### SQL — Google BigQuery
+
+As consultas estão em `sql/` e utilizam o conjunto público
+`basedosdados.br_ms_cnes`.
+
+Recorte principal: São Paulo, novembro de 2025.
+
+Para reproduzir os indicadores, abra o BigQuery, execute o arquivo SQL
+correspondente e compare o resultado com a documentação do projeto.
+
+### Python — Google Colab
+
+O notebook principal está em
+`python/fase2-limpeza-tratamento.ipynb`.
+
+Ele foi executado no Google Colab, com autenticação Google e acesso ao
+BigQuery.
+
+As dependências utilizadas estão registradas em `requirements.txt`.
+
+Ambiente de referência:
+
+- Python 3.13.15
+- pandas 2.2.3
+- numpy 2.1.3
+- google-cloud-bigquery 3.44.0
+- db-dtypes 1.7.1
+
+O identificador do projeto Google Cloud é uma configuração do ambiente
+do usuário e deve ser ajustado antes da execução.
+
+### Proveniência — Docker e PySUS
+
+A investigação de `tipo_unidade = 16` é complementar à análise principal.
+
+Foi executada separadamente com:
+
+- Docker
+- Python 3.12
+- PySUS 2.11.1
+
+Os detalhes estão em
+`docs/investigacao-proveniencia-tipo-unidade-16.md`.
+
+### Dados locais
+
+Extrações locais em CSV, Parquet e bancos temporários não são
+versionadas. O `.gitignore` também protege arquivos de ambiente,
+credenciais e artefatos temporários.
+
+Arquivos JSON não são ignorados globalmente porque a Fase 6 utilizará
+recursos FHIR em JSON.
+
+---
+
 ## Estrutura do repositório
 
 ```text
@@ -478,6 +537,9 @@ Atividades já realizadas dentro da Fase 6:
 ├── dashboard/
 │   └── relatórios e evidências da Fase 4
 │
+├── .gitignore
+├── LICENSE
+├── requirements.txt
 └── README.md
 ```
 
@@ -594,6 +656,18 @@ Próximas atividades:
 8. registrar exceções e perdas semânticas;
 9. concluir a Fase 6;
 10. consolidar a apresentação final do projeto na Fase 7.
+
+---
+
+## Licença e uso dos dados
+
+O código e a documentação autoral deste repositório são disponibilizados
+sob a licença MIT. Consulte o arquivo `LICENSE`.
+
+Os dados utilizados nas análises são provenientes do CNES/DATASUS e foram
+acessados principalmente por meio da Base dos Dados. Esses dados não são
+relicenciados por este repositório e permanecem sujeitos aos termos,
+licenças e condições definidos pelas respectivas fontes.
 
 ---
 
