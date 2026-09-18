@@ -1,104 +1,454 @@
 # Diagnóstico de Qualidade e Governança de Dados em Estabelecimentos de Saúde (CNES/DATASUS)
 
-> Projeto de portfólio em Dados para Saúde. Autora em formação (Biomedicina + Ciência de Dados e IA), aplicando na prática análise de dados, medição de qualidade, governança e interoperabilidade em uma base pública do SUS.
+> Projeto de portfólio em Dados para Saúde. Autora em formação em Biomedicina e Ciência de Dados e IA, aplicando na prática análise de dados, qualidade de dados, governança e interoperabilidade em uma base pública do SUS.
 
 ## Sobre o projeto
 
-Este projeto usa a base pública do CNES (Cadastro Nacional de Estabelecimentos de Saúde), mantida pelo DATASUS/Ministério da Saúde, para medir a qualidade do cadastro de estabelecimentos e propor um conjunto mínimo de regras de governança. Ao final, os dados tratados são mapeados para os recursos FHIR `Organization` e `Location`.
+Este projeto utiliza dados públicos do CNES (Cadastro Nacional de Estabelecimentos de Saúde), disponibilizados pelo DATASUS/Ministério da Saúde e acessados inicialmente pelo dataset público `br_ms_cnes` da Base dos Dados, para avaliar a qualidade cadastral de estabelecimentos de saúde.
 
-O CNES é o cadastro base que sustenta outros sistemas do SUS, entre eles SIA, SIH e e-SUS AB. Inconsistência no CNES não fica nele: se propaga para a rede inteira, e chega em forma de indicador aos gestores que decidem alocação de leitos, distribuição de profissionais e planejamento regional.
+O trabalho percorre diferentes etapas do ciclo de vida do dado:
 
-A pergunta do projeto é objetiva: quanto do cadastro está incompleto, inconsistente ou desatualizado, e onde.
+- exploração e compreensão da estrutura;
+- definição de recorte;
+- avaliação de completude;
+- avaliação de consistência;
+- avaliação de atualidade;
+- avaliação de unicidade;
+- tratamento e reprodução dos indicadores em Python;
+- visualização dos resultados;
+- definição de regras mínimas de governança;
+- investigação de proveniência;
+- preparação para interoperabilidade por meio de FHIR.
+
+Ao final, o projeto prevê o mapeamento dos dados tratados para os recursos FHIR `Organization` e `Location`, com validação formal dos recursos produzidos.
+
+O CNES é uma base estrutural para diferentes processos de informação em saúde. Problemas cadastrais podem se propagar para análises, integrações, indicadores e processos que dependem desses registros.
+
+A pergunta central do projeto é:
+
+> Quanto do cadastro está incompleto, inconsistente ou desatualizado, onde esses problemas aparecem e quais controles de qualidade e governança podem reduzir o risco de propagação dessas inconsistências?
+
+---
 
 ## Perguntas de negócio
 
-- Quais campos críticos do cadastro têm mais problemas de completude?
+- Quais campos críticos do cadastro apresentam problemas de completude?
+- Existem inconsistências entre informações relacionadas armazenadas em tabelas diferentes?
 - Qual o percentual de estabelecimentos sem atualização cadastral recente?
+- Existem identificadores duplicados dentro do recorte?
 - Como a qualidade do cadastro varia entre municípios?
+- Quais achados exigem regras explícitas de governança?
+- Quais limitações semânticas precisam ser resolvidas antes de transformar esses dados em recursos interoperáveis?
 
-Cada indicador calculado precisa responder a uma dessas perguntas. Indicador que não muda nenhuma decisão de gestão não entra no diagnóstico.
+Cada indicador calculado deve responder a uma necessidade analítica ou de governança identificável.
+
+---
 
 ## Recorte
 
 - **Geográfico:** Estado de São Paulo
 - **Temporal:** competência de novembro de 2025
-- **Fonte:** Base dos Dados, dataset público `br_ms_cnes`, acessado via Google BigQuery
+- **Fonte analítica principal:** Base dos Dados
+- **Dataset:** `br_ms_cnes`
+- **Consulta:** Google BigQuery
 
-Justificativa completa em [`docs/decisao-recorte.md`](docs/decisao-recorte.md).
+O recorte principal contém **110.362 estabelecimentos**.
+
+A justificativa completa do recorte está documentada em [`docs/decisao-recorte.md`](docs/decisao-recorte.md).
+
+---
 
 ## Dimensões de qualidade
 
-O diagnóstico usa quatro dimensões como categorias fixas de análise. As quatro já têm pelo menos um indicador calculado.
+O diagnóstico utiliza quatro dimensões fixas de qualidade.
 
 | Dimensão | O que mede | Status |
 |---|---|---|
-| Completude | Campos críticos avaliados quanto à presença e às regras de preenchimento | 5 campos avaliados |
-| Consistência | Valores que se contradizem entre campos ou entre tabelas | 3 regras concluídas |
+| Completude | Presença dos valores esperados considerando regras reais de preenchimento | 5 campos avaliados |
+| Consistência | Contradições, incompatibilidades ou problemas de domínio entre campos e tabelas | 3 regras principais + investigação semântica |
 | Atualidade | Tempo desde a última alteração cadastral | Concluída |
-| Unicidade | Se cada estabelecimento aparece uma única vez no recorte | Concluída |
+| Unicidade | Existência de duplicidade de identificadores dentro do recorte | Concluída |
+
+As quatro dimensões possuem ao menos um indicador calculado e documentado.
+
+---
 
 ## Regras de consistência aplicadas
 
-Três regras, escolhidas para cobrir níveis técnicos distintos — todas concluídas:
+Foram implementadas três regras principais, escolhidas para representar diferentes níveis de complexidade analítica.
 
 | Regra | Tabelas | O que exige | Status |
 |---|---|---|---|
-| Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação de datas dentro da tabela | Concluída |
-| Divergência de quantidade de leitos entre `leito` e `habilitacao` | `leito` + `habilitacao` | junção com agregação prévia | Concluída |
-| Leito de UTI cadastrado sem habilitação correspondente | `leito` + `habilitacao` | junção e critério clínico de correspondência (de-para semântico validado empiricamente) | Concluída |
+| Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação temporal dentro da própria tabela | Concluída |
+| Divergência de quantidade de leitos | `leito` + `habilitacao` | agregação e junção entre tabelas | Concluída |
+| Leito de UTI sem habilitação correspondente | `leito` + `habilitacao` | correspondência semântica entre domínios diferentes | Concluída |
 
-A definição de quais habilitações correspondem a cada tipo de UTI é decisão clínica, não técnica, e fica justificada na documentação.
+A correspondência entre tipos de leito e tipos de habilitação foi investigada separadamente, pois os dois campos utilizam domínios de códigos diferentes.
 
-## Achados até aqui
+---
 
-A verificação da estrutura do conjunto, feita antes de a análise começar, já produziu problemas de qualidade documentados:
+## Principais achados
 
-- Dado pessoal de profissional de saúde presente em base pública
-- Quantidade de leitos registrada em duas tabelas diferentes, sem garantia de que coincidam
-- Campos indicadores com tipos de dado diferentes entre tabelas do mesmo conjunto
-- Códigos ambíguos no dicionário oficial: valores distintos com o mesmo significado declarado
+### Ausência mascarada em `id_regiao_saude`
 
-Detalhamento em [`docs/achados-verificacao-estrutura.md`](docs/achados-verificacao-estrutura.md).
+O campo `id_regiao_saude` não representa ausência apenas com `NULL`.
 
-A aplicação dos indicadores e das regras de consistência revelou achados adicionais, com investigação completa em [`docs/dicionario-de-dados.md`](docs/dicionario-de-dados.md):
+Foram identificadas três formas:
 
-- **Nulo mascarado como texto.** O campo `id_regiao_saude` não usa `NULL` para representar ausência de valor — usa o texto literal `"nan"`. Uma checagem baseada só em `IS NULL` indicava 0% de incompletude; a checagem correta revelou 54,69%.
-- **Sentinela de prazo indeterminado.** Em `habilitacao`, 89,76% dos registros usam `ano_competencia_final = 9999` para representar "sem prazo definido", em vez de um campo nulo. A regra de habilitação vencida precisou excluir esse sentinela antes de comparar datas.
-- **Divergência sistemática entre fontes.** Nenhum dos 768 estabelecimentos avaliáveis tem `leito.quantidade_total` igual a `habilitacao.quantidade_leitos`. A divergência é sempre na mesma direção (leito ≥ habilitação), o que sugere que os dois campos medem conceitos diferentes, não erro aleatório de digitação.
-- **Metade dos leitos de UTI sem habilitação correspondente.** 553 de 1.103 combinações estabelecimento+categoria de UTI (50,1%) não têm habilitação formal correspondente, totalizando 7.312 leitos. O de-para entre os códigos de leito e de habilitação foi validado empiricamente, não apenas por nome parecido.
-- **Um campo genuinamente completo.** `tipo_unidade` apresentou 0% de incompletude, testado contra três formas de ausência (nulo, texto "nan", string vazia) e confirmado por inspeção prévia dos 38 valores distintos em uso — diferente dos zeros enganosos encontrados em outros campos.
-- **Um em cada cinco estabelecimentos desatualizado.** Usando uma janela de 24 meses anteriores à própria competência do arquivo (não à data de execução da análise, para manter o indicador reproduzível), 20,72% dos estabelecimentos não tiveram atualização cadastral recente.
-- **Disparidade municipal real, mas não bimodal.** A incompletude de `id_regiao_saude` varia de 0% (ex.: Osvaldo Cruz) a mais de 99% (ex.: Caieiras) entre municípios de porte comparável. A hipótese inicial de dois grupos opostos foi testada contra a distribuição completa e rejeitada: os 347 municípios avaliados se espalham pelas quatro faixas de incompletude, sem concentração em extremos.
+- `NULL`;
+- texto literal `"nan"`;
+- string vazia `""`.
 
-## Status
+Uma verificação baseada apenas em `IS NULL` produziria falsamente 0% de incompletude.
 
-Fase 1 concluída. Fase 3 concluída — as quatro dimensões de qualidade (completude, consistência, atualidade, unicidade) têm ao menos um indicador calculado e documentado. Fase 2 concluída para os indicadores de completude e unicidade — pipeline formal em Python (`python/fase2-limpeza-tratamento.ipynb`) reproduzindo, com paridade confirmada, os resultados já validados em SQL; duas divergências reais entre SQL e Python foram encontradas e corrigidas no processo (tipo de `id_municipio`, métrica de `id_regiao_saude`). Reprodução das 3 regras de consistência e do indicador de atualidade em Python (tabelas `leito` e `habilitacao`) fica como extensão futura, fora do escopo desta etapa. Fase 4 concluída — três gráficos publicados no Power BI Service (completude por campo, atualidade cadastral, distribuição regional), exportados como PDF e versionados em `dashboard/`. Cada gráfico ficou em um relatório separado, devido à limitação da versão Web do Power BI em mesclar múltiplas fontes de dados sem o Desktop. Fase 5 concluída — framework de governança com 9 regras (`docs/framework-governanca.md`), cada uma rastreável a um achado real do projeto, distinguindo explicitamente fato confirmado de hipótese pendente de validação.
+Após a comparação entre SQL e Python e a inclusão das três formas de ausência, a métrica corrigida do recorte é **54,70% de incompletude**.
 
-- [x] Ambiente configurado, BigQuery Sandbox
-- [x] Estrutura da tabela `estabelecimento` explorada, 204 colunas
-- [x] Recorte definido e validado contra dado real
-- [x] Estrutura do conjunto verificada: 14 tabelas, chaves de junção e granularidade
-- [x] Escopo revisado a partir da estrutura real ([versão 2](docs/projeto-portfolio-cnes-qualidade-dados-v2.md))
-- [x] Indicadores de completude: `id_regiao_saude` (54,69% incompleto), `tipo_unidade` (0%, verificado)
-- [x] Regra de consistência: habilitação vencida ainda registrada
-- [x] Regra de consistência: divergência de quantidade de leitos entre fontes
-- [x] Regra de consistência: leito de UTI sem habilitação correspondente
-- [x] Indicador de atualidade cadastral (20,72% desatualizado, corte de 24 meses documentado)
-- [x] Indicador de distribuição regional (disparidade municipal documentada, extensão de completude)
-- [x] Indicadores de completude: `id_municipio` (100%), `tipo_gestao` (100%, domínio observado menor que o esperado), `cnpj_mantenedora` (100% completo entre estabelecimentos "Mantidos"; 88,89% vazio bruto, ausência esperada por regra de negócio)
-- [x] Indicador de unicidade (0 duplicados em `id_estabelecimento_cnes`, 110.362 registros)
-- [x] Limpeza e tratamento formal em Python (`python/fase2-limpeza-tratamento.ipynb`), com paridade SQL×Python confirmada para completude e unicidade
-- [x] Painel publicado (3 gráficos: completude por campo, atualidade cadastral, distribuição regional)
-- [x] Proposta de regras mínimas de governança (`docs/framework-governanca.md`)
-- [ ] Mapeamento validado para recursos FHIR
+Esse achado mostra que a forma física de representação do dado precisa ser investigada antes da definição de métricas.
+
+### Valor sentinela em habilitações
+
+Na tabela `habilitacao`, a combinação:
+
+```text
+ano_competencia_final = 9999
+mes_competencia_final = 99
+```
+
+é utilizada para representar prazo final indeterminado.
+
+No recorte, **6.072 de 6.764 habilitações (89,76%)** utilizam esse padrão.
+
+A regra de habilitação vencida precisou excluir explicitamente o sentinela antes da comparação temporal. Após o tratamento correto, **0 habilitações vencidas** foram encontradas no recorte.
+
+### Divergência sistemática entre quantidades de leitos
+
+Foram encontrados **768 estabelecimentos avaliáveis** presentes simultaneamente nas tabelas necessárias para a comparação.
+
+Em todos eles:
+
+```text
+leito.quantidade_total > habilitacao.quantidade_leitos
+```
+
+Nenhum dos 768 apresentou igualdade entre as duas medidas.
+
+O padrão é sistemático e compatível com a hipótese de que os campos possam representar conceitos diferentes. Essa interpretação permanece documentada como hipótese enquanto não houver confirmação semântica suficiente da fonte.
+
+### UTI sem habilitação correspondente
+
+Foram avaliadas **1.103 combinações estabelecimento + categoria de UTI**. Dessas, **553 (50,1%)** não apresentaram habilitação correspondente segundo o de-para utilizado no projeto.
+
+Essas combinações representam **7.312 leitos** em **547 estabelecimentos**.
+
+A correspondência entre os domínios de leito e habilitação foi construída semanticamente e investigada empiricamente, não apenas pela semelhança textual dos nomes.
+
+### Completude não garante consistência semântica
+
+O campo `tipo_unidade` apresentou:
+
+- 0 `NULL`;
+- 0 textos `"nan"`;
+- 0 strings vazias.
+
+Portanto, apresentou **0% de incompletude** no recorte.
+
+Entretanto, a investigação do domínio mostrou que completude física não significa necessariamente consistência semântica.
+
+Foram observados **38 códigos distintos**, dos quais:
+
+- 37 possuem correspondência na tabela `dicionario`;
+- o código `16` não possui correspondência nessa fonte;
+- 5 estabelecimentos apresentam `tipo_unidade = 16`.
+
+Isso transformou o código `16` em uma exceção semântica que precisou ser investigada antes do mapeamento FHIR.
+
+---
+
+## Investigação de proveniência do código `tipo_unidade = 16`
+
+A investigação temporal mostrou que o código `16` começou a aparecer recentemente nos cinco estabelecimentos afetados do recorte, substituindo diferentes códigos anteriores.
+
+Também foi identificada ocorrência nacional do código em múltiplas UFs a partir de setembro de 2025 dentro do período pesquisado.
+
+Para verificar se o valor poderia ter sido criado durante a transformação da Base dos Dados, foi realizado um teste independente de proveniência.
+
+### Ferramentas utilizadas
+
+- Docker;
+- PySUS 2.11.1;
+- fonte CNES consultada com `source="origin"`.
+
+### Consulta realizada
+
+```text
+Estado: SP
+Ano: 2025
+Mês: 11
+Grupo CNES: ST
+```
+
+O conjunto retornado apresentou:
+
+- 110.362 registros;
+- 208 colunas;
+- campos originais `CNES` e `TP_UNID`.
+
+Os cinco estabelecimentos investigados apresentaram:
+
+| CNES | `TP_UNID` |
+|---|---:|
+| `4932609` | `16` |
+| `5767032` | `16` |
+| `5828953` | `16` |
+| `9340459` | `16` |
+| `9570365` | `16` |
+
+Resultado: **5 de 5 registros apresentaram `TP_UNID = 16` na origem consultada.**
+
+Portanto, não foi encontrada evidência de que a transformação observada entre a origem consultada e a Base dos Dados tenha introduzido o valor `16`.
+
+Isso confirma sua proveniência dentro da cadeia investigada, mas não confirma seu significado semântico. O código continua sem significado oficial confirmado dentro das fontes utilizadas no projeto.
+
+Por essa razão, nenhum `coding.display` será inferido artificialmente durante o mapeamento FHIR.
+
+Investigação completa: [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs/investigacao-proveniencia-tipo-unidade-16.md).
+
+---
+
+## Atualidade cadastral
+
+Foi adotada uma janela metodológica de **24 meses** anteriores à própria competência do snapshot.
+
+A referência utilizada é novembro de 2025, e não a data em que a análise foi executada.
+
+| Situação | Estabelecimentos |
+|---|---:|
+| Atualizados | 87.494 |
+| Desatualizados | 22.868 |
+| Não informado | 0 |
+
+Percentual desatualizado: **20,72%**.
+
+A janela de 24 meses é uma convenção metodológica deste projeto e não uma regra normativa atribuída ao DATASUS.
+
+---
+
+## Distribuição regional
+
+A incompletude de `id_regiao_saude` apresenta forte variação municipal.
+
+Foram avaliados **347 municípios** com pelo menos 20 estabelecimentos.
+
+| Faixa de incompletude | Municípios |
+|---|---:|
+| 0–25% | 100 |
+| 25–50% | 67 |
+| 50–75% | 111 |
+| 75–100% | 69 |
+
+A hipótese inicial de uma distribuição bimodal foi testada e rejeitada. O problema apresenta distribuição contínua entre municípios.
+
+---
+
+## Unicidade
+
+O campo `id_estabelecimento_cnes` foi avaliado dentro do recorte fixo SP + novembro/2025.
+
+Resultado:
+
+```text
+110.362 registros
+0 identificadores duplicados
+```
+
+Dentro deste recorte, `id_estabelecimento_cnes` funciona como chave única de fato.
+
+---
+
+## Tratamento em Python
+
+A Fase 2 reproduziu formalmente parte dos indicadores originalmente desenvolvidos em SQL utilizando Python e pandas.
+
+Notebook principal: [`python/fase2-limpeza-tratamento.ipynb`](python/fase2-limpeza-tratamento.ipynb).
+
+A comparação SQL × Python permitiu identificar e corrigir divergências reais de interpretação, incluindo:
+
+- tipo correto de `id_municipio`;
+- existência de strings vazias em `id_regiao_saude`;
+- correção da métrica de incompletude de 54,69% para 54,70%.
+
+A reprodução das três regras de consistência e do indicador de atualidade em Python permanece como extensão futura e não bloqueia as próximas fases do projeto.
+
+---
+
+## Dashboard
+
+A Fase 4 produziu três visualizações principais:
+
+- completude por campo;
+- atualidade cadastral;
+- distribuição regional.
+
+Os relatórios foram produzidos no Power BI e os resultados exportados e versionados na pasta `dashboard/`.
+
+A versão Web do Power BI utilizada no projeto exigiu relatórios separados para algumas visualizações devido às limitações de combinação de múltiplas fontes sem o Power BI Desktop.
+
+---
+
+## Governança de dados
+
+A Fase 5 transformou os principais achados técnicos em regras mínimas de governança.
+
+O framework contém **9 regras de governança**, cada uma associada a um problema efetivamente encontrado durante o projeto.
+
+Documento: [`docs/framework-governanca.md`](docs/framework-governanca.md).
+
+O framework diferencia explicitamente:
+
+```text
+fato confirmado
+≠
+hipótese
+≠
+regra metodológica do projeto
+```
+
+Essa separação evita transformar interpretações ainda não verificadas em regras de negócio ou afirmações sobre a fonte.
+
+---
+
+## Interoperabilidade FHIR
+
+A **Fase 6 está em andamento**.
+
+O objetivo é transformar informações selecionadas do CNES em recursos compatíveis com **FHIR R4**, principalmente:
+
+- `Organization`;
+- `Location`.
+
+O processo não consiste apenas em renomear colunas. Cada campo precisa ser avaliado considerando:
+
+- conceito de origem;
+- significado semântico;
+- recurso FHIR apropriado;
+- elemento FHIR;
+- cardinalidade;
+- tipo de dado;
+- sistema de identificação ou terminologia;
+- necessidade de transformação;
+- referências entre recursos;
+- possível perda semântica.
+
+Os mapeamentos serão classificados como:
+
+- direto;
+- aproximado;
+- dependente de transformação;
+- sem correspondência clara.
+
+A investigação de `tipo_unidade = 16` foi realizada justamente porque um código cuja semântica não está confirmada não pode ser transformado automaticamente em um conceito FHIR validado.
+
+A Fase 6 somente será considerada concluída após:
+
+- definição do mapeamento;
+- geração dos recursos;
+- produção de exemplos JSON;
+- validação formal FHIR;
+- documentação das perdas e exceções semânticas.
+
+Submissão de dados à RNDS não faz parte do escopo deste projeto.
+
+---
+
+## Status do projeto
+
+### Fases concluídas
+
+- [x] Fase 1 — Exploração, extração e definição do recorte
+- [x] Fase 2 — Limpeza e tratamento formal em Python
+- [x] Fase 3 — Indicadores de qualidade e consistência
+- [x] Fase 4 — Dashboard
+- [x] Fase 5 — Governança de dados
+
+### Fase atual
+
+- [ ] **Fase 6 — Mapeamento e validação FHIR**
+
+Atividades já realizadas dentro da Fase 6:
+
+- [x] investigação inicial dos campos disponíveis para interoperabilidade;
+- [x] avaliação de `id_estabelecimento_cnes` como identificador;
+- [x] investigação do domínio de `tipo_unidade`;
+- [x] identificação da exceção semântica `tipo_unidade = 16`;
+- [x] análise temporal dos cinco estabelecimentos afetados;
+- [x] análise nacional da ocorrência do código `16`;
+- [x] teste de proveniência utilizando PySUS e `source="origin"`;
+- [x] documentação formal da exceção semântica;
+- [ ] concluir tabela de mapeamento CNES → FHIR;
+- [ ] implementar transformação;
+- [ ] gerar recursos `Organization`;
+- [ ] gerar recursos `Location`;
+- [ ] validar formalmente os recursos FHIR;
+- [ ] documentar perdas semânticas e exceções.
+
+### Etapa final
+
+- [ ] Fase 7 — Consolidação e apresentação final do portfólio
+
+---
+
+## Checklist técnico concluído
+
+- [x] Ambiente configurado e BigQuery Sandbox utilizado
+- [x] Estrutura da tabela `estabelecimento` explorada
+- [x] 204 colunas identificadas na tabela analítica principal
+- [x] Recorte definido e validado contra dados reais
+- [x] Estrutura do conjunto investigada
+- [x] 14 tabelas avaliadas quanto a chaves e granularidade
+- [x] Escopo revisado após exploração da estrutura
+- [x] Completude de `id_regiao_saude` calculada e corrigida para 54,70%
+- [x] Completude de `tipo_unidade` calculada: 0% de ausência
+- [x] Domínio observado de `tipo_unidade` investigado: 37 de 38 códigos reconciliados
+- [x] Exceção semântica do código `16` documentada
+- [x] Regra de habilitação vencida
+- [x] Regra de divergência de leitos
+- [x] Regra de UTI sem habilitação correspondente
+- [x] Indicador de atualidade cadastral
+- [x] Indicador de distribuição regional
+- [x] Completude de `id_municipio`
+- [x] Completude de `tipo_gestao`
+- [x] Completude condicional de `cnpj_mantenedora`
+- [x] Indicador de unicidade
+- [x] Pipeline formal em Python
+- [x] Comparação SQL × Python
+- [x] Dashboard produzido
+- [x] Framework de governança produzido
+- [x] Investigação de proveniência do código `16`
+- [ ] Mapeamento CNES → FHIR concluído
+- [ ] Recursos FHIR gerados
+- [ ] Recursos FHIR formalmente validados
+
+---
 
 ## Tecnologias
 
-SQL (Google BigQuery), Python (pandas), Power BI, Git, FHIR.
+- SQL
+- Google BigQuery
+- Python
+- pandas
+- Power BI
+- Git
+- GitHub
+- Docker
+- PySUS
+- FHIR R4
+
+---
 
 ## Estrutura do repositório
 
-```
+```text
+.
 ├── sql/
 │   ├── 01-exploracao-fase1.sql
 │   ├── 02-verificacao-estrutura.sql
@@ -113,44 +463,145 @@ SQL (Google BigQuery), Python (pandas), Power BI, Git, FHIR.
 │   ├── 11-completude-tipo_gestao.sql
 │   ├── 12-completude-cnpj_mantenedora.sql
 │   └── 13-unicidade-id_estabelecimento_cnes.sql
-├── docs/         decisões documentadas, achados, dicionário de dados e escopo
-├── python/       tratamento e cálculo de indicadores (a partir da Fase 2)
-├── dashboard/    arquivos e capturas do painel (a partir da Fase 4)
+│
+├── docs/
+│   ├── decisao-recorte.md
+│   ├── achados-verificacao-estrutura.md
+│   ├── dicionario-de-dados.md
+│   ├── framework-governanca.md
+│   ├── investigacao-proveniencia-tipo-unidade-16.md
+│   └── demais decisões e documentos metodológicos
+│
+├── python/
+│   └── fase2-limpeza-tratamento.ipynb
+│
+├── dashboard/
+│   └── relatórios e evidências da Fase 4
+│
 └── README.md
 ```
 
-## Decisões
+---
 
-As escolhas de escopo, tratamento e interpretação ficam registradas em `docs/`, uma por arquivo, sempre com o motivo e as alternativas descartadas.
+## Decisões metodológicas
 
-Decisão sem justificativa escrita é decisão que ninguém consegue auditar depois, inclusive quem a tomou.
+As decisões de escopo, tratamento e interpretação são registradas em `docs/`.
 
-O documento de escopo tem histórico de versões. A versão 2 registra o que mudou depois que a estrutura real do conjunto foi verificada, incluindo uma premissa do planejamento inicial que se mostrou errada.
+Sempre que possível, cada decisão contém:
+
+- problema encontrado;
+- evidência;
+- interpretação;
+- hipótese, quando existente;
+- decisão adotada;
+- justificativa;
+- impacto sobre as etapas posteriores.
+
+Uma decisão sem justificativa escrita reduz a auditabilidade e dificulta a reprodução da análise.
+
+O projeto também preserva a separação entre:
+
+```text
+observação
+hipótese
+conclusão
+decisão metodológica
+```
+
+Uma hipótese plausível não é documentada como fato enquanto não houver evidência suficiente para sustentá-la.
+
+---
 
 ## Limitações declaradas
 
-**O que este projeto mede.** A qualidade do cadastro, não a operação da instituição por trás dele. Um estabelecimento com cadastro completo não é necessariamente bem gerido, e um cadastro incompleto não indica má gestão.
+### Escopo da análise
 
-**Alcance do recorte.** São Paulo, uma competência. Diferenças observadas entre municípios valem para este recorte e não devem ser lidas como padrão nacional.
+O projeto mede a qualidade do cadastro, não a qualidade operacional ou assistencial das instituições.
 
-**Defasagem.** A competência mais recente publicada na fonte tem alguns meses de atraso em relação à data da extração. Os achados descrevem o cadastro naquele momento.
+Um estabelecimento com cadastro completo não é necessariamente bem administrado, assim como um cadastro incompleto não demonstra má gestão da instituição.
 
-**Natureza do dado.** O projeto usa dados de estabelecimento, sem qualquer informação de paciente.
+### Recorte geográfico e temporal
 
-O conjunto `br_ms_cnes` contém uma tabela `profissional` com nome, cartão nacional de saúde e município de residência — dado pessoal de profissional de saúde em base pública. Essa tabela ficou fora do escopo desta versão. Nenhum dado pessoal é extraído, tratado ou versionado neste repositório. A decisão está registrada em `docs/`.
+O diagnóstico principal utiliza São Paulo, competência novembro de 2025.
 
-**Alcance do mapeamento FHIR.** O projeto mapeia dados para recursos FHIR e valida o resultado. Não envolve submissão à RNDS, que exige certificação digital e credenciais indisponíveis em projeto de portfólio.
+Os resultados desse snapshot não devem ser automaticamente generalizados para todo o Brasil ou para outras competências.
 
-**Convenções metodológicas próprias.** Alguns cortes (como a janela de 24 meses do indicador de atualidade) são decisões deste projeto, não definições normativas do DATASUS. Cada convenção está documentada com sua justificativa em `docs/dicionario-de-dados.md`.
+Investigações nacionais ou temporais realizadas durante o projeto são utilizadas como análises auxiliares e ficam explicitamente identificadas.
 
-Nenhuma conformidade legal ou recomendação clínica é alegada.
+### Defasagem da fonte
+
+O snapshot analisado representa uma competência específica da base.
+
+Resultados relacionados à atualidade são calculados em relação à própria competência de novembro de 2025 para garantir reprodutibilidade.
+
+### Dados pessoais
+
+O projeto utiliza dados de estabelecimentos. Nenhum dado de paciente é utilizado.
+
+O conjunto `br_ms_cnes` contém uma tabela `profissional` com informações pessoais de profissionais de saúde. Essa tabela permanece fora do escopo.
+
+Nenhum dado pessoal dessa tabela é extraído, tratado ou versionado neste repositório.
+
+### Proveniência
+
+O uso de `source="origin"` no PySUS permite reduzir camadas intermediárias durante a investigação da proveniência.
+
+Entretanto, confirmar que determinado valor existe no conjunto disponibilizado pela origem consultada não significa determinar em qual sistema ou processo anterior ele foi originalmente criado.
+
+### Semântica
+
+A presença de um código nos dados não é suficiente para atribuir significado a ele.
+
+O código `tipo_unidade = 16` exemplifica essa diferença:
+
+```text
+proveniência confirmada
+≠
+semântica validada
+```
+
+Nenhum significado terminológico será inventado para preencher lacunas durante a transformação FHIR.
+
+### FHIR
+
+O projeto realiza mapeamento e validação de recursos FHIR.
+
+Não envolve submissão à RNDS.
+
+Integração produtiva com a RNDS exigiria requisitos operacionais, de segurança, autenticação e credenciamento que estão fora do escopo deste projeto de portfólio.
+
+### Convenções metodológicas
+
+Alguns critérios utilizados no projeto, como a janela de 24 meses para avaliação de atualidade, são decisões metodológicas próprias.
+
+Eles não são apresentados como normas do DATASUS quando não existe confirmação documental para isso.
+
+---
+
+## Próximos passos
+
+O projeto encontra-se atualmente na **Fase 6 — Interoperabilidade FHIR**.
+
+Próximas atividades:
+
+1. concluir o mapeamento semântico dos campos CNES;
+2. definir os campos utilizados em `Organization`;
+3. definir os campos utilizados em `Location`;
+4. classificar cada correspondência quanto à qualidade do mapeamento;
+5. implementar a transformação;
+6. gerar exemplos em JSON;
+7. executar validação formal FHIR R4;
+8. registrar exceções e perdas semânticas;
+9. concluir a Fase 6;
+10. consolidar a apresentação final do projeto na Fase 7.
+
+---
 
 ## Autoria
 
 **Carla Rodrigues de Moraes**
-Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
 
-As decisões de escopo, tratamento e interpretação estão documentadas em `docs/`,
-cada uma com a justificativa.
+Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
+As decisões de escopo, tratamento, qualidade, governança e interoperabilidade deste projeto são documentadas para tornar o processo reproduzível e auditável.
 
 [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
