@@ -1,10 +1,83 @@
+<p align="center">
+  <b>Nexis — Dados em Saúde</b> · Projeto CNES<br/>
+  <img src="https://img.shields.io/badge/status-em%20andamento-ed93b1?style=flat-square" alt="Status: em andamento">
+  <img src="https://img.shields.io/badge/dados-p%C3%BAblicos-f4c0d1?style=flat-square&labelColor=d4537e" alt="Dados públicos">
+  <img src="https://img.shields.io/badge/fase-6%20de%207-d4537e?style=flat-square" alt="Fase 6 de 7">
+</p>
+
 # Diagnóstico de Qualidade e Governança de Dados em Estabelecimentos de Saúde (CNES/DATASUS)
 
 > Projeto de portfólio em Dados para Saúde. Autora em formação em Biomedicina e Ciência de Dados e IA, aplicando na prática análise de dados, qualidade de dados, governança e interoperabilidade em uma base pública do SUS.
 
-## Sobre o projeto
+> [!NOTE]
+> Projeto com **dados públicos** do CNES/DATASUS. O projeto utiliza dados de estabelecimentos. Nenhum dado de paciente é utilizado.
+
+## Sumário
+
+1. [Pergunta do projeto](#1-pergunta-do-projeto)
+2. [Contexto do processo](#2-contexto-do-processo)
+3. [Dados](#3-dados)
+4. [Método](#4-método)
+5. [Estrutura do repositório](#5-estrutura-do-repositório)
+6. [Como reproduzir](#6-como-reproduzir)
+7. [Regras e validações](#7-regras-e-validações)
+8. [Achados](#8-achados)
+9. [Decisões registradas](#9-decisões-registradas)
+10. [Limitações](#10-limitações)
+11. [Aprendizados e correções de método](#11-aprendizados-e-correções-de-método)
+12. [Próximos passos](#12-próximos-passos)
+13. [Referências](#13-referências)
+14. [Autoria e licença](#14-autoria-e-licença)
+
+---
+
+## 1. Pergunta do projeto
+
+A pergunta central do projeto é:
+
+> Quanto do cadastro está incompleto, inconsistente ou desatualizado, onde esses problemas aparecem e quais controles de qualidade e governança podem reduzir o risco de propagação dessas inconsistências?
+
+### Perguntas de negócio
+
+- Quais campos críticos do cadastro apresentam problemas de completude?
+- Existem inconsistências entre informações relacionadas armazenadas em tabelas diferentes?
+- Qual o percentual de estabelecimentos sem atualização cadastral recente?
+- Existem identificadores duplicados dentro do recorte?
+- Como a qualidade do cadastro varia entre municípios?
+- Quais achados exigem regras explícitas de governança?
+- Quais limitações semânticas precisam ser resolvidas antes de transformar esses dados em recursos interoperáveis?
+
+Cada indicador calculado deve responder a uma necessidade analítica ou de governança identificável.
+
+---
+
+## 2. Contexto do processo
+
+O CNES é uma base estrutural para diferentes processos de informação em saúde. Problemas cadastrais podem se propagar para análises, integrações, indicadores e processos que dependem desses registros.
+
+---
+
+## 3. Dados
 
 Este projeto utiliza dados públicos do CNES (Cadastro Nacional de Estabelecimentos de Saúde), disponibilizados pelo DATASUS/Ministério da Saúde e acessados inicialmente pelo dataset público `br_ms_cnes` da Base dos Dados, para avaliar a qualidade cadastral de estabelecimentos de saúde.
+
+### Recorte
+
+| Item | Descrição |
+|---|---|
+| Geográfico | Estado de São Paulo |
+| Temporal | competência de novembro de 2025 |
+| Fonte analítica principal | Base dos Dados |
+| Dataset | `br_ms_cnes` |
+| Consulta | Google BigQuery |
+
+O recorte principal contém **110.362 estabelecimentos**.
+
+A justificativa completa do recorte está documentada em [`docs/decisao-recorte.md`](docs/decisao-recorte.md).
+
+---
+
+## 4. Método
 
 O trabalho percorre diferentes etapas do ciclo de vida do dado:
 
@@ -22,43 +95,7 @@ O trabalho percorre diferentes etapas do ciclo de vida do dado:
 
 Ao final, o projeto prevê o mapeamento dos dados tratados para os recursos FHIR `Organization` e `Location`, com validação formal dos recursos produzidos.
 
-O CNES é uma base estrutural para diferentes processos de informação em saúde. Problemas cadastrais podem se propagar para análises, integrações, indicadores e processos que dependem desses registros.
-
-A pergunta central do projeto é:
-
-> Quanto do cadastro está incompleto, inconsistente ou desatualizado, onde esses problemas aparecem e quais controles de qualidade e governança podem reduzir o risco de propagação dessas inconsistências?
-
----
-
-## Perguntas de negócio
-
-- Quais campos críticos do cadastro apresentam problemas de completude?
-- Existem inconsistências entre informações relacionadas armazenadas em tabelas diferentes?
-- Qual o percentual de estabelecimentos sem atualização cadastral recente?
-- Existem identificadores duplicados dentro do recorte?
-- Como a qualidade do cadastro varia entre municípios?
-- Quais achados exigem regras explícitas de governança?
-- Quais limitações semânticas precisam ser resolvidas antes de transformar esses dados em recursos interoperáveis?
-
-Cada indicador calculado deve responder a uma necessidade analítica ou de governança identificável.
-
----
-
-## Recorte
-
-- **Geográfico:** Estado de São Paulo
-- **Temporal:** competência de novembro de 2025
-- **Fonte analítica principal:** Base dos Dados
-- **Dataset:** `br_ms_cnes`
-- **Consulta:** Google BigQuery
-
-O recorte principal contém **110.362 estabelecimentos**.
-
-A justificativa completa do recorte está documentada em [`docs/decisao-recorte.md`](docs/decisao-recorte.md).
-
----
-
-## Dimensões de qualidade
+### Dimensões de qualidade
 
 O diagnóstico utiliza quatro dimensões fixas de qualidade.
 
@@ -71,9 +108,241 @@ O diagnóstico utiliza quatro dimensões fixas de qualidade.
 
 As quatro dimensões possuem ao menos um indicador calculado e documentado.
 
+### Tratamento em Python (Fase 2)
+
+A Fase 2 reproduziu formalmente parte dos indicadores originalmente desenvolvidos em SQL utilizando Python e pandas.
+
+Notebook principal: [`python/fase2-limpeza-tratamento.ipynb`](python/fase2-limpeza-tratamento.ipynb).
+
+A reprodução das três regras de consistência e do indicador de atualidade em Python permanece como extensão futura e não bloqueia as próximas fases do projeto.
+
+### Dashboard (Fase 4)
+
+A Fase 4 produziu três visualizações principais:
+
+- completude por campo;
+- atualidade cadastral;
+- distribuição regional.
+
+Os relatórios foram produzidos no Power BI e os resultados exportados e versionados na pasta `dashboard/`.
+
+A versão Web do Power BI utilizada no projeto exigiu relatórios separados para algumas visualizações devido às limitações de combinação de múltiplas fontes sem o Power BI Desktop.
+
+### Interoperabilidade FHIR (Fase 6)
+
+A **Fase 6 está em andamento**.
+
+O objetivo é transformar informações selecionadas do CNES em recursos compatíveis com **FHIR R4**, principalmente:
+
+- `Organization`;
+- `Location`.
+
+O processo não consiste apenas em renomear colunas. Cada campo precisa ser avaliado considerando:
+
+- conceito de origem;
+- significado semântico;
+- recurso FHIR apropriado;
+- elemento FHIR;
+- cardinalidade;
+- tipo de dado;
+- sistema de identificação ou terminologia;
+- necessidade de transformação;
+- referências entre recursos;
+- possível perda semântica.
+
+Os mapeamentos serão classificados como:
+
+- direto;
+- aproximado;
+- dependente de transformação;
+- sem correspondência clara.
+
+A investigação de `tipo_unidade = 16` foi realizada justamente porque um código cuja semântica não está confirmada não pode ser transformado automaticamente em um conceito FHIR validado.
+
+A Fase 6 somente será considerada concluída após:
+
+- definição do mapeamento;
+- geração dos recursos;
+- produção de exemplos JSON;
+- validação formal FHIR;
+- documentação das perdas e exceções semânticas.
+
+> [!NOTE]
+> Submissão de dados à RNDS não faz parte do escopo deste projeto.
+
+### Status do projeto
+
+**Fases concluídas**
+
+- [x] Fase 1 — Exploração, extração e definição do recorte
+- [x] Fase 2 — Limpeza e tratamento formal em Python
+- [x] Fase 3 — Indicadores de qualidade e consistência
+- [x] Fase 4 — Dashboard
+- [x] Fase 5 — Governança de dados
+
+**Fase atual**
+
+- [ ] **Fase 6 — Mapeamento e validação FHIR**
+
+Atividades já realizadas dentro da Fase 6:
+
+- [x] investigação inicial dos campos disponíveis para interoperabilidade;
+- [x] avaliação de `id_estabelecimento_cnes` como identificador;
+- [x] investigação do domínio de `tipo_unidade`;
+- [x] identificação da exceção semântica `tipo_unidade = 16`;
+- [x] análise temporal dos cinco estabelecimentos afetados;
+- [x] análise nacional da ocorrência do código `16`;
+- [x] teste de proveniência utilizando PySUS e `source="origin"`;
+- [x] documentação formal da exceção semântica;
+- [ ] concluir tabela de mapeamento CNES → FHIR;
+- [ ] implementar transformação;
+- [ ] gerar recursos `Organization`;
+- [ ] gerar recursos `Location`;
+- [ ] validar formalmente os recursos FHIR;
+- [ ] documentar perdas semânticas e exceções.
+
+**Etapa final**
+
+- [ ] Fase 7 — Consolidação e apresentação final do portfólio
+
+<details>
+<summary><b>Checklist técnico concluído</b></summary>
+
+- [x] Ambiente configurado e BigQuery Sandbox utilizado
+- [x] Estrutura da tabela `estabelecimento` explorada
+- [x] 204 colunas identificadas na tabela analítica principal
+- [x] Recorte definido e validado contra dados reais
+- [x] Estrutura do conjunto investigada
+- [x] 14 tabelas avaliadas quanto a chaves e granularidade
+- [x] Escopo revisado após exploração da estrutura
+- [x] Completude de `id_regiao_saude` calculada e corrigida para 54,70%
+- [x] Completude de `tipo_unidade` calculada: 0% de ausência
+- [x] Domínio observado de `tipo_unidade` investigado: 37 de 38 códigos reconciliados
+- [x] Exceção semântica do código `16` documentada
+- [x] Regra de habilitação vencida
+- [x] Regra de divergência de leitos
+- [x] Regra de UTI sem habilitação correspondente
+- [x] Indicador de atualidade cadastral
+- [x] Indicador de distribuição regional
+- [x] Completude de `id_municipio`
+- [x] Completude de `tipo_gestao`
+- [x] Completude condicional de `cnpj_mantenedora`
+- [x] Indicador de unicidade
+- [x] Pipeline formal em Python
+- [x] Comparação SQL × Python
+- [x] Dashboard produzido
+- [x] Framework de governança produzido
+- [x] Investigação de proveniência do código `16`
+- [ ] Mapeamento CNES → FHIR concluído
+- [ ] Recursos FHIR gerados
+- [ ] Recursos FHIR formalmente validados
+
+</details>
+
 ---
 
-## Regras de consistência aplicadas
+## 5. Estrutura do repositório
+
+```text
+.
+├── sql/
+│   ├── 01-exploracao-fase1.sql
+│   ├── 02-verificacao-estrutura.sql
+│   ├── 03-completude-id_regiao_saude.sql
+│   ├── 04-consistencia-habilitacao-vencida.sql
+│   ├── 05-consistencia-divergencia-leitos.sql
+│   ├── 06-consistencia-uti-sem-habilitacao.sql
+│   ├── 07-completude-tipo_unidade.sql
+│   ├── 08-atualidade-cadastral.sql
+│   ├── 09-distribuicao-regional.sql
+│   ├── 10-completude-id_municipio.sql
+│   ├── 11-completude-tipo_gestao.sql
+│   ├── 12-completude-cnpj_mantenedora.sql
+│   └── 13-unicidade-id_estabelecimento_cnes.sql
+│
+├── docs/
+│   ├── decisao-recorte.md
+│   ├── achados-verificacao-estrutura.md
+│   ├── dicionario-de-dados.md
+│   ├── framework-governanca.md
+│   ├── investigacao-proveniencia-tipo-unidade-16.md
+│   └── demais decisões e documentos metodológicos
+│
+├── python/
+│   └── fase2-limpeza-tratamento.ipynb
+│
+├── dashboard/
+│   └── relatórios e evidências da Fase 4
+│
+├── .gitignore
+├── LICENSE
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 6. Como reproduzir
+
+O projeto utiliza ambientes diferentes conforme a etapa executada.
+
+### Tecnologias
+
+SQL · Google BigQuery · Python · pandas · Power BI · Git · GitHub · Docker · PySUS · FHIR R4
+
+### SQL — Google BigQuery
+
+As consultas estão em `sql/` e utilizam o conjunto público `basedosdados.br_ms_cnes`.
+
+Recorte principal: São Paulo, novembro de 2025.
+
+Para reproduzir os indicadores, abra o BigQuery, execute o arquivo SQL correspondente e compare o resultado com a documentação do projeto.
+
+### Python — Google Colab
+
+O notebook principal está em `python/fase2-limpeza-tratamento.ipynb`.
+
+Ele foi executado no Google Colab, com autenticação Google e acesso ao BigQuery.
+
+As dependências utilizadas estão registradas em `requirements.txt`.
+
+**Ambiente de referência**
+
+| Pacote | Versão |
+|---|---|
+| Python | 3.13.15 |
+| pandas | 2.2.3 |
+| numpy | 2.1.3 |
+| google-cloud-bigquery | 3.44.0 |
+| db-dtypes | 1.7.1 |
+
+O identificador do projeto Google Cloud é uma configuração do ambiente do usuário e deve ser ajustado antes da execução.
+
+### Proveniência — Docker e PySUS
+
+A investigação de `tipo_unidade = 16` é complementar à análise principal.
+
+Foi executada separadamente com:
+
+| Ferramenta | Versão |
+|---|---|
+| Docker | — |
+| Python | 3.12 |
+| PySUS | 2.11.1 |
+
+Os detalhes estão em [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs/investigacao-proveniencia-tipo-unidade-16.md).
+
+### Dados locais
+
+Extrações locais em CSV, Parquet e bancos temporários não são versionadas. O `.gitignore` também protege arquivos de ambiente, credenciais e artefatos temporários.
+
+Arquivos JSON não são ignorados globalmente porque a Fase 6 utilizará recursos FHIR em JSON.
+
+---
+
+## 7. Regras e validações
+
+### Regras de consistência aplicadas
 
 Foram implementadas três regras principais, escolhidas para representar diferentes níveis de complexidade analítica.
 
@@ -85,9 +354,29 @@ Foram implementadas três regras principais, escolhidas para representar diferen
 
 A correspondência entre tipos de leito e tipos de habilitação foi investigada separadamente, pois os dois campos utilizam domínios de códigos diferentes.
 
+### Governança de dados (Fase 5)
+
+A Fase 5 transformou os principais achados técnicos em regras mínimas de governança.
+
+O framework contém **9 regras de governança**, cada uma associada a um problema efetivamente encontrado durante o projeto.
+
+Documento: [`docs/framework-governanca.md`](docs/framework-governanca.md).
+
+O framework diferencia explicitamente:
+
+```text
+fato confirmado
+≠
+hipótese
+≠
+regra metodológica do projeto
+```
+
+Essa separação evita transformar interpretações ainda não verificadas em regras de negócio ou afirmações sobre a fonte.
+
 ---
 
-## Principais achados
+## 8. Achados
 
 ### Ausência mascarada em `id_regiao_saude`
 
@@ -162,9 +451,7 @@ Foram observados **38 códigos distintos**, dos quais:
 
 Isso transformou o código `16` em uma exceção semântica que precisou ser investigada antes do mapeamento FHIR.
 
----
-
-## Investigação de proveniência do código `tipo_unidade = 16`
+### Investigação de proveniência do código `tipo_unidade = 16`
 
 A investigação temporal mostrou que o código `16` começou a aparecer recentemente nos cinco estabelecimentos afetados do recorte, substituindo diferentes códigos anteriores.
 
@@ -172,13 +459,13 @@ Também foi identificada ocorrência nacional do código em múltiplas UFs a par
 
 Para verificar se o valor poderia ter sido criado durante a transformação da Base dos Dados, foi realizado um teste independente de proveniência.
 
-### Ferramentas utilizadas
+**Ferramentas utilizadas**
 
 - Docker;
 - PySUS 2.11.1;
 - fonte CNES consultada com `source="origin"`.
 
-### Consulta realizada
+**Consulta realizada**
 
 ```text
 Estado: SP
@@ -207,15 +494,14 @@ Resultado: **5 de 5 registros apresentaram `TP_UNID = 16` na origem consultada.*
 
 Portanto, não foi encontrada evidência de que a transformação observada entre a origem consultada e a Base dos Dados tenha introduzido o valor `16`.
 
-Isso confirma sua proveniência dentro da cadeia investigada, mas não confirma seu significado semântico. O código continua sem significado oficial confirmado dentro das fontes utilizadas no projeto.
-
-Por essa razão, nenhum `coding.display` será inferido artificialmente durante o mapeamento FHIR.
+> [!IMPORTANT]
+> Isso confirma sua proveniência dentro da cadeia investigada, mas não confirma seu significado semântico. O código continua sem significado oficial confirmado dentro das fontes utilizadas no projeto.
+>
+> Por essa razão, nenhum `coding.display` será inferido artificialmente durante o mapeamento FHIR.
 
 Investigação completa: [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs/investigacao-proveniencia-tipo-unidade-16.md).
 
----
-
-## Atualidade cadastral
+### Atualidade cadastral
 
 Foi adotada uma janela metodológica de **24 meses** anteriores à própria competência do snapshot.
 
@@ -229,11 +515,10 @@ A referência utilizada é novembro de 2025, e não a data em que a análise foi
 
 Percentual desatualizado: **20,72%**.
 
-A janela de 24 meses é uma convenção metodológica deste projeto e não uma regra normativa atribuída ao DATASUS.
+> [!IMPORTANT]
+> A janela de 24 meses é uma convenção metodológica deste projeto e não uma regra normativa atribuída ao DATASUS.
 
----
-
-## Distribuição regional
+### Distribuição regional
 
 A incompletude de `id_regiao_saude` apresenta forte variação municipal.
 
@@ -248,9 +533,7 @@ Foram avaliados **347 municípios** com pelo menos 20 estabelecimentos.
 
 A hipótese inicial de uma distribuição bimodal foi testada e rejeitada. O problema apresenta distribuição contínua entre municípios.
 
----
-
-## Unicidade
+### Unicidade
 
 O campo `id_estabelecimento_cnes` foi avaliado dentro do recorte fixo SP + novembro/2025.
 
@@ -265,287 +548,7 @@ Dentro deste recorte, `id_estabelecimento_cnes` funciona como chave única de fa
 
 ---
 
-## Tratamento em Python
-
-A Fase 2 reproduziu formalmente parte dos indicadores originalmente desenvolvidos em SQL utilizando Python e pandas.
-
-Notebook principal: [`python/fase2-limpeza-tratamento.ipynb`](python/fase2-limpeza-tratamento.ipynb).
-
-A comparação SQL × Python permitiu identificar e corrigir divergências reais de interpretação, incluindo:
-
-- tipo correto de `id_municipio`;
-- existência de strings vazias em `id_regiao_saude`;
-- correção da métrica de incompletude de 54,69% para 54,70%.
-
-A reprodução das três regras de consistência e do indicador de atualidade em Python permanece como extensão futura e não bloqueia as próximas fases do projeto.
-
----
-
-## Dashboard
-
-A Fase 4 produziu três visualizações principais:
-
-- completude por campo;
-- atualidade cadastral;
-- distribuição regional.
-
-Os relatórios foram produzidos no Power BI e os resultados exportados e versionados na pasta `dashboard/`.
-
-A versão Web do Power BI utilizada no projeto exigiu relatórios separados para algumas visualizações devido às limitações de combinação de múltiplas fontes sem o Power BI Desktop.
-
----
-
-## Governança de dados
-
-A Fase 5 transformou os principais achados técnicos em regras mínimas de governança.
-
-O framework contém **9 regras de governança**, cada uma associada a um problema efetivamente encontrado durante o projeto.
-
-Documento: [`docs/framework-governanca.md`](docs/framework-governanca.md).
-
-O framework diferencia explicitamente:
-
-```text
-fato confirmado
-≠
-hipótese
-≠
-regra metodológica do projeto
-```
-
-Essa separação evita transformar interpretações ainda não verificadas em regras de negócio ou afirmações sobre a fonte.
-
----
-
-## Interoperabilidade FHIR
-
-A **Fase 6 está em andamento**.
-
-O objetivo é transformar informações selecionadas do CNES em recursos compatíveis com **FHIR R4**, principalmente:
-
-- `Organization`;
-- `Location`.
-
-O processo não consiste apenas em renomear colunas. Cada campo precisa ser avaliado considerando:
-
-- conceito de origem;
-- significado semântico;
-- recurso FHIR apropriado;
-- elemento FHIR;
-- cardinalidade;
-- tipo de dado;
-- sistema de identificação ou terminologia;
-- necessidade de transformação;
-- referências entre recursos;
-- possível perda semântica.
-
-Os mapeamentos serão classificados como:
-
-- direto;
-- aproximado;
-- dependente de transformação;
-- sem correspondência clara.
-
-A investigação de `tipo_unidade = 16` foi realizada justamente porque um código cuja semântica não está confirmada não pode ser transformado automaticamente em um conceito FHIR validado.
-
-A Fase 6 somente será considerada concluída após:
-
-- definição do mapeamento;
-- geração dos recursos;
-- produção de exemplos JSON;
-- validação formal FHIR;
-- documentação das perdas e exceções semânticas.
-
-Submissão de dados à RNDS não faz parte do escopo deste projeto.
-
----
-
-## Status do projeto
-
-### Fases concluídas
-
-- [x] Fase 1 — Exploração, extração e definição do recorte
-- [x] Fase 2 — Limpeza e tratamento formal em Python
-- [x] Fase 3 — Indicadores de qualidade e consistência
-- [x] Fase 4 — Dashboard
-- [x] Fase 5 — Governança de dados
-
-### Fase atual
-
-- [ ] **Fase 6 — Mapeamento e validação FHIR**
-
-Atividades já realizadas dentro da Fase 6:
-
-- [x] investigação inicial dos campos disponíveis para interoperabilidade;
-- [x] avaliação de `id_estabelecimento_cnes` como identificador;
-- [x] investigação do domínio de `tipo_unidade`;
-- [x] identificação da exceção semântica `tipo_unidade = 16`;
-- [x] análise temporal dos cinco estabelecimentos afetados;
-- [x] análise nacional da ocorrência do código `16`;
-- [x] teste de proveniência utilizando PySUS e `source="origin"`;
-- [x] documentação formal da exceção semântica;
-- [ ] concluir tabela de mapeamento CNES → FHIR;
-- [ ] implementar transformação;
-- [ ] gerar recursos `Organization`;
-- [ ] gerar recursos `Location`;
-- [ ] validar formalmente os recursos FHIR;
-- [ ] documentar perdas semânticas e exceções.
-
-### Etapa final
-
-- [ ] Fase 7 — Consolidação e apresentação final do portfólio
-
----
-
-## Checklist técnico concluído
-
-- [x] Ambiente configurado e BigQuery Sandbox utilizado
-- [x] Estrutura da tabela `estabelecimento` explorada
-- [x] 204 colunas identificadas na tabela analítica principal
-- [x] Recorte definido e validado contra dados reais
-- [x] Estrutura do conjunto investigada
-- [x] 14 tabelas avaliadas quanto a chaves e granularidade
-- [x] Escopo revisado após exploração da estrutura
-- [x] Completude de `id_regiao_saude` calculada e corrigida para 54,70%
-- [x] Completude de `tipo_unidade` calculada: 0% de ausência
-- [x] Domínio observado de `tipo_unidade` investigado: 37 de 38 códigos reconciliados
-- [x] Exceção semântica do código `16` documentada
-- [x] Regra de habilitação vencida
-- [x] Regra de divergência de leitos
-- [x] Regra de UTI sem habilitação correspondente
-- [x] Indicador de atualidade cadastral
-- [x] Indicador de distribuição regional
-- [x] Completude de `id_municipio`
-- [x] Completude de `tipo_gestao`
-- [x] Completude condicional de `cnpj_mantenedora`
-- [x] Indicador de unicidade
-- [x] Pipeline formal em Python
-- [x] Comparação SQL × Python
-- [x] Dashboard produzido
-- [x] Framework de governança produzido
-- [x] Investigação de proveniência do código `16`
-- [ ] Mapeamento CNES → FHIR concluído
-- [ ] Recursos FHIR gerados
-- [ ] Recursos FHIR formalmente validados
-
----
-
-## Tecnologias
-
-- SQL
-- Google BigQuery
-- Python
-- pandas
-- Power BI
-- Git
-- GitHub
-- Docker
-- PySUS
-- FHIR R4
-
----
-
-## Como reproduzir o projeto
-
-O projeto utiliza ambientes diferentes conforme a etapa executada.
-
-### SQL — Google BigQuery
-
-As consultas estão em `sql/` e utilizam o conjunto público
-`basedosdados.br_ms_cnes`.
-
-Recorte principal: São Paulo, novembro de 2025.
-
-Para reproduzir os indicadores, abra o BigQuery, execute o arquivo SQL
-correspondente e compare o resultado com a documentação do projeto.
-
-### Python — Google Colab
-
-O notebook principal está em
-`python/fase2-limpeza-tratamento.ipynb`.
-
-Ele foi executado no Google Colab, com autenticação Google e acesso ao
-BigQuery.
-
-As dependências utilizadas estão registradas em `requirements.txt`.
-
-Ambiente de referência:
-
-- Python 3.13.15
-- pandas 2.2.3
-- numpy 2.1.3
-- google-cloud-bigquery 3.44.0
-- db-dtypes 1.7.1
-
-O identificador do projeto Google Cloud é uma configuração do ambiente
-do usuário e deve ser ajustado antes da execução.
-
-### Proveniência — Docker e PySUS
-
-A investigação de `tipo_unidade = 16` é complementar à análise principal.
-
-Foi executada separadamente com:
-
-- Docker
-- Python 3.12
-- PySUS 2.11.1
-
-Os detalhes estão em
-`docs/investigacao-proveniencia-tipo-unidade-16.md`.
-
-### Dados locais
-
-Extrações locais em CSV, Parquet e bancos temporários não são
-versionadas. O `.gitignore` também protege arquivos de ambiente,
-credenciais e artefatos temporários.
-
-Arquivos JSON não são ignorados globalmente porque a Fase 6 utilizará
-recursos FHIR em JSON.
-
----
-
-## Estrutura do repositório
-
-```text
-.
-├── sql/
-│   ├── 01-exploracao-fase1.sql
-│   ├── 02-verificacao-estrutura.sql
-│   ├── 03-completude-id_regiao_saude.sql
-│   ├── 04-consistencia-habilitacao-vencida.sql
-│   ├── 05-consistencia-divergencia-leitos.sql
-│   ├── 06-consistencia-uti-sem-habilitacao.sql
-│   ├── 07-completude-tipo_unidade.sql
-│   ├── 08-atualidade-cadastral.sql
-│   ├── 09-distribuicao-regional.sql
-│   ├── 10-completude-id_municipio.sql
-│   ├── 11-completude-tipo_gestao.sql
-│   ├── 12-completude-cnpj_mantenedora.sql
-│   └── 13-unicidade-id_estabelecimento_cnes.sql
-│
-├── docs/
-│   ├── decisao-recorte.md
-│   ├── achados-verificacao-estrutura.md
-│   ├── dicionario-de-dados.md
-│   ├── framework-governanca.md
-│   ├── investigacao-proveniencia-tipo-unidade-16.md
-│   └── demais decisões e documentos metodológicos
-│
-├── python/
-│   └── fase2-limpeza-tratamento.ipynb
-│
-├── dashboard/
-│   └── relatórios e evidências da Fase 4
-│
-├── .gitignore
-├── LICENSE
-├── requirements.txt
-└── README.md
-```
-
----
-
-## Decisões metodológicas
+## 9. Decisões registradas
 
 As decisões de escopo, tratamento e interpretação são registradas em `docs/`.
 
@@ -574,7 +577,7 @@ Uma hipótese plausível não é documentada como fato enquanto não houver evid
 
 ---
 
-## Limitações declaradas
+## 10. Limitações
 
 ### Escopo da análise
 
@@ -640,7 +643,17 @@ Eles não são apresentados como normas do DATASUS quando não existe confirmaç
 
 ---
 
-## Próximos passos
+## 11. Aprendizados e correções de método
+
+A comparação SQL × Python permitiu identificar e corrigir divergências reais de interpretação, incluindo:
+
+- tipo correto de `id_municipio`;
+- existência de strings vazias em `id_regiao_saude`;
+- correção da métrica de incompletude de 54,69% para 54,70%.
+
+---
+
+## 12. Próximos passos
 
 O projeto encontra-se atualmente na **Fase 6 — Interoperabilidade FHIR**.
 
@@ -659,23 +672,26 @@ Próximas atividades:
 
 ---
 
-## Licença e uso dos dados
+## 13. Referências
 
-O código e a documentação autoral deste repositório são disponibilizados
-sob a licença MIT. Consulte o arquivo `LICENSE`.
-
-Os dados utilizados nas análises são provenientes do CNES/DATASUS e foram
-acessados principalmente por meio da Base dos Dados. Esses dados não são
-relicenciados por este repositório e permanecem sujeitos aos termos,
-licenças e condições definidos pelas respectivas fontes.
+_Em construção — prevista para a Fase 7._
 
 ---
 
-## Autoria
+## 14. Autoria e licença
+
+### Licença e uso dos dados
+
+O código e a documentação autoral deste repositório são disponibilizados sob a licença MIT. Consulte o arquivo `LICENSE`.
+
+Os dados utilizados nas análises são provenientes do CNES/DATASUS e foram acessados principalmente por meio da Base dos Dados. Esses dados não são relicenciados por este repositório e permanecem sujeitos aos termos, licenças e condições definidos pelas respectivas fontes.
+
+### Autoria
 
 **Carla Rodrigues de Moraes**
 
 Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
+
 As decisões de escopo, tratamento, qualidade, governança e interoperabilidade deste projeto são documentadas para tornar o processo reproduzível e auditável.
 
 [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
