@@ -1,0 +1,32 @@
+set. 30, 2026 8:08:54 AM org.jline.utils.Log log
+ADVERTÊNCIA: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (26 days old)
+  Java:   21.0.12.1 from /tmp/temurin21 on amd64 (64bit). 2048MB available
+  Paths:  Current = <HOME>/cnes-qualidade-dados, Package Cache = <HOME>/.fhir/packages
+  Params: fhir/exemplos/bundle-cnes-0003735.json -version 4.0.1 -tx n/a
+  Locale: Brasil/BR
+  Jurisdiction: Brazil
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:07.745)
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:01.487)
+  Loaded FHIR - 8265 resources (00:00.000)
+  Terminology server null - Version n/a: No Terminology Server (00:00.000)
+  Load hl7.terminology#7.4.0 - 4181 resources (00:03.245)
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:00.331)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:02.381)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.014)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:02.519)
+Cached new session. Cache size = 1
+Sources to validate: fhir/exemplos/bundle-cnes-0003735.json
+Validating
+  Validate fhir/exemplos/bundle-cnes-0003735.json
+ 00:00.631
+Done. Times: Loading: 00:17.857, validation: 00:00.632. Memory = 574Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: Tudo OK
+Done. Times: Loading: 00:17.857, validation: 00:00.632. Max Memory = 2Gb

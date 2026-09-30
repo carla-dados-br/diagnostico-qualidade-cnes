@@ -1,0 +1,35 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:1232e2f1-4c6b-4e4b-9ea4-872eb32dc686",
+      "resource": {
+        "resourceType": "Organization",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Identificador CNES: 0004200. Sistema: https://saude.gov.br/fhir/sid/cnes.</p></div>"
+        },
+        "identifier": [
+          {
+            "system": "https://saude.gov.br/fhir/sid/cnes",
+            "value": "0004200"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:60166a82-ab22-4df4-bffe-bec0400c3c1f",
+      "resource": {
+        "resourceType": "Location",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>CEP: 07011010.</p></div>"
+        },
+        "address": {
+          "postalCode": "07011010"
+        }
+      }
+    }
+  ]
+}
