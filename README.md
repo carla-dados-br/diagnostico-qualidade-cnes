@@ -93,7 +93,7 @@ O trabalho percorre diferentes etapas do ciclo de vida do dado:
 - investigação de proveniência;
 - preparação para interoperabilidade por meio de FHIR.
 
-A Fase 6 documenta o mapeamento dos campos autorizados do CNES para `Organization` e `Location`, com cinco exemplos JSON aprovados na validação formal FHIR R4 (4.0.1).
+A Fase 6 avalia campos selecionados do CNES para interoperabilidade FHIR R4. A implementação aprovada nesta versão gera `Organization` com identificador CNES e CEP em `Organization.address.postalCode`; `Location` foi considerado no escopo inicial, mas não é gerado como recurso independente. Cinco exemplos JSON possuem registro de validação formal FHIR R4 (4.0.1).
 
 ### Dimensões de qualidade
 
@@ -130,12 +130,9 @@ A versão Web do Power BI utilizada no projeto exigiu relatórios separados para
 
 ### Interoperabilidade FHIR (Fase 6)
 
-A **Fase 6 foi concluída** após a auditoria dos artefatos e a validação formal dos cinco exemplos FHIR R4.
+A **Fase 6 está tecnicamente concluída**. A revisão corretiva reconciliou a documentação, reexecutou a suíte automatizada e revalidou os cinco exemplos FHIR R4.
 
-O objetivo é transformar informações selecionadas do CNES em recursos compatíveis com **FHIR R4**, principalmente:
-
-- `Organization`;
-- `Location`.
+O objetivo é avaliar informações selecionadas do CNES para representação compatível com **FHIR R4**. O escopo inicial considerou `Organization` e `Location`; após a revisão semântica, a implementação desta versão permaneceu restrita a `Organization`, com o CEP em `Organization.address.postalCode` e sem `Location` independente.
 
 O processo não consiste apenas em renomear colunas. Cada campo precisa ser avaliado considerando:
 
@@ -159,7 +156,7 @@ Os mapeamentos foram classificados como:
 
 A investigação de `tipo_unidade = 16` foi realizada justamente porque um código cuja semântica não está confirmada não pode ser transformado automaticamente em um conceito FHIR validado.
 
-A Fase 6 somente será considerada concluída após as entregas abaixo e a auditoria final dos artefatos:
+As entregas de encerramento da Fase 6 foram concluídas e auditadas:
 
 - definição do mapeamento;
 - geração dos recursos;
@@ -197,7 +194,7 @@ Atividades já realizadas dentro da Fase 6:
 - [x] concluir tabela de mapeamento CNES → FHIR;
 - [x] implementar transformação;
 - [x] gerar recursos `Organization`;
-- [x] gerar recursos `Location`;
+- [x] avaliar o uso de `Location` e decidir por não gerar recurso independente nesta versão;
 - [x] validar formalmente os recursos FHIR;
 - [x] documentar perdas semânticas e exceções.
 
@@ -217,7 +214,8 @@ Atividades já realizadas dentro da Fase 6:
 - [x] Escopo revisado após exploração da estrutura
 - [x] Completude de `id_regiao_saude` calculada e corrigida para 54,70%
 - [x] Completude de `tipo_unidade` calculada: 0% de ausência
-- [x] Domínio observado de `tipo_unidade` investigado: 37 de 38 códigos reconciliados
+- [x] Domínio observado de `tipo_unidade` investigado: 37 de 38 códigos reconciliados com a tabela `dicionario`
+- [x] Cobertura terminológica FHIR verificada: 37 de 38 códigos observados aparecem no `BRTipoEstabelecimentoSaude` consultado; o código `16` é a única exceção observada
 - [x] Exceção semântica do código `16` documentada
 - [x] Regra de habilitação vencida
 - [x] Regra de divergência de leitos
@@ -316,11 +314,13 @@ As dependências utilizadas estão registradas em `requirements.txt`.
 
 | Pacote | Versão |
 |---|---|
-| Python | 3.13.15 |
+| Python | 3.13.16 |
 | pandas | 2.2.3 |
 | numpy | 2.1.3 |
 | google-cloud-bigquery | 3.44.0 |
 | db-dtypes | 1.7.1 |
+
+> Python 3.13.16 foi verificado diretamente no ambiente Google Colab durante a revisão corretiva de 2026-10-05; essa verificação caracteriza o ambiente observado nessa revisão e não atribui retroativamente a mesma versão a execuções anteriores do notebook.
 
 O identificador do projeto Google Cloud é uma configuração do ambiente do usuário e deve ser ajustado antes da execução.
 
@@ -340,7 +340,7 @@ Os detalhes estão em [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs
 
 ### FHIR R4 — Fase 6
 
-O mapeamento e as decisões de exclusão estão em `docs/mapeamento-cnes-fhir.md`. O conversor `python/fase6-conversor-fhir.py` gera um `Bundle` do tipo `collection` com `Organization.identifier.value` (CNES) e `Location.address.postalCode` (CEP). Os demais campos analisados não são exportados nesta versão.
+O mapeamento e as decisões de exclusão estão em `docs/mapeamento-cnes-fhir.md`. O conversor `python/fase6-conversor-fhir.py` gera um `Bundle` do tipo `collection` com `Organization.identifier.value` (CNES) e `Organization.address.postalCode` (CEP). Os demais campos analisados não são exportados nesta versão.
 
 Para gerar um exemplo a partir de um par CNES/CEP, execute na raiz do repositório:
 
@@ -348,17 +348,23 @@ Para gerar um exemplo a partir de um par CNES/CEP, execute na raiz do repositór
 python3 python/fase6-conversor-fhir.py --cnes 0003735 --cep 07144000 --saida /tmp/bundle-cnes-reproducao.json
 ```
 
-O caminho de saída deve estar disponível: o conversor não sobrescreve arquivos existentes.
+Como restrições de entrada desta implementação, o conversor exige CNES com exatamente 7 dígitos e CEP com exatamente 8 dígitos. Essas verificações são estruturais e não constituem, por si só, uma afirmação normativa universal sobre os identificadores.
+
+A validação estrutural não comprova que um CNES e um CEP informados pela CLI pertencem ao mesmo registro da fonte. Essa correspondência deve ser validada a montante. Para os cinco exemplos versionados, os pares foram reproduzidos em `sql/14-proveniencia-exemplos-fhir.sql`.
+
+O caminho de saída deve estar disponível: o conversor não sobrescreve arquivos existentes. O `fullUrl` da `Organization` utiliza `uuid5` determinístico derivado do sistema identificador CNES e do próprio CNES, permitindo reprodução estável do mesmo recurso.
+
+Os testes automatizados podem ser executados com `python3 -m unittest discover -s tests -p 'test_*.py' -v`. Na revisão corretiva de 2026-10-05, os 13 testes de `tests/test_fase6_conversor_fhir.py` foram aprovados.
 
 Para validar o JSON gerado, utilize o FHIR Validator CLI 6.10.4 com Java 17 ou superior:
 
 ```bash
-/tmp/temurin21/bin/java -Xmx2g -jar /tmp/validator_cli-6.10.4.jar /tmp/bundle-cnes-reproducao.json -version 4.0.1 -tx n/a
+java -Xmx2g -jar /caminho/validator_cli-6.10.4.jar /tmp/bundle-cnes-reproducao.json -version 4.0.1 -tx n/a
 ```
 
-Os caminhos em `/tmp` correspondem ao ambiente utilizado neste projeto e devem ser ajustados em outros computadores.
+O caminho `/tmp/bundle-cnes-reproducao.json` é apenas um destino temporário de exemplo. O caminho do arquivo `validator_cli-6.10.4.jar` deve ser ajustado ao ambiente local.
 
-Os cinco Bundles em `fhir/exemplos/` passaram na validação com FHIR Validator CLI 6.10.4 e FHIR R4 (4.0.1): 5/5 aprovados, com 0 erros e 0 avisos. As evidências estão em `fhir/validacao/validacao-bundle-cnes-0003735.log` e `fhir/validacao/validacao-quatro-bundles-cnes.log`.
+Os cinco Bundles em `fhir/exemplos/` passaram na validação com FHIR Validator CLI 6.10.4 e FHIR R4 (4.0.1): 5/5 aprovados, com 0 erros e 0 avisos. A evidência consolidada está em `fhir/validacao/validacao-cinco-bundles-cnes.log`.
 
 A validação abrange somente os cinco exemplos e as regras FHIR R4 verificadas. O parâmetro `-tx n/a` desativa a consulta a um servidor terminológico externo. Os resultados não comprovam conformidade com perfis específicos da RNDS nem representam a validação de todos os 110.362 registros do recorte CNES.
 
@@ -478,6 +484,10 @@ Foram observados **38 códigos distintos**, dos quais:
 - 37 possuem correspondência na tabela `dicionario`;
 - o código `16` não possui correspondência nessa fonte;
 - 5 estabelecimentos apresentam `tipo_unidade = 16`.
+
+Em uma validação terminológica separada da Fase 6, os mesmos 38 códigos observados foram comparados com o ValueSet `BRTipoEstabelecimentoSaude` consultado. Desses, 37 aparecem entre os 39 conceitos da versão terminológica registrada em `sql/16-validacao-tipo_unidade-terminologia-fhir.sql`; novamente, o único código observado ausente é o `16`. Os conceitos `32` e `64` pertencem ao ValueSet consultado, mas não aparecem no recorte SP/2025-11.
+
+Como o artefato terminológico consultado é posterior ao snapshot de novembro de 2025, a ausência do código `16` nessa versão não prova que ele nunca tenha possuído significado oficial no período histórico analisado.
 
 Isso transformou o código `16` em uma exceção semântica que precisou ser investigada antes do mapeamento FHIR.
 
@@ -633,9 +643,11 @@ Resultados relacionados à atualidade são calculados em relação à própria c
 
 O projeto utiliza dados de estabelecimentos. Nenhum dado de paciente é utilizado.
 
-O conjunto `br_ms_cnes` contém uma tabela `profissional` com informações pessoais de profissionais de saúde. Essa tabela permanece fora do escopo.
+O conjunto `br_ms_cnes` contém uma tabela `profissional` com informações pessoais de profissionais de saúde. Essa tabela permanece fora do escopo, e nenhum dado dela é extraído ou versionado neste repositório.
 
-Nenhum dado pessoal dessa tabela é extraído, tratado ou versionado neste repositório.
+A revisão da Fase 6 também identificou risco de privacidade dentro da própria tabela `estabelecimento`: o campo `cpf_cnpj` contém valores que passam matematicamente pelos algoritmos de CPF e/ou CNPJ. Essa validação não comprova existência cadastral, titularidade nem tipo fiscal efetivo do documento.
+
+Por precaução, valores individuais de `cpf_cnpj` não são publicados nem versionados. As evidências do projeto permanecem agregadas, conforme `sql/15-validacao-cpf_cnpj.sql` e a Regra 10 de `docs/framework-governanca.md`. O campo também não é convertido em identificador CPF/CNPJ nos recursos FHIR desta versão.
 
 ### Proveniência
 
@@ -689,9 +701,7 @@ A **Fase 6 — Interoperabilidade FHIR** foi concluída. A próxima etapa é a *
 
 Próximas atividades:
 
-1. conferir as alterações finais e preparar os dez artefatos da Fase 6 para versionamento;
-2. registrar a Fase 6 em commit e publicar no GitHub após a conferência;
-3. iniciar a Fase 7 — Consolidação e apresentação final do portfólio.
+1. iniciar a Fase 7 — Consolidação e apresentação final do portfólio.
 
 ---
 

@@ -5,14 +5,15 @@ Esta versão implementa somente os mapeamentos autorizados
 em docs/mapeamento-cnes-fhir.md:
 
 - id_estabelecimento_cnes -> Organization.identifier
-- cep -> Location.address.postalCode
+- cep -> Organization.address.postalCode
 
 Os demais campos analisados permanecem fora dos recursos
 FHIR desta versão conforme as decisões documentadas.
 """
 
+import re
 from html import escape
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid5
 
 
 CNES_SYSTEM = "https://saude.gov.br/fhir/sid/cnes"
@@ -31,9 +32,36 @@ def normalizar_texto(valor, campo):
     return texto
 
 
-def criar_organization(cnes):
-    """Cria Organization com o identificador CNES autorizado."""
-    cnes = normalizar_texto(cnes, "id_estabelecimento_cnes")
+def validar_cnes(valor):
+    """Valida a restricao de entrada CNES adotada nesta implementacao."""
+    texto = normalizar_texto(valor, "id_estabelecimento_cnes")
+
+    if re.fullmatch(r"[0-9]{7}", texto) is None:
+        raise ValueError(
+            "id_estabelecimento_cnes: formato invalido para esta implementacao; "
+            "esperado exatamente 7 digitos numericos"
+        )
+
+    return texto
+
+
+def validar_cep(valor):
+    """Valida a restricao de entrada CEP adotada nesta implementacao."""
+    texto = normalizar_texto(valor, "cep")
+
+    if re.fullmatch(r"[0-9]{8}", texto) is None:
+        raise ValueError(
+            "cep: formato invalido para esta implementacao; "
+            "esperado exatamente 8 digitos numericos"
+        )
+
+    return texto
+
+
+def criar_organization(cnes, cep):
+    """Cria Organization com identificador CNES e CEP autorizados."""
+    cnes = validar_cnes(cnes)
+    cep = validar_cep(cep)
 
     return {
         "resourceType": "Organization",
@@ -41,7 +69,7 @@ def criar_organization(cnes):
             "status": "generated",
             "div": (
                 '<div xmlns="http://www.w3.org/1999/xhtml">'
-                f"<p>Identificador CNES: {escape(cnes)}. "
+                f"<p>Identificador CNES: {escape(cnes)}. CEP: {escape(cep)}. "
                 f"Sistema: {escape(CNES_SYSTEM)}.</p>"
                 "</div>"
             ),
@@ -52,45 +80,26 @@ def criar_organization(cnes):
                 "value": cnes,
             }
         ],
-    }
-
-
-def criar_location(cep):
-    """Cria Location contendo somente o CEP autorizado."""
-    cep = normalizar_texto(cep, "cep")
-
-    return {
-        "resourceType": "Location",
-        "text": {
-            "status": "generated",
-            "div": (
-                '<div xmlns="http://www.w3.org/1999/xhtml">'
-                f"<p>CEP: {escape(cep)}.</p>"
-                "</div>"
-            ),
-        },
-        "address": {
-            "postalCode": cep,
-        },
+        "address": [
+            {
+                "postalCode": cep,
+            }
+        ],
     }
 
 
 def criar_bundle_estabelecimento(cnes, cep):
-    """Agrupa Organization e Location em Bundle do tipo collection."""
-    organization = criar_organization(cnes)
-    location = criar_location(cep)
+    """Cria Bundle do tipo collection contendo a Organization do estabelecimento."""
+    organization = criar_organization(cnes, cep)
+    cnes_normalizado = organization["identifier"][0]["value"]
 
     return {
         "resourceType": "Bundle",
         "type": "collection",
         "entry": [
             {
-                "fullUrl": f"urn:uuid:{uuid4()}",
+                "fullUrl": f"urn:uuid:{uuid5(NAMESPACE_URL, f'{CNES_SYSTEM}/{cnes_normalizado}')}",
                 "resource": organization,
-            },
-            {
-                "fullUrl": f"urn:uuid:{uuid4()}",
-                "resource": location,
             },
         ],
     }
@@ -103,7 +112,10 @@ def main():
     from pathlib import Path
 
     parser = argparse.ArgumentParser(
-        description="Gera um Bundle FHIR R4 com Organization e Location."
+        description=(
+            "Gera um Bundle FHIR R4 com Organization contendo identificador CNES e CEP. "
+            "O par CNES/CEP deve ter sua correspondencia verificada antes da chamada."
+        )
     )
     parser.add_argument("--cnes", required=True, help="Identificador CNES.")
     parser.add_argument("--cep", required=True, help="CEP do estabelecimento.")

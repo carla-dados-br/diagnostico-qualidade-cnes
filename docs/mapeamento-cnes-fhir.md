@@ -10,12 +10,24 @@ O mapeamento é definido antes da implementação em Python para separar:
 - a transformação técnica;
 - a validação do recurso FHIR gerado.
 
-O escopo inicial da Fase 6 é composto pelos recursos:
+O escopo inicial de avaliação da Fase 6 considerou os recursos:
 
 - `Organization`;
 - `Location`.
 
+Durante a revisão semântica, a criação de um recurso `Location` independente não foi aprovada para os dados implementados nesta versão. A implementação final permanece restrita a `Organization`, conforme as decisões documentadas neste arquivo.
+
 A existência de um campo no CNES não implica que ele possua correspondência direta no FHIR. Cada campo deve ser analisado individualmente.
+
+### 1.1 Escopo de seleção e limite de rastreabilidade
+
+A tabela analítica principal `basedosdados.br_ms_cnes.estabelecimento` possui 204 colunas identificadas na etapa de exploração do projeto. A presente versão da Fase 6 analisou formalmente os dez campos registrados na matriz deste documento.
+
+O critério histórico utilizado para selecionar especificamente esses dez campos entre as 204 colunas não foi formalmente registrado nos artefatos disponíveis. A revisão corretiva, portanto, não atribui retroativamente uma justificativa que não possa ser demonstrada pela documentação versionada.
+
+Os dez campos devem ser entendidos como o escopo efetivamente analisado nesta versão, e não como uma avaliação exaustiva de todas as colunas disponíveis. Campos fora desse conjunto, como `sigla_uf`, permanecem não avaliados para mapeamento nesta versão. Sua ausência da matriz não significa rejeição semântica de possíveis elementos FHIR, como `Organization.address.state`; significa apenas que essa correspondência não recebeu decisão formal neste ciclo.
+
+De modo equivalente, o critério original de escolha dos cinco estabelecimentos utilizados nos exemplos FHIR não foi recuperado nos artefatos disponíveis. O `sql/14-proveniencia-exemplos-fhir.sql` confirma que os pares CNES/CEP versionados pertencem à mesma linha da fonte analítica no recorte SP/nov-2025, mas não demonstra o critério histórico utilizado para selecionar esses cinco registros.
 
 ---
 
@@ -63,7 +75,7 @@ Nenhum código, `display`, sistema terminológico ou significado será inventado
 | Campo CNES | Significado na fonte | Resource FHIR | Elemento FHIR | Transformação | Sistema / terminologia | Classificação | Perda semântica |
 |---|---|---|---|---|---|---|---|
 | `id_estabelecimento_cnes` | Identificador CNES do estabelecimento | `Organization` | `identifier.value` | Preservar como `string` | `identifier.system = https://saude.gov.br/fhir/sid/cnes` | **DIRETO** | Nenhuma perda relevante identificada |
-| `cep` | Código de Endereçamento Postal do endereço onde se situa o estabelecimento | `Location` | `address.postalCode` | Preservar como `string`; não converter para número | Não se aplica | **DIRETO** | Nenhuma perda relevante identificada no componente CEP |
+| `cep` | Código de Endereçamento Postal do estabelecimento | `Organization` | `address.postalCode` | Preservar como `string`; não converter para número | Não se aplica | **DIRETO** | Não foi identificada perda semântica relevante na representação do valor do CEP; nesta versão, o endereço postal permanece associado à própria `Organization`, sem criação de `Location` independente |
 | `tipo_gestao` | Esfera de gestão do estabelecimento no contexto do CNES (`M` municipal; `E` estadual no recorte analisado) | — | — | Não mapear para `Organization.type` | — | **SEM CORRESPONDÊNCIA CLARA** | O conceito administrativo de gestão não equivale ao tipo da organização |
 | `tipo_esfera_administrativa` | Campo derivado de `ESFERA_A`; a representação observada apresenta descontinuidade temporal e a semântica atual não foi validada | — | — | Não mapear enquanto a semântica não estiver comprovada | — | **SEM CORRESPONDÊNCIA CLARA** | O mapeamento poderia consolidar como equivalente a `tipo_gestao` uma coincidência de valores sem equivalência conceitual comprovada |
 | `tipo_unidade` | Classificação do tipo do estabelecimento no contexto do CNES; o código `16` permanece sem significado terminológico comprovado | `Organization` | `type` (`CodeableConcept`) | Converter somente valores com significado e sistema terminológico validados; não gerar `Coding` para valores não validados | Sistema terminológico do domínio deve ser comprovado antes da geração do `Coding`; não inferir `system` ou `display` | **DEPENDENTE DE TRANSFORMAÇÃO** | Valores sem validação terminológica não são codificados; `16` permanece como exceção bloqueada |
@@ -107,6 +119,14 @@ Sistema do identificador:
 
 `https://saude.gov.br/fhir/sid/cnes`
 
+Fonte oficial do sistema identificador:
+
+O Guia de Implementação de Terminologias do Brasil, publicado pelo Ministério da Saúde, documenta o `NamingSystemCNES`, cuja URL canônica é `https://terminologia.saude.gov.br/fhir/NamingSystem/cnes`. Nesse artefato, o URI `https://saude.gov.br/fhir/sid/cnes` é registrado como identificador do tipo URI e marcado como preferencial (`preferred = true`). Por esse motivo, esta versão utiliza esse URI em `Organization.identifier.system`.
+
+A URL canônica do recurso `NamingSystem` e o URI preferencial do sistema identificador são identidades distintas: a primeira identifica o artefato FHIR que documenta o sistema, enquanto a segunda é utilizada em `Identifier.system` para identificar o sistema ao qual pertence o valor CNES.
+
+Esta fonte fundamenta exclusivamente o sistema identificador CNES utilizado em `Organization.identifier.system`; ela não valida códigos, domínios ou significados terminológicos de outros campos do CNES.
+
 Representação conceitual:
 
 ```text
@@ -140,7 +160,7 @@ Campo:
 
 `cep`
 
-A documentação do CNES associa o CEP ao endereço onde se situa o estabelecimento.
+O campo representa o Código de Endereçamento Postal do estabelecimento.
 
 No recorte de estabelecimentos de São Paulo, competência novembro de 2025, foram observados:
 
@@ -153,31 +173,43 @@ No recorte de estabelecimentos de São Paulo, competência novembro de 2025, for
 
 Esses resultados descrevem o recorte analisado e não são tratados como regra normativa universal para todos os dados do CNES.
 
-### Destino FHIR
+### Destino FHIR revisado
 
 Recurso:
 
-`Location`
+`Organization`
 
 Elemento:
 
-`Location.address.postalCode`
+`Organization.address.postalCode`
 
 O valor será preservado como `string`.
 
-Mesmo quando composto apenas por dígitos, CEP é um código postal e não uma grandeza quantitativa. A conversão para número poderia eliminar zeros à esquerda e alterar o identificador.
+Mesmo quando composto apenas por dígitos, CEP é um código postal e não uma grandeza quantitativa. A conversão para número poderia eliminar zeros à esquerda e alterar o valor.
+
+### Revisão da decisão de modelagem
+
+A versão inicial desta decisão representava o CEP em `Location.address.postalCode` e gerava um recurso `Location` separado da `Organization`.
+
+A revisão identificou que os dois recursos eram apenas agrupados no mesmo `Bundle`, sem uma referência FHIR explícita que demonstrasse que o `Location` contendo o CEP correspondia à `Organization` identificada pelo CNES.
+
+A existência de `Location.managingOrganization` não foi considerada evidência suficiente para utilizá-lo automaticamente, pois a relação administrativa expressa por esse elemento exige justificativa semântica própria.
+
+Nesta implementação mínima, o CEP permanece associado diretamente à `Organization` por meio de `Organization.address.postalCode`. Não será criado um recurso `Location` independente apenas para transportar o CEP.
+
+Um recurso `Location` poderá ser avaliado futuramente caso existam dados e requisitos semânticos suficientes para representar uma localização física como entidade independente e estabelecer sua relação com a organização.
 
 ### Escopo da decisão
 
 Este mapeamento valida somente o componente `postalCode`.
 
-Ele não significa que o endereço completo em `Location.address` esteja mapeado, pois os demais componentes do tipo `Address` exigem análise independente e nem todos estão expostos na tabela `estabelecimento` utilizada neste projeto.
+Ele não significa que o endereço completo em `Organization.address` esteja mapeado. Os demais componentes do tipo `Address` exigem análise independente e não fazem parte desta implementação.
 
 ### Classificação
 
 **DIRETO**
 
-Não foi identificada perda semântica relevante na representação do CEP em `Location.address.postalCode`.
+Não foi identificada perda semântica relevante na representação do valor do CEP como `Organization.address.postalCode`. A decisão sobre o recurso que contém o endereço foi revisada separadamente para evitar a criação de uma relação entre `Organization` e `Location` sem evidência suficiente.
 
 ---
 
@@ -267,6 +299,14 @@ Assim, no recorte investigado, o valor já estava presente no conjunto obtido da
 
 Essa confirmação estabelece proveniência, mas não estabelece o significado terminológico do código.
 
+### Investigação temporal reproduzível
+
+A evolução temporal do código `16` foi reproduzida em `sql/19-validacao-historico-tipo-unidade-16.sql`, na janela de 2024-01 a 2026-02. Dentro dessa janela pesquisada, a primeira ocorrência nacional observada foi em 2025-09; essa constatação não estabelece que setembro de 2025 tenha sido a primeira ocorrência histórica absoluta do código.
+
+Os cinco estabelecimentos de São Paulo apresentavam códigos anteriores distintos antes de assumir o valor `16`. O estabelecimento CNES `5767032`, por exemplo, passou de `36` para `16` em 2025-11 e voltou a `36` em 2026-02. Nacionalmente, os registros com código `16` cresceram de 10 estabelecimentos em 7 UFs em 2025-09 para 86 estabelecimentos em 18 UFs em 2026-02.
+
+A série temporal comprova ocorrência e evolução do valor nos dados consultados, mas não determina seu significado terminológico nem autoriza inferência de `system`, `code` ou `display` FHIR.
+
 ### Investigação terminológica
 
 O significado oficial de `TP_UNID = 16` não foi comprovado de forma suficiente para sustentar a geração de um `Coding` FHIR.
@@ -278,6 +318,12 @@ Também foram consultadas as fichas atuais dos cinco estabelecimentos. Entre ela
 Essas fichas representam o estado atual consultado e não são temporalmente equivalentes ao recorte de novembro de 2025. Portanto, seus valores atuais não podem ser utilizados como tradução retroativa do código `16`.
 
 A causa das diferenças observadas entre o recorte histórico e as fichas atuais não foi determinada.
+
+Como verificação terminológica adicional, os 38 códigos distintos de `tipo_unidade` observados no recorte SP/2025-11 foram comparados com o ValueSet `BRTipoEstabelecimentoSaude` publicado no Guia de Implementação de Terminologias do Brasil, versão consultada 1.1.0, cujo artefato estava informado como ativo desde 2026-08-22. A comparação reproduzível está registrada em `sql/16-validacao-tipo_unidade-terminologia-fhir.sql`.
+
+Dos 38 códigos observados, 37 aparecem entre os 39 conceitos do ValueSet consultado. O único código observado que não aparece nessa versão terminológica é o `16`, presente em 5 estabelecimentos. Os códigos `32` e `64` pertencem ao ValueSet consultado, mas não foram observados no recorte SP/2025-11.
+
+Essa comparação reforça que o código `16` não possui cobertura na versão terminológica consultada, mas não demonstra que ele nunca tenha possuído significado oficial no período histórico de novembro de 2025. O artefato terminológico consultado é posterior ao snapshot analisado e, portanto, não autoriza inferência retroativa de significado.
 
 ### Decisão FHIR
 
@@ -410,6 +456,8 @@ Fontes:
 Foram investigadas as transições individuais entre novembro
 e dezembro de 2022, utilizando `id_estabelecimento_cnes`
 como identificador de acompanhamento.
+
+A reprodução quantitativa dessa investigação está registrada em `sql/18-validacao-transicoes-natureza-juridica-2022.sql`.
 
 | Código em novembro | Situação em dezembro | Estabelecimentos |
 |---|---|---:|
@@ -767,6 +815,8 @@ ou regularidade cadastral perante a Receita Federal.
 
 ### Relação com o documento do estabelecimento
 
+O cruzamento reproduzível entre o CNPJ da mantenedora, o documento do estabelecimento e a natureza jurídica está registrado em `sql/17-validacao-relacao-cnpj-mantenedora.sql`.
+
 Entre os 12.264 registros com CNPJ da mantenedora:
 
 | Situação | Registros |
@@ -917,11 +967,23 @@ O campo `tipo_gestao` deriva de `TPGESTAO` na origem
 consultada do CNES.
 
 No recorte de São Paulo, novembro de 2025, foram
-observados os valores `M` (municipal) e `E` (estadual),
-conforme o domínio investigado no projeto.
+observados somente os valores `M` (municipal) e `E`
+(estadual).
 
-Esses valores descrevem a esfera de gestão do
-estabelecimento no contexto administrativo do CNES.
+Em verificação posterior reproduzida no
+`sql/11-completude-tipo_gestao.sql`, a tabela
+`basedosdados.br_ms_cnes.dicionario` retornou para o campo
+os valores `D = dupla`, `E = estadual`, `M = municipal`,
+`S = sem gestao` e `Z = nao informado`.
+
+Assim, `M` e `E` representam o domínio observado no recorte
+SP/nov-2025, enquanto `D`, `E`, `M`, `S` e `Z` representam
+o domínio registrado no dicionário do conjunto consultado.
+A tabela `dicionario` é utilizada como fonte auxiliar do
+conjunto e não, por si só, como terminologia FHIR oficial.
+
+O campo descreve a esfera de gestão do estabelecimento
+no contexto administrativo do CNES.
 
 ### Distinção entre os campos
 
@@ -992,21 +1054,52 @@ Portanto:
 
 ---
 
-## 17. Próximas etapas da Fase 6
+## 17. Estado da implementação e fechamento da Fase 6
 
-Com os campos selecionados analisados, as
-atividades seguintes são:
+A revisão corretiva da Fase 6 consolidou o escopo efetivamente implementado e as limitações que permanecem abertas.
 
-1. Revisar a consistência das dez decisões
-   e da matriz CNES → FHIR.
-2. Conferir os sistemas de identificação,
-   transformações e elementos FHIR aprovados.
-3. Implementar em Python o conversor para
-   `Organization` e `Location`, utilizando
-   somente os campos autorizados.
-4. Executar testes e validar formalmente
-   os recursos FHIR R4 gerados.
-5. Revisar os exemplos e os arquivos para
-   impedir a publicação de documentos pessoais.
-6. Somente depois da validação integral,
-   realizar o commit e o push da Fase 6.
+### Implementação aprovada
+
+Nesta versão, o conversor gera um `Bundle` FHIR R4 do tipo `collection` contendo uma única `Organization` com:
+
+- `Organization.identifier`, utilizando o identificador CNES;
+- `Organization.identifier.system = https://saude.gov.br/fhir/sid/cnes`;
+- `Organization.address.postalCode`, utilizando o CEP.
+
+A criação de um recurso `Location` independente não foi aprovada apenas para transportar o CEP.
+
+Os demais campos analisados permanecem não implementados quando sua representação exigiria inferência semântica, relação não comprovada, tratamento de dado fiscal potencialmente pessoal ou terminologia insuficientemente validada.
+
+### Rastreabilidade e validação
+
+A revisão passou a registrar explicitamente que:
+
+- os dez campos da matriz constituem o escopo efetivamente analisado nesta versão, sem pretensão de cobertura exaustiva das 204 colunas da tabela;
+- o critério histórico usado para escolher esses dez campos não foi recuperado nos artefatos disponíveis;
+- o critério original de seleção dos cinco estabelecimentos usados como exemplos FHIR também não foi recuperado;
+- o `sql/14-proveniencia-exemplos-fhir.sql` confirma, entretanto, que cada par CNES/CEP versionado pertence à mesma linha da fonte analítica no recorte SP/nov-2025;
+- a proveniência de um valor não é tratada como prova de seu significado terminológico.
+
+O conversor utiliza `uuid5` determinístico para o `fullUrl` da `Organization` e aplica, como restrições de entrada desta implementação, CNES com exatamente 7 dígitos e CEP com exatamente 8 dígitos. Essas verificações estruturais não comprovam que um par CNES/CEP pertence ao mesmo registro; essa correspondência deve ser validada a montante.
+
+A suíte automatizada em `tests/test_fase6_conversor_fhir.py` possui 13 testes e foi reexecutada com sucesso na verificação final de 2026-10-06.
+
+Os cinco exemplos versionados possuem registro consolidado de validação com FHIR Validator CLI 6.10.4, FHIR R4 4.0.1 e `-tx n/a`, em `fhir/validacao/validacao-cinco-bundles-cnes.log`.
+
+### Fechamento corretivo
+
+A reconciliação documental, a reexecução da suíte automatizada e a revalidação dos cinco Bundles FHIR foram concluídas. Os 13 testes automatizados passaram na verificação final, e os cinco exemplos FHIR R4 foram aprovados novamente pelo FHIR Validator CLI 6.10.4 com `0 errors` e `0 warnings`.
+
+Com a reconciliação documental, a reexecução dos testes e a revalidação dos exemplos FHIR, a revisão corretiva da Fase 6 encontra-se tecnicamente concluída.
+
+---
+
+## 18. Referências técnicas
+
+### Sistema identificador CNES
+
+- **Ministério da Saúde — Guia de Implementação de Terminologias do Brasil — NamingSystemCNES.** URL canônica do artefato: `https://terminologia.saude.gov.br/fhir/NamingSystem/cnes`. O artefato registra `https://saude.gov.br/fhir/sid/cnes` como URI preferencial do sistema identificador CNES. Utilizado neste projeto para fundamentar `Organization.identifier.system`. Acesso em: 2026-10-04.
+
+### Tipo de estabelecimento de saúde
+
+- **Ministério da Saúde — Guia de Implementação de Terminologias do Brasil — BRTipoEstabelecimentoSaude.** ValueSet canônico: `https://terminologia.saude.gov.br/fhir/ValueSet/BRTipoEstabelecimentoSaude`. CodeSystem canônico: `https://terminologia.saude.gov.br/fhir/CodeSystem/BRTipoEstabelecimentoSaude`. Versão consultada do guia: 1.1.0. Utilizado neste projeto como referência terminológica adicional para a investigação de `tipo_unidade`; a comparação reproduzível está em `sql/16-validacao-tipo_unidade-terminologia-fhir.sql`. O artefato consultado é posterior ao recorte SP/2025-11 e, por isso, não sustenta inferência retroativa sobre o significado histórico do código `16`.

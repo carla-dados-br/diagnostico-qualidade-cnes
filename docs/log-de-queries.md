@@ -579,7 +579,7 @@ ORDER BY quantidade DESC;
 ```
 **Resultado:** `M` (municipal) com 109.733, `E` (estadual) com 629. Soma = 110.362, o total exato do recorte.
 
-**Decisão:** campo 100% completo. Domínio esperado (não verificado em fonte oficial nesta sessão) inclui também `D` e `S`, que não ocorrem neste recorte — domínio teórico maior que o observado, sem indicar ausência.
+**Decisão:** o campo apresentou 100% de preenchimento físico no recorte, com somente `M` e `E` observados. Em verificação posterior reproduzida pela Query 2 de `sql/11-completude-tipo_gestao.sql`, a tabela `basedosdados.br_ms_cnes.dicionario` retornou `D = dupla`, `E = estadual`, `M = municipal`, `S = sem gestao` e `Z = nao informado`. Assim, o domínio observado em SP/nov-2025 (`M`, `E`) é menor que o domínio registrado no dicionário do conjunto (`D`, `E`, `M`, `S`, `Z`). A categoria `Z` representa "nao informado" no dicionário, mas não ocorreu neste recorte. A tabela `dicionario` é tratada como fonte auxiliar do conjunto e não, por si só, como terminologia FHIR oficial.
 
 ---
 
@@ -634,14 +634,16 @@ ORDER BY tipo_grau_dependencia, status_cnpj;
 ```
 **Resultado:** exatamente 2 combinações, sem exceção — `1` + `vazio` (98.098) e `3` + `preenchido` (12.264). Confirmação linha a linha, não só coincidência de totais.
 
-**Decisão:** `tipo_grau_dependencia` codifica a distinção Individual/Mantido do manual técnico do CNES, mesmo sem nome literal no campo. Métrica final tem duas camadas:
+**Decisão:** `tipo_grau_dependencia` separa operacionalmente os dois grupos observados na regra de preenchimento de `cnpj_mantenedora`. Os rótulos `1 = individual` e `3 = mantida` foram verificados posteriormente na tabela `dicionario` do conjunto. A métrica final tem duas camadas:
 
 | Camada | Resultado |
 |---|---|
 | Completude bruta (todos os estabelecimentos) | 11,11% preenchido, 88,89% vazio |
 | Completude condicional (só entre os que deveriam ter CNPJ, `tipo_grau_dependencia = 3`) | **100% preenchido, 0% de ausência real** |
 
-Reportar só a completude bruta seria enganoso, na mesma direção (embora oposta em efeito) do erro que `id_regiao_saude` teria causado se medido só por `IS NULL`. O significado dos códigos `1`/`3` não foi confirmado em fonte oficial nomeando-os — a confirmação vem da correspondência perfeita e sem exceção com `cnpj_mantenedora`, que é evidência empírica direta, não leitura de documentação.
+Reportar só a completude bruta seria enganoso, na mesma direção (embora oposta em efeito) do erro que `id_regiao_saude` teria causado se medido só por `IS NULL`.
+
+**Verificação posterior dos rótulos:** a tabela `basedosdados.br_ms_cnes.dicionario`, filtrada por `nome_coluna = 'tipo_grau_dependencia'`, retornou `1 = individual` e `3 = mantida`. Essa consulta foi incorporada ao `sql/12-completude-cnpj_mantenedora.sql`. A evidência empírica original permanece relevante, mas os rótulos não dependem mais apenas da correspondência observada com `cnpj_mantenedora`. A tabela `dicionario` é tratada aqui como fonte auxiliar do conjunto, não como terminologia FHIR oficial.
 
 ---
 

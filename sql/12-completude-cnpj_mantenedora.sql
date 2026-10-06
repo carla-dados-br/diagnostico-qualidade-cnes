@@ -71,18 +71,20 @@ ORDER BY
 --    de totais agregados)
 -- Resultado: exatamente 2 combinacoes, sem excecao -- 1+vazio (98.098)
 --            e 3+preenchido (12.264).
--- Decisao: tipo_grau_dependencia codifica a distincao Individual/Mantido
---            do manual tecnico do CNES, mesmo sem nome literal no campo.
+-- Interpretacao operacional: tipo_grau_dependencia separa os dois grupos
+--            observados na regra de preenchimento de cnpj_mantenedora.
+--            Os rotulos dos codigos 1/3 foram verificados posteriormente
+--            na tabela dicionario do conjunto (secao 5).
 --            Metrica final em duas camadas:
 --              - Completude bruta (todos os estabelecimentos):
 --                11,11% preenchido, 88,89% vazio
 --              - Completude condicional (so entre tipo_grau_dependencia
 --                = 3, os que deveriam ter CNPJ):
 --                100% preenchido, 0% de ausencia real
---            O significado exato dos codigos 1/3 nao foi confirmado em
---            fonte oficial que os nomeie diretamente -- a confirmacao
---            vem da correspondencia empirica perfeita, nao de leitura
---            de documentacao.
+--            Esta foi a evidencia empirica original. A verificacao
+--            posterior dos rotulos no dicionario do conjunto esta
+--            registrada na secao 5. Essa fonte e tratada como dicionario
+--            auxiliar do conjunto, nao como terminologia FHIR oficial.
 -- -----------------------------------------------------------------------
 SELECT
     tipo_grau_dependencia,
@@ -102,3 +104,31 @@ GROUP BY
 ORDER BY
     tipo_grau_dependencia,
     status_cnpj;
+
+
+-- -----------------------------------------------------------------------
+-- 5. Reconciliacao dos rotulos de tipo_grau_dependencia com a tabela
+--    dicionario do conjunto.
+-- Esta consulta foi incorporada posteriormente para tornar reproduzivel
+-- a verificacao dos rotulos usados na interpretacao da completude
+-- condicional. A tabela dicionario e tratada aqui como fonte auxiliar
+-- do conjunto, nao como terminologia FHIR oficial.
+-- -----------------------------------------------------------------------
+SELECT
+    chave,
+    valor
+FROM `basedosdados.br_ms_cnes.dicionario`
+WHERE nome_coluna = 'tipo_grau_dependencia'
+ORDER BY chave;
+
+
+-- RESULTADO DA VERIFICACAO POSTERIOR — 2026-10-04
+-- chave | valor
+-- 1     | individual
+-- 3     | mantida
+--
+-- Limite:
+-- estes rotulos foram reproduzidos a partir da tabela
+-- basedosdados.br_ms_cnes.dicionario. Esta evidencia documenta o
+-- dicionario do conjunto utilizado pelo projeto e nao deve ser tratada,
+-- por si so, como terminologia FHIR oficial.

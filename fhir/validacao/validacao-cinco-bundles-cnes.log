@@ -1,0 +1,227 @@
+===== bundle-cnes-0003735.json =====
+[0.001s][warning][os,container] Cgroup memory controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+[0.001s][warning][os,container] Cgroup cpu controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+Oct 05, 2026 11:08:37 PM org.jline.utils.Log log
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (31 days old)
+  Java:   21.0.12.1 from /usr/lib/jvm/java-21-openjdk-amd64 on amd64 (64bit). 2048MB available
+  Paths:  Current = /content, Package Cache = /root/.fhir/packages
+  Params: bundle-cnes-0003735.json -version 4.0.1 -tx n/a
+  Locale: United States/US
+  Jurisdiction: United States of America
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+Installing hl7.fhir.r4.core#4.0.1 to the package cache
+  Fetching:
+
+Installing hl7.fhir.r4.core#4.0.1
+ done.
+ loaded @ /root/.fhir/packages/hl7.fhir.r4.core#4.0.1
+Installing hl7.fhir.xver-extensions#0.1.0 to the package cache
+  Fetching:
+
+Installing hl7.fhir.xver-extensions#0.1.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.fhir.xver-extensions#0.1.0
+Installing hl7.terminology.r4#6.2.0 to the package cache
+  Fetching:
+
+Installing hl7.terminology.r4#6.2.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.terminology.r4#6.2.0
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:29.460)
+Installing hl7.fhir.uv.extensions.r4#5.2.0 to the package cache
+  Fetching:
+
+Installing hl7.fhir.uv.extensions.r4#5.2.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.fhir.uv.extensions.r4#5.2.0
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:05.587)
+  Loaded FHIR - 8265 resources (00:00.000)
+  Terminology server null - Version n/a: No Terminology Server (00:00.003)
+Installing hl7.terminology#7.4.0 to the package cache
+  Fetching:
+
+Installing hl7.terminology#7.4.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.terminology#7.4.0
+  Load hl7.terminology#7.4.0 - 4181 resources (00:05.616)
+Installing hl7.fhir.uv.extensions#5.3.0 to the package cache
+  Fetching:
+
+Installing hl7.fhir.uv.extensions#5.3.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.fhir.uv.extensions#5.3.0
+Installing hl7.terminology.r5#7.1.0 to the package cache
+  Fetching:
+
+Installing hl7.terminology.r5#7.1.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.terminology.r5#7.1.0
+Installing hl7.fhir.uv.extensions.r5#5.2.0 to the package cache
+  Fetching:
+
+Installing hl7.fhir.uv.extensions.r5#5.2.0
+ done.
+ loaded @ /root/.fhir/packages/hl7.fhir.uv.extensions.r5#5.2.0
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:05.559)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:02.810)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.019)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:06.319)
+Cached new session. Cache size = 1
+Sources to validate: bundle-cnes-0003735.json
+Validating
+  Validate bundle-cnes-0003735.json
+ 00:01.947
+Done. Times: Loading: 00:55.582, validation: 00:01.948. Memory = 652Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: All OK
+Done. Times: Loading: 00:55.582, validation: 00:01.948. Max Memory = 2Gb
+
+===== bundle-cnes-0004200.json =====
+[0.001s][warning][os,container] Cgroup memory controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+[0.001s][warning][os,container] Cgroup cpu controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+Oct 05, 2026 11:09:36 PM org.jline.utils.Log log
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (31 days old)
+  Java:   21.0.12.1 from /usr/lib/jvm/java-21-openjdk-amd64 on amd64 (64bit). 2048MB available
+  Paths:  Current = /content, Package Cache = /root/.fhir/packages
+  Params: bundle-cnes-0004200.json -version 4.0.1 -tx n/a
+  Locale: United States/US
+  Jurisdiction: United States of America
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:24.032)
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:04.645)
+  Loaded FHIR - 8265 resources (00:00.002)
+  Terminology server null - Version n/a: No Terminology Server (00:00.002)
+  Load hl7.terminology#7.4.0 - 4181 resources (00:03.936)
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:00.344)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:02.959)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.034)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:07.441)
+Cached new session. Cache size = 1
+Sources to validate: bundle-cnes-0004200.json
+Validating
+  Validate bundle-cnes-0004200.json
+ 00:01.946
+Done. Times: Loading: 00:43.573, validation: 00:01.947. Memory = 386Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: All OK
+Done. Times: Loading: 00:43.573, validation: 00:01.947. Max Memory = 2Gb
+
+===== bundle-cnes-0004642.json =====
+[0.002s][warning][os,container] Cgroup memory controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+[0.002s][warning][os,container] Cgroup cpu controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+Oct 05, 2026 11:10:24 PM org.jline.utils.Log log
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (31 days old)
+  Java:   21.0.12.1 from /usr/lib/jvm/java-21-openjdk-amd64 on amd64 (64bit). 2048MB available
+  Paths:  Current = /content, Package Cache = /root/.fhir/packages
+  Params: bundle-cnes-0004642.json -version 4.0.1 -tx n/a
+  Locale: United States/US
+  Jurisdiction: United States of America
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:18.719)
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:05.161)
+  Loaded FHIR - 8265 resources (00:00.000)
+  Terminology server null - Version n/a: No Terminology Server (00:00.000)
+  Load hl7.terminology#7.4.0 - 4181 resources (00:04.940)
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:00.311)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:03.033)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.035)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:06.321)
+Cached new session. Cache size = 1
+Sources to validate: bundle-cnes-0004642.json
+Validating
+  Validate bundle-cnes-0004642.json
+ 00:01.757
+Done. Times: Loading: 00:38.696, validation: 00:01.758. Memory = 438Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: All OK
+Done. Times: Loading: 00:38.696, validation: 00:01.758. Max Memory = 2Gb
+
+===== bundle-cnes-0006351.json =====
+[0.001s][warning][os,container] Cgroup memory controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+[0.001s][warning][os,container] Cgroup cpu controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+Oct 05, 2026 11:11:06 PM org.jline.utils.Log log
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (31 days old)
+  Java:   21.0.12.1 from /usr/lib/jvm/java-21-openjdk-amd64 on amd64 (64bit). 2048MB available
+  Paths:  Current = /content, Package Cache = /root/.fhir/packages
+  Params: bundle-cnes-0006351.json -version 4.0.1 -tx n/a
+  Locale: United States/US
+  Jurisdiction: United States of America
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:19.095)
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:03.461)
+  Loaded FHIR - 8265 resources (00:00.001)
+  Terminology server null - Version n/a: No Terminology Server (00:00.000)
+  Load hl7.terminology#7.4.0 - 4181 resources (00:05.462)
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:00.391)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:03.300)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.034)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:05.183)
+Cached new session. Cache size = 1
+Sources to validate: bundle-cnes-0006351.json
+Validating
+  Validate bundle-cnes-0006351.json
+ 00:01.397
+Done. Times: Loading: 00:37.136, validation: 00:01.398. Memory = 603Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: All OK
+Done. Times: Loading: 00:37.136, validation: 00:01.398. Max Memory = 2Gb
+
+===== bundle-cnes-0008028.json =====
+[0.001s][warning][os,container] Cgroup memory controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+[0.001s][warning][os,container] Cgroup cpu controller path at '/sys/fs/cgroup' seems to have moved to '/../../jupyter-children', detected limits won't be accurate
+Oct 05, 2026 11:11:46 PM org.jline.utils.Log log
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+FHIR Validation tool Version 6.10.4 (Git# 1b90fb13f77b). Built 2026-09-04T05:45:41.468Z (31 days old)
+  Java:   21.0.12.1 from /usr/lib/jvm/java-21-openjdk-amd64 on amd64 (64bit). 2048MB available
+  Paths:  Current = /content, Package Cache = /root/.fhir/packages
+  Params: bundle-cnes-0008028.json -version 4.0.1 -tx n/a
+  Locale: United States/US
+  Jurisdiction: United States of America
+Loading
+  Loading FHIR v4.0.1 from hl7.fhir.r4.core#4.0.1
+  Load hl7.terminology.r4#6.2.0 - 4288 resources (00:18.841)
+  Load hl7.fhir.uv.extensions.r4#5.2.0 - 759 resources (00:03.947)
+  Loaded FHIR - 8265 resources (00:00.002)
+  Terminology server null - Version n/a: No Terminology Server (00:00.001)
+  Load hl7.terminology#7.4.0 - 4181 resources (00:04.384)
+  Load hl7.fhir.uv.extensions.r5#5.2.0 - 759 resources (00:00.342)
+  Load hl7.terminology.r5#7.1.0 - 4072 resources (00:02.583)
+  Load hl7.fhir.uv.extensions#5.3.0 - 856 resources (00:00.033)
+  Package Summary: [hl7.fhir.r4.core#4.0.1, hl7.fhir.xver-extensions#0.1.0, hl7.terminology.r4#6.2.0, hl7.fhir.uv.extensions.r4#5.2.0, hl7.terminology#7.4.0, hl7.fhir.uv.extensions.r5#5.2.0, hl7.terminology.r5#7.1.0, hl7.fhir.uv.extensions#5.3.0]
+  Terminology Cache at /tmp/default-tx-cache
+  Get set...
+  ...go! (00:06.102)
+Cached new session. Cache size = 1
+Sources to validate: bundle-cnes-0008028.json
+Validating
+  Validate bundle-cnes-0008028.json
+ 00:01.321
+Done. Times: Loading: 00:36.430, validation: 00:01.322. Memory = 378Mb
+
+Success: 0 errors, 0 warnings, 1 notes
+  Information: All OK
+Done. Times: Loading: 00:36.430, validation: 00:01.322. Max Memory = 2Gb

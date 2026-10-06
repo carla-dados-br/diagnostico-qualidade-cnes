@@ -28,10 +28,13 @@ ORDER BY tipo_unidade;
 
 
 -- -----------------------------------------------------------------------
--- 2. Traducao dos codigos via dicionario oficial
--- Resultado: 44 codigos catalogados nacionalmente (posto de saude,
--- hospital geral, farmacia, central de regulacao, etc.), dos quais 38
--- tem uso no recorte SP/nov-2025.
+-- 2. Reconciliacao dos codigos com a tabela dicionario do conjunto
+-- Resultado: 44 codigos estao registrados na tabela dicionario.
+-- No recorte SP/2025-11 foram observados 38 codigos distintos:
+-- 37 possuem correspondencia nessa tabela e o codigo 16 nao possui.
+-- Esta reconciliacao nao equivale a validacao terminologica FHIR.
+-- A comparacao com BRTipoEstabelecimentoSaude esta registrada em
+-- sql/16-validacao-tipo_unidade-terminologia-fhir.sql.
 -- -----------------------------------------------------------------------
 SELECT
   chave,
@@ -46,9 +49,10 @@ ORDER BY chave;
 -- tempo (nulo real, texto "nan", string vazia), mesmo padrao de
 -- verificacao usado em id_regiao_saude.
 -- Resultado: 0 em todas as tres formas de ausencia, 110.362 de 110.362
--- estabelecimentos com valor valido. Campo genuinamente 100% completo
--- neste recorte - resultado confirmado por investigacao previa (secao 1),
--- nao aceito por ausencia de checagem.
+-- estabelecimentos com valor preenchido segundo as formas testadas.
+-- O campo esta 100% completo neste recorte segundo esta metrica.
+-- Completude nao implica validade semantica: o codigo 16 permanece como
+-- excecao terminologica documentada separadamente na Fase 6.
 -- -----------------------------------------------------------------------
 SELECT
   COUNT(*) AS total_estabelecimentos,

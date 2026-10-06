@@ -3,32 +3,24 @@
   "type": "collection",
   "entry": [
     {
-      "fullUrl": "urn:uuid:1232e2f1-4c6b-4e4b-9ea4-872eb32dc686",
+      "fullUrl": "urn:uuid:0fd9c9db-3de1-5ce7-8308-4e7ece71ec0a",
       "resource": {
         "resourceType": "Organization",
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Identificador CNES: 0004200. Sistema: https://saude.gov.br/fhir/sid/cnes.</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Identificador CNES: 0004200. CEP: 07011010. Sistema: https://saude.gov.br/fhir/sid/cnes.</p></div>"
         },
         "identifier": [
           {
             "system": "https://saude.gov.br/fhir/sid/cnes",
             "value": "0004200"
           }
+        ],
+        "address": [
+          {
+            "postalCode": "07011010"
+          }
         ]
-      }
-    },
-    {
-      "fullUrl": "urn:uuid:60166a82-ab22-4df4-bffe-bec0400c3c1f",
-      "resource": {
-        "resourceType": "Location",
-        "text": {
-          "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>CEP: 07011010.</p></div>"
-        },
-        "address": {
-          "postalCode": "07011010"
-        }
       }
     }
   ]

@@ -2,11 +2,14 @@
 
 **Versão 2 — 19/08/2026**
 
+> **Nota de revisão da Fase 6 — 05/10/2026:** o planejamento inicial considerava os recursos FHIR `Organization` e `Location`. Após a revisão semântica, a implementação mínima aprovada permaneceu restrita a `Organization`, com o CEP representado em `Organization.address.postalCode`. Um recurso `Location` independente não é gerado nesta versão.
+
+
 ---
 
 ## Resumo
 
-Este projeto usa a base pública do CNES (Cadastro Nacional de Estabelecimentos de Saúde), mantida pelo DATASUS/Ministério da Saúde, para medir a qualidade do cadastro de estabelecimentos de saúde e propor um conjunto mínimo de regras de governança a partir dos achados. Ao final, os dados tratados são mapeados para os recursos FHIR `Organization` e `Location`, como exercício de interoperabilidade.
+Este projeto usa a base pública do CNES (Cadastro Nacional de Estabelecimentos de Saúde), mantida pelo DATASUS/Ministério da Saúde, para medir a qualidade do cadastro de estabelecimentos de saúde e propor um conjunto mínimo de regras de governança a partir dos achados. Ao final, campos selecionados são avaliados para interoperabilidade FHIR R4. A implementação aprovada nesta versão gera `Organization` com identificador CNES e CEP em `Organization.address.postalCode`; `Location` foi considerado no escopo inicial, mas não é gerado como recurso independente.
 
 O CNES é a base cadastral que sustenta outros sistemas do SUS — SIA, SIH, e-SUS AB. Problemas de qualidade nele se propagam para a rede inteira, o que torna o diagnóstico relevante para organizações de saúde públicas e privadas.
 
@@ -38,7 +41,7 @@ O CNES é a base cadastral que sustenta outros sistemas do SUS — SIA, SIH, e-S
 - Medir completude, consistência e atualidade do cadastro de estabelecimentos
 - Aplicar três regras de consistência com base na estrutura real do CNES, incluindo uma regra que depende de conhecimento clínico
 - Propor um conjunto mínimo de regras de governança e responsabilidades
-- Mapear os dados tratados para os recursos FHIR `Organization` e `Location`, com validação
+- Avaliar campos selecionados para FHIR R4 e implementar somente os mapeamentos semanticamente aprovados; nesta versão, gerar `Organization` com identificador CNES e CEP, com validação dos recursos resultantes
 
 ### Escopo
 
@@ -84,7 +87,7 @@ Fontes → Coleta → Transformação → Modelagem → Análise
 | Análise | Indicadores de qualidade e três regras de consistência |
 | Visualização | Power BI |
 | Governança | Framework de qualidade proposto |
-| Interoperabilidade | Mapeamento para FHIR `Organization` e `Location` |
+| Interoperabilidade | Avaliação CNES → FHIR R4; implementação final em `Organization`, sem `Location` independente nesta versão |
 | Documentação | README, dicionário de dados, tabela de-para FHIR |
 
 ---
@@ -197,9 +200,9 @@ Documento com regras mínimas de qualidade e responsabilidades: quem valida o qu
 
 ### Fase 6 — Mapeamento FHIR
 
-Converter os estabelecimentos tratados para os recursos `Organization` e `Location`. Validar os recursos gerados. Documentar a tabela de-para, incluindo os campos que não foram mapeados e o motivo.
+Avaliar os campos selecionados para `Organization` e, quando semanticamente justificável, `Location`. A revisão da Fase 6 concluiu que o CEP deve permanecer em `Organization.address.postalCode`, sem criação de `Location` independente apenas para transportar esse dado. Validar os recursos gerados e documentar a tabela de-para, incluindo os campos não implementados e seus motivos.
 
-**Entregável:** script de conversão, amostra de recursos validados, tabela de-para.
+**Entregável:** script de conversão para `Organization`, exemplos de recursos validados, tabela de-para, testes automatizados e registro das decisões de exclusão.
 
 ### Fase 7 — Portfólio
 
@@ -251,7 +254,11 @@ Esse último achado atinge a camada de metadados, o que compromete qualquer aná
 
 Não há dado de paciente. Há dado pessoal de profissional de saúde.
 
-*Mitigação adotada:* a tabela `profissional` fica fora do escopo desta versão. Nenhum dado pessoal é extraído, tratado ou versionado.
+*Mitigação para `profissional`:* a tabela permanece fora do escopo desta versão. Nenhum dado dessa tabela é extraído ou versionado no repositório.
+
+**Revisão adicional na Fase 6.** A análise de `estabelecimento.cpf_cnpj` identificou outro risco de privacidade dentro da própria tabela de estabelecimentos. No recorte de São Paulo, competência 2025-11, a validação reproduzível em `sql/15-validacao-cpf_cnpj.sql` encontrou valores que passam matematicamente pelos algoritmos de CPF e/ou CNPJ. Essa compatibilidade não comprova existência cadastral, titularidade, situação cadastral ou tipo fiscal efetivo do documento.
+
+*Mitigação para `cpf_cnpj`:* nenhum valor individual é publicado ou versionado; as evidências permanecem agregadas. O campo não é convertido em identificador CPF/CNPJ nos recursos FHIR desta versão, e seu tratamento segue a Regra 10 de `docs/framework-governanca.md`.
 
 ### Risco de escopo
 

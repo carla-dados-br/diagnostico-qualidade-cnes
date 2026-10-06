@@ -244,9 +244,9 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
   | `M` | Gestão municipal | 109.733 |
   | `E` | Gestão estadual | 629 |
 
-  Soma = 110.362, o total exato do recorte — 0% de ausência.
+  Soma = 110.362, o total exato do recorte — 0% de ausência física no campo.
 
-- **Domínio teórico vs. domínio observado:** conhecimento prévio (não verificado em fonte oficial nesta sessão) indica que o domínio completo do campo inclui também `D` (dupla gestão) e `S` (sem gestão), nenhum dos dois presente neste recorte. Ausência de uma categoria do domínio teórico não é a mesma coisa que ausência de dado — é o domínio teórico sendo maior que o domínio observado neste recorte específico.
+- **Domínio registrado no dicionário do conjunto vs. domínio observado:** consulta reproduzida à tabela `basedosdados.br_ms_cnes.dicionario`, filtrando por `nome_coluna = 'tipo_gestao'`, retornou `D` = "dupla", `E` = "estadual", `M` = "municipal", `S` = "sem gestao" e `Z` = "nao informado". No recorte SP/nov-2025 foram observados somente `M` e `E`. Portanto, ausência de `D`, `S` e `Z` nesse recorte não significa que esses valores sejam inválidos; significa apenas que não ocorreram nessa competência e UF. A categoria `Z` representa "nao informado" no dicionário, mas não foi observada no recorte. A tabela `dicionario` é tratada como fonte auxiliar do conjunto e não, por si só, como terminologia FHIR oficial.
 - **Query de referência:** ver `sql/11-completude-tipo_gestao.sql`
 
 ---
@@ -283,7 +283,7 @@ Total: 347 municípios com volume ≥ 20 estabelecimentos.
 
   Reportar só a completude bruta seria enganoso — na direção oposta, mas equivalente em gravidade, ao erro que `id_regiao_saude` teria causado se medido só por `IS NULL`.
 
-- **Confirmação oficial dos códigos (12/09/2026):** consulta direta à tabela `dicionario` do BigQuery (`basedosdados.br_ms_cnes.dicionario`, filtrando por `nome_coluna = 'tipo_grau_dependencia'`) confirmou os rótulos oficiais: `1` = "individual", `3` = "mantida". Domínio oficial do campo é exatamente `{1, 3}` — sem categorias adicionais. Isso substitui a suposição anterior, que se apoiava só em correspondência empírica com `cnpj_mantenedora` (perfeita e sem exceção, mas sem nome oficial confirmado).
+- **Confirmação no dicionário do conjunto:** consulta reproduzida à tabela `basedosdados.br_ms_cnes.dicionario`, filtrando por `nome_coluna = 'tipo_grau_dependencia'`, retornou `1` = "individual" e `3` = "mantida". Nessa tabela, o domínio observado para o campo é `{1, 3}`. Isso substitui a interpretação anterior baseada apenas na correspondência empírica com `cnpj_mantenedora`. A tabela `dicionario` é utilizada como fonte auxiliar do conjunto e não é tratada, por si só, como terminologia FHIR oficial.
 - **Query de referência:** ver `sql/12-completude-cnpj_mantenedora.sql`
 
 ---
