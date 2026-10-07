@@ -218,8 +218,8 @@ Atividades já realizadas dentro da Fase 6:
 - [x] Cobertura terminológica FHIR verificada: 37 de 38 códigos observados aparecem no `BRTipoEstabelecimentoSaude` consultado; o código `16` é a única exceção observada
 - [x] Exceção semântica do código `16` documentada
 - [x] Regra de habilitação vencida
-- [x] Regra de divergência de leitos
-- [x] Regra de UTI sem habilitação correspondente
+- [x] Investigação da divergência entre quantidades de leitos e habilitações
+- [x] Investigação de UTI sem correspondência segundo o de-para do projeto
 - [x] Indicador de atualidade cadastral
 - [x] Indicador de distribuição regional
 - [x] Completude de `id_municipio`
@@ -256,7 +256,13 @@ Atividades já realizadas dentro da Fase 6:
 │   ├── 10-completude-id_municipio.sql
 │   ├── 11-completude-tipo_gestao.sql
 │   ├── 12-completude-cnpj_mantenedora.sql
-│   └── 13-unicidade-id_estabelecimento_cnes.sql
+│   ├── 13-unicidade-id_estabelecimento_cnes.sql
+│   ├── 14-proveniencia-exemplos-fhir.sql
+│   ├── 15-validacao-cpf_cnpj.sql
+│   ├── 16-validacao-tipo_unidade-terminologia-fhir.sql
+│   ├── 17-validacao-relacao-cnpj-mantenedora.sql
+│   ├── 18-validacao-transicoes-natureza-juridica-2022.sql
+│   └── 19-validacao-historico-tipo-unidade-16.sql
 │
 ├── docs/
 │   ├── decisao-recorte.md
@@ -271,12 +277,15 @@ Atividades já realizadas dentro da Fase 6:
 │   ├── fase2-limpeza-tratamento.ipynb
 │   └── fase6-conversor-fhir.py
 │
+├── tests/
+│   └── test_fase6_conversor_fhir.py
+│
 ├── dashboard/
 │   └── relatórios e evidências da Fase 4
 │
 ├── fhir/
 │   ├── exemplos/ (5 Bundles JSON)
-│   └── validacao/ (2 logs)
+│   └── validacao/ (1 log consolidado)
 │
 ├── .gitignore
 ├── LICENSE
@@ -332,7 +341,7 @@ Foi executada separadamente com:
 
 | Ferramenta | Versão |
 |---|---|
-| Docker | — |
+| Docker | versão não registrada na execução |
 | Python | 3.12 |
 | PySUS | 2.11.1 |
 
@@ -378,15 +387,15 @@ Arquivos JSON não são ignorados globalmente porque a Fase 6 inclui exemplos de
 
 ## 7. Regras e validações
 
-### Regras de consistência aplicadas
+### Verificações de consistência e investigações aplicadas
 
-Foram implementadas três regras principais, escolhidas para representar diferentes níveis de complexidade analítica.
+Foram implementadas três verificações principais, escolhidas para representar diferentes níveis de complexidade analítica. Nos cruzamentos entre `leito` e `habilitacao`, os resultados são tratados como achados para investigação enquanto a relação semântica e a regra de negócio esperada não estiverem formalmente confirmadas.
 
-| Regra | Tabelas | O que exige | Status |
+| Verificação / investigação | Tabelas | O que avalia | Status |
 |---|---|---|---|
 | Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação temporal dentro da própria tabela | Concluída |
-| Divergência de quantidade de leitos | `leito` + `habilitacao` | agregação e junção entre tabelas | Concluída |
-| Leito de UTI sem habilitação correspondente | `leito` + `habilitacao` | correspondência semântica entre domínios diferentes | Concluída |
+| Comparação agregada entre quantidades de leitos e habilitações | `leito` + `habilitacao` | diferença observada entre medidas agregadas, sem pressupor equivalência semântica | Concluída |
+| UTI sem correspondência segundo o de-para do projeto | `leito` + `habilitacao` | teste da hipótese de correspondência entre categorias de UTI e habilitações | Concluída |
 
 A correspondência entre tipos de leito e tipos de habilitação foi investigada separadamente, pois os dois campos utilizam domínios de códigos diferentes.
 
@@ -394,7 +403,7 @@ A correspondência entre tipos de leito e tipos de habilitação foi investigada
 
 A Fase 5 transformou os principais achados técnicos em regras mínimas de governança.
 
-O framework contém **9 regras de governança**, cada uma associada a um problema efetivamente encontrado durante o projeto.
+O framework contém **10 regras de governança**, cada uma associada a um problema efetivamente encontrado durante o projeto.
 
 Documento: [`docs/framework-governanca.md`](docs/framework-governanca.md).
 
@@ -465,7 +474,7 @@ Foram avaliadas **1.103 combinações estabelecimento + categoria de UTI**. Dess
 
 Essas combinações representam **7.312 leitos** em **547 estabelecimentos**.
 
-A correspondência entre os domínios de leito e habilitação foi construída semanticamente e investigada empiricamente, não apenas pela semelhança textual dos nomes.
+O de-para entre categorias de UTI e habilitações utilizado pelo projeto foi construído como hipótese de correspondência e testado empiricamente no recorte analisado; ele não equivale, por si só, a uma validação terminológica oficial da relação entre os dois domínios. Assim, as 553 combinações sem correspondência descrevem o resultado da verificação segundo o de-para adotado e não comprovam, isoladamente, irregularidade regulatória ou erro cadastral.
 
 ### Completude não garante consistência semântica
 
@@ -726,5 +735,7 @@ Os dados utilizados nas análises são provenientes do CNES/DATASUS e foram aces
 Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dados e IA
 
 As decisões de escopo, tratamento, qualidade, governança e interoperabilidade deste projeto são documentadas para tornar o processo reproduzível e auditável.
+
+**Autoria e apoio ao desenvolvimento:** este projeto foi idealizado, desenvolvido e executado pela autora. Durante o processo, foi utilizada IA generativa como ferramenta de apoio à aprendizagem, orientação técnica, revisão e discussão de alternativas. A IA não executou o projeto de forma autônoma nem substituiu a tomada de decisão da autora: consultas, códigos, testes, validações, análises, correções e decisões documentadas foram executados, conferidos e aprovados pela autora.
 
 [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)

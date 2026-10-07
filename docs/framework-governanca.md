@@ -31,22 +31,23 @@ Por fim, devido à limitação metodológica de operar sobre o recorte de uma ú
 
 ---
 
-## Regra 2 — Inconsistência referencial e potencial quebra de regra de negócio (Leitos vs. Habilitações)
+## Regra 2 — Investigação de coerência entre leitos e habilitações
 
-A divergência entre leitos físicos e habilitações formais é, no mínimo, uma
-quebra crítica de integridade referencial entre módulos que deveriam ser
-consistentes. Se for confirmado junto à área de negócio que a habilitação
-reflete, de fato, a autorização para financiamento SUS (hipótese ainda não
-verificada na documentação oficial do CNES), essa inconsistência
-representaria também risco de glosa de faturamento e impacto na regulação
-de vagas.
+- **Base da regra:** hipótese / tarefa formal de investigação.
 
-- **Gatilho:** a cada ingestão conjunta ou cruzamento periódico (ETL) entre os módulos de infraestrutura (`leito`) e de documentação/credenciamento (`habilitacao`).
-- **Responsável pela execução:** área de Integração de Dados / Engenharia de Dados.
-- **Responsável pela validação:** área de Faturamento SUS ou Regulação Assistencial, acionada especificamente para validar a hipótese de impacto regulatório.
-- **Ação em caso de violação:** gerar notificação automática para a área de qualidade e faturamento, informando o código CNES do estabelecimento, o tipo de leito conflitante, a natureza da divergência (quantidade incompatível ou ausência total) e a competência.
-- **Achados que originaram esta regra:** divergência sistemática de quantidade (768 de 768 casos, sempre no mesmo sentido); 50,1% dos leitos de UTI sem habilitação correspondente.
-- **Indicador de monitoramento:** percentual de ativos de infraestrutura crítica (leitos de UTI, suporte avançado) com quebra de integridade referencial frente ao cadastro de habilitações, estratificado por tipo de divergência.
+A comparação agregada entre `leito.quantidade_total` e `habilitacao.quantidade_leitos` encontrou divergência nos 768 estabelecimentos presentes nas duas fontes, sempre com o total de leitos superior ao total informado nas habilitações. Esse padrão é um achado reproduzível, mas não demonstra, por si só, que as duas medidas devam ser iguais ou que exista erro cadastral.
+
+Em análise distinta, específica para UTI, o de-para semântico utilizado pelo projeto encontrou 553 de 1.103 combinações estabelecimento + categoria de UTI sem habilitação correspondente segundo os códigos considerados. Essas combinações concentram 7.312 leitos. O resultado também não é tratado isoladamente como irregularidade regulatória, porque sua interpretação depende da validação da relação de negócio entre os cadastros.
+
+Até que essa relação seja confirmada por documentação oficial ou por regra de negócio validada, os resultados permanecem como evidência para investigação e não como violação automatizada.
+
+- **Gatilho:** revisão periódica das comparações entre os módulos `leito` e `habilitacao`, especialmente após novas competências ou alterações no de-para semântico.
+- **Responsável pela execução:** área de Qualidade de Dados / Análise de Dados, com apoio da Engenharia de Dados para reprodução das consultas.
+- **Responsável pela validação:** área de negócio responsável pelo CNES, regulação ou gestão assistencial, capaz de confirmar a relação esperada entre os conceitos comparados.
+- **Ação diante do achado:** abrir registro de investigação contendo competência, código CNES, consulta de origem e medidas observadas. Não gerar alerta de violação, conclusão de irregularidade ou inferência de risco de glosa enquanto a relação semântica entre os campos não estiver confirmada.
+- **Achados que originaram esta investigação:** no `sql/05`, 768 de 768 estabelecimentos avaliáveis apresentaram diferença entre os totais agregados, sempre com `total_leitos > total_leitos_habilitados`; no `sql/06`, 553 de 1.103 combinações estabelecimento + categoria de UTI não encontraram habilitação correspondente segundo o de-para aplicado pelo projeto, concentrando 7.312 leitos.
+- **Indicadores de acompanhamento:** percentual de estabelecimentos com divergência entre os totais agregados e percentual de combinações estabelecimento + categoria de UTI sem correspondência segundo o de-para aplicado. Esses indicadores descrevem os achados e não representam, nesta etapa, percentuais de violação.
+- **Condição para futura automação:** somente transformar o achado em regra de alerta após confirmar, em documentação oficial ou regra de negócio validada, qual relação deve existir entre os campos, em qual granularidade e quais códigos podem ser considerados semanticamente correspondentes.
 
 ---
 

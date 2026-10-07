@@ -15,7 +15,7 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 - **Hipótese de causa:** provável resíduo de um processo de tratamento de dados (ex.: exportação via pandas/Python, onde `NaN` é a representação padrão de ausência) que converteu o valor ausente em texto antes de gravar na base, em vez de preservá-lo como nulo.
 - **Métrica de completude (SP, nov/2025):**
 
-  | Total de estabelecimentos | Incompletos (NULL + "nan") | % Incompleto |
+  | Total de estabelecimentos | Incompletos (NULL + "nan" + "") | % Incompleto |
   |---|---|---|
   | 110.362 | 60.366 | 54,70% |
 

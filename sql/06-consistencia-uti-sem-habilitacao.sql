@@ -95,7 +95,7 @@ ORDER BY chave;
 --   leito 85 -> habilitacao 2608  (uti coronariana tipo II)
 --   leito 86 -> habilitacao 2609  (uti coronariana tipo III)
 --
--- 2 pares com sinonimo confirmado empiricamente (ver secoes 6 e 7):
+-- 2 pares com correspondencia empiricamente sustentada no recorte (ver secoes 6 e 7):
 --   leito 81 -> habilitacao 2602 OU 2610 (uti neonatal tipo II)
 --   leito 82 -> habilitacao 2605 OU 2611 (uti neonatal tipo III)
 --
@@ -108,12 +108,12 @@ ORDER BY chave;
 
 
 -- -----------------------------------------------------------------------
--- 6. Investigacao empirica do codigo 2610 (suspeita de sinonimo de 2602)
+-- 6. Investigacao empirica do codigo 2610 (hipotese de correspondencia com 2602)
 -- Pergunta: os estabelecimentos com habilitacao 2610 tambem tem leito
 -- codigo 81 (uti neonatal tipo II) cadastrado?
 -- Resultado: 98 estabelecimentos com habilitacao 2610; 96 deles (~98%)
--- tem leito codigo 81 correspondente -> evidencia forte de sinonimo,
--- nao duplicidade nem erro.
+-- tem leito codigo 81 correspondente -> evidencia empirica forte de associacao,
+-- suficiente para sustentar a hipotese de correspondencia no recorte.
 -- -----------------------------------------------------------------------
 WITH estabelecimentos_2610 AS (
   SELECT DISTINCT id_estabelecimento_cnes
@@ -138,10 +138,10 @@ WHERE l.sigla_uf = 'SP'
 
 
 -- -----------------------------------------------------------------------
--- 7. Investigacao empirica do codigo 2611 (suspeita de sinonimo de 2605)
+-- 7. Investigacao empirica do codigo 2611 (hipotese de correspondencia com 2605)
 -- Resultado: 28 de 28 estabelecimentos (100%) tem leito codigo 82
--- correspondente -> sinonimo confirmado com evidencia ainda mais forte
--- que o caso anterior.
+-- correspondente -> evidencia empirica forte de associacao,
+-- suficiente para sustentar a hipotese de correspondencia no recorte.
 -- -----------------------------------------------------------------------
 WITH estabelecimentos_2611 AS (
   SELECT DISTINCT id_estabelecimento_cnes
@@ -168,11 +168,12 @@ WHERE l.sigla_uf = 'SP'
 -- -----------------------------------------------------------------------
 -- 8. Regra final - leitos de UTI agregados por categoria semantica
 -- (CASE WHEN unifica os codigos de leito em categorias), habilitacoes
--- de UTI agregadas pela mesma categoria (unificando os sinonimos), e
+-- de UTI agregadas pela mesma categoria (agrupando as correspondencias empiricamente sustentadas), e
 -- LEFT JOIN para achar combinacoes estabelecimento+categoria sem
 -- nenhuma habilitacao correspondente.
 -- Resultado: 553 de 1.103 combinacoes (50,1%) sem habilitacao,
--- totalizando 7.312 leitos de UTI sem respaldo formal, em 547
+-- totalizando 7.312 leitos associados a essas combinacoes sem
+-- habilitacao correspondente segundo o de-para aplicado, em 547
 -- estabelecimentos com algum tipo de UTI cadastrado.
 -- -----------------------------------------------------------------------
 WITH leitos_uti AS (
