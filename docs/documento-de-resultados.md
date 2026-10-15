@@ -81,6 +81,16 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 ### 5.2 Achados detalhados
 
+#### A1 e A6 — Ausência de região de saúde e variação entre municípios
+
+- **Achado:** O campo região de saúde apresenta ausência de informação em mais da metade dos estabelecimentos analisados. A ausência é composta principalmente pelo texto `"nan"`: dos 60.366 registros classificados como ausentes, 60.361 estão representados como `"nan"`, 5 aparecem como texto em branco e nenhum foi identificado como campo sem valor. Isso mostra que a ausência está sendo representada principalmente como um valor textual, e não como um campo nulo convencional.
+- **Evidência:** A consulta `sql/03` identificou ausência de região de saúde em 60.366 dos 110.362 estabelecimentos (54,70%). A consulta `sql/09` mostrou que as taxas municipais de ausência variam de 0% a 99,18%. A análise municipal considerou 347 municípios do estado de São Paulo que possuíam pelo menos 20 estabelecimentos na base analisada; esse critério foi utilizado para evitar que municípios com poucos estabelecimentos produzissem proporções extremas que dificultassem a interpretação da variação observada.
+- **Dimensão:** Completude.
+- **Onde ocorre no processo:** O problema foi observado na base `br_ms_cnes`, disponibilizada pela Base dos Dados e consultada no Google BigQuery, após a publicação e o tratamento intermediário dos dados. Como o projeto não acompanhou diretamente o cadastramento nos estabelecimentos nem todas as etapas anteriores à disponibilização da base, não é possível afirmar em qual etapa a informação deixou de estar disponível ou passou a ser representada como texto.
+- **Causa provável (hipótese):** Uma hipótese é que os valores ausentes tenham sido convertidos para o texto `"nan"` em alguma etapa de tratamento ou transformação dos dados. Essa hipótese ainda não foi confirmada. Um caminho possível para investigar a proveniência, já utilizado no projeto para o código 16, é aplicar ao campo região de saúde o mesmo método da Fase 6, com o PySUS e `source="origin"`, verificando se o `"nan"` já está presente na origem ou se aparece posteriormente no processamento.
+- **Alcance:** O achado abrange o recorte estadual de São Paulo, com 60.366 estabelecimentos sem região de saúde identificada, e apresenta variação entre os 347 municípios avaliados, cujas taxas de ausência vão de 0% a 99,18%. O projeto mediu a distribuição da ausência, mas não quantificou seus efeitos sobre decisões ou serviços de saúde.
+- **Prioridade:** Alta, devido à magnitude da ausência identificada, à grande variação entre municípios e ao fato de que a representação como texto `"nan"` pode não ser reconhecida por verificações convencionais de valores nulos.
+
 _Em construção._
 
 ## 6. Recomendações e controles
