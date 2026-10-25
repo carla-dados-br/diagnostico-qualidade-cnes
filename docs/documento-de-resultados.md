@@ -93,6 +93,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 _Em construção._
 
+#### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
+
+- **Achado:** O campo `cnpj_mantenedora` apresenta 98.098 registros vazios, correspondentes a 88,89% dos 110.362 estabelecimentos analisados. Entretanto, o vazio bruto não representa, por si só, uma falha de completude, pois o preenchimento do campo depende da situação cadastral do estabelecimento. A análise identificou que os registros vazios correspondem aos estabelecimentos classificados como `tipo_grau_dependencia = 1` (Individual), enquanto os registros classificados como `tipo_grau_dependencia = 3` (Mantida) apresentam o CNPJ da mantenedora preenchido.
+
+- **Evidência:** A análise identificou 98.098 registros sem `cnpj_mantenedora` e 12.264 registros com CNPJ válido de 14 dígitos, correspondentes a 743 mantenedoras distintas. O cruzamento com `tipo_grau_dependencia` apresentou exatamente duas combinações: `1` (Individual) associado a CNPJ vazio em 98.098 registros e `3` (Mantida) associado a CNPJ preenchido em 12.264 registros. A correspondência foi confirmada linha a linha. Entre os 12.264 estabelecimentos classificados como Mantidos, portanto, a completude observada do campo foi de 100%.
+
+- **Dimensão:** Completude.
+
+- **Onde ocorre no processo:** O achado foi identificado na análise da base `br_ms_cnes`, durante a avaliação da completude do campo `cnpj_mantenedora`. A investigação mostrou que a interpretação da ausência depende da classificação `tipo_grau_dependencia`. O projeto não acompanhou diretamente o processo operacional de cadastramento de cada estabelecimento e, portanto, não atribui o comportamento observado a uma etapa específica de origem.
+
+- **Causa provável:** Não foi identificada uma inconsistência de preenchimento entre os registros em que o campo é aplicável. A elevada proporção de vazios no total geral decorre da inclusão, na mesma métrica, de estabelecimentos classificados como Individuais, para os quais o CNPJ da mantenedora não se aplica. Assim, o principal risco identificado é metodológico: calcular a completude do campo sobre o total geral do recorte, sem considerar sua regra de aplicabilidade, produziria uma interpretação incorreta da qualidade dos dados.
+
+- **Alcance:** O achado abrange os 110.362 estabelecimentos de São Paulo na competência de novembro de 2025. No total geral, foram observados 98.098 registros vazios (88,89%) e 12.264 preenchidos (11,11%). Considerando somente o universo em que o campo é aplicável, formado pelos 12.264 estabelecimentos classificados como Mantidos, a completude observada foi de 100%. O resultado está restrito ao recorte analisado e não deve ser extrapolado automaticamente para outras competências ou Unidades da Federação.
+
+- **Prioridade:** Baixa. A classificação decorre do fato de que não foi identificada ausência de `cnpj_mantenedora` entre os estabelecimentos classificados como Mantidos no recorte analisado. O principal ponto de atenção é preservar a regra de negócio na definição e no monitoramento do indicador, evitando que estabelecimentos para os quais o campo não se aplica sejam tratados como registros incompletos.
+
 ## 6. Recomendações e controles
 
 _Em construção._
