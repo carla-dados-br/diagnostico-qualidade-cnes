@@ -91,7 +91,21 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 - **Alcance:** O achado abrange o recorte estadual de São Paulo, com 60.366 estabelecimentos sem região de saúde identificada, e apresenta variação entre os 347 municípios avaliados, cujas taxas de ausência vão de 0% a 99,18%. O projeto mediu a distribuição da ausência, mas não quantificou seus efeitos sobre decisões ou serviços de saúde.
 - **Prioridade:** Alta, devido à magnitude da ausência identificada, à grande variação entre municípios e ao fato de que a representação como texto `"nan"` pode não ser reconhecida por verificações convencionais de valores nulos.
 
-_Em construção._
+#### A5 — Cadastros classificados como desatualizados
+
+- **Achado:** Foram identificados 22.868 estabelecimentos classificados como desatualizados, o que representa 20,72% dos 110.362 estabelecimentos do recorte. Como o projeto não identificou um critério oficial de validade cadastral, a classificação baseou-se em um critério metodológico próprio: foi considerado desatualizado o registro cuja última atualização informada é anterior a 24 meses em relação à competência do arquivo.
+
+- **Evidência:** A consulta `sql/08-atualidade-cadastral.sql` avaliou os campos `ano_atualizacao` e `mes_atualizacao` da tabela `estabelecimento`, tendo como referência a competência do próprio arquivo (2025-11), e não a data de execução da consulta. A janela de 24 meses fixou o corte em 2023-11, mês incluído como atualizado. O cálculo retornou 87.494 registros atualizados (79,28%), 22.868 desatualizados (20,72%) e nenhum registro sem data de atualização informada. O resultado está registrado também em `docs/log-de-queries.md`. A janela de 24 meses é uma convenção analítica adotada para o diagnóstico e não foi confirmada como norma oficial de validade cadastral do DATASUS.
+
+- **Dimensão:** Atualidade.
+
+- **Onde ocorre no processo:** O indicador foi medido sobre a tabela `estabelecimento` da base `br_ms_cnes`. Não é possível afirmar em qual etapa da origem a defasagem se acumula. A consulta também identificou uma anomalia de cronologia: 2.971 estabelecimentos (2,7%) apresentam data de atualização (2025-12) posterior à própria competência do arquivo (2025-11). Pela regra do corte (igual ou posterior a 2023-11), esses registros foram incluídos no grupo de atualizados e não afetam os 20,72% calculados para a desatualização. A anomalia levantou a hipótese de uma defasagem no fluxo de consolidação ou publicação pela fonte, mas essa causa não pôde ser confirmada pelos dados.
+
+- **Causa provável (hipótese):** A ausência de atualização por mais de 24 meses não comprova, isoladamente, que o dado esteja incorreto. As hipóteses principais são: (1) ausência real de alterações físicas, assistenciais ou administrativas que motivassem atualização no período; (2) falha na rotina de manutenção cadastral pelos responsáveis locais; ou (3) encerramento de atividades sem a devida baixa no sistema. O diagnóstico comprova a ausência de atualização registrada, mas não a sua causa operacional.
+
+- **Alcance:** O achado abrange 22.868 estabelecimentos do recorte de São Paulo, competência novembro de 2025, segundo o critério de 24 meses. O número depende diretamente da janela metodológica escolhida e não deve ser extrapolado para outras competências ou Unidades da Federação.
+
+- **Prioridade:** Alta. A classificação justifica-se pela magnitude do achado: mais de um quinto do recorte não registra atualização nos 24 meses anteriores à competência analisada. Esse volume gera incerteza sobre a atualidade das informações de uma parcela expressiva do cadastro, o que justifica a atenção no documento e o acompanhamento do indicador, independentemente dos efeitos que essa defasagem possa ou não causar no planejamento ou nos serviços de saúde.
 
 #### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
 
