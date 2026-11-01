@@ -29,18 +29,17 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 
 - **Tipo:** INT64
 - **O que representa:** competência (ano/mês) em que a habilitação do estabelecimento deixa de valer. Usado na regra de consistência "habilitação vencida ainda registrada" (Fase 3).
-- **Padrão de ausência/indeterminação identificado:** o campo não usa `NULL` para representar "sem prazo de validade definido". Em vez disso, usa um valor sentinela: `ano_competencia_final = 9999` combinado com `mes_competencia_final = 99`.
-- **Prevalência do sentinela (SP, nov/2025):** 6.072 de 6.764 habilitações (89,76%) usam esse sentinela — a grande maioria das habilitações não tem prazo definido.
+- **Padrão de ausência/indeterminação identificado:** o campo não usa `NULL` para representar "sem prazo de validade definido". Em vez disso, usa um valor sentinela: `ano_competencia_final = 9999` (o mês associado não é fixo: `99` em 6.068 registros e `9` em 4, SP, nov/2025; ver etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`).
+- **Prevalência do sentinela (SP, nov/2025):** 6.072 de 6.764 habilitações (89,77%) usam esse sentinela — a grande maioria das habilitações não tem prazo definido.
 - **Categorias observadas no campo, entre os registros com data definida (692 registros):**
-  1. **Sentinela `9999/99`** — indeterminado, convenção sistemática e consistente.
-  2. **Prazos longos plausíveis** — datas futuras distantes mas plausíveis (majoritariamente entre 2029 e 2099), refletindo habilitações de longa duração. Contagens relevantes em cada competência (ex.: 2029-10 com 20 registros), o que indica padrão real, não ruído.
-  3. **Outlier isolado** — um único registro com `2999/12`. Aparece uma única vez; não é um segundo sentinela sistemático. **Os dados não permitem determinar a causa** (não documentar como erro de digitação ou qualquer outra causa específica sem confirmação da fonte).
+  1. **Prazos longos plausíveis** — datas futuras distantes mas plausíveis (majoritariamente entre 2029 e 2099), refletindo habilitações de longa duração. Contagens relevantes em cada competência (ex.: 2029-10 com 20 registros), o que indica padrão real, não ruído.
+  2. **Outlier isolado** — um único registro com `2999/12`. Aparece uma única vez; não é um segundo sentinela sistemático. **Os dados não permitem determinar a causa** (não documentar como erro de digitação ou qualquer outra causa específica sem confirmação da fonte).
 - **Impacto para a regra de consistência:** a regra "habilitação vencida" precisa excluir explicitamente o sentinela (`ano_competencia_final != 9999`) antes de comparar datas — caso contrário, a comparação `sentinela < competência_de_referência` nunca é verdadeira (9999 é sempre maior), mascarando o resultado real da regra como "zero vencidas" mesmo antes de qualquer habilitação real ser avaliada.
 - **Resultado da regra aplicada corretamente (SP, nov/2025):**
 
   | Total habilitações | Indeterminadas (sentinela) | Com data definida | Vencidas |
   |---|---|---|---|
-  | 6.764 | 6.072 (89,76%) | 692 | 0 |
+  | 6.764 | 6.072 (89,77%) | 692 | 0 |
 
   A competência final mínima entre os registros com data definida é 2025-11 — ou seja, a habilitação mais próxima de vencer está vencendo na própria competência de referência, não antes dela. O resultado de zero vencidas é genuíno para este recorte, não um artefato de cálculo.
 - **Query de referência:** ver `sql/04-consistencia-habilitacao-vencida.sql`

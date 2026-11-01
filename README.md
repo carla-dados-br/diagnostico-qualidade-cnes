@@ -441,16 +441,15 @@ Esse achado mostra que a forma física de representação do dado precisa ser in
 
 ### Valor sentinela em habilitações
 
-Na tabela `habilitacao`, a combinação:
+Na tabela `habilitacao`, o valor:
 
 ```text
 ano_competencia_final = 9999
-mes_competencia_final = 99
 ```
 
-é utilizada para representar prazo final indeterminado.
+é utilizado para representar prazo final indeterminado. O mês associado não é fixo: `99` em 6.068 registros e `9` em 4 (ver etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`).
 
-No recorte, **6.072 de 6.764 habilitações (89,76%)** utilizam esse padrão.
+No recorte, **6.072 de 6.764 habilitações (89,77%)** utilizam esse padrão.
 
 A regra de habilitação vencida precisou excluir explicitamente o sentinela antes da comparação temporal. Após o tratamento correto, **0 habilitações vencidas** foram encontradas no recorte.
 

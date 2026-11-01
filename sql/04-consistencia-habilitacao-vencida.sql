@@ -125,3 +125,26 @@ WHERE sigla_uf = 'SP'
 GROUP BY ano_competencia_final, mes_competencia_final
 ORDER BY ano_competencia_final DESC, mes_competencia_final DESC
 LIMIT 15;
+
+
+-- -----------------------------------------------------------------------
+-- 7. Verificacao - o par 9999/99 e fixo? (executado em 31/10/2026)
+-- Motivacao: a etapa 3 calculou MIN/MAX de cada coluna separadamente,
+-- o que nao prova que 9999 e 99 aparecem juntos no mesmo registro.
+-- Resultado: 9999/99 = 6068; 9999/9 = 4; nenhum outro ano com mes 99.
+-- Conclusao: o ano 9999 identifica o sentinela (6068 + 4 = 6072);
+-- o mes associado nao e fixo. A contagem da etapa 4 (6072) se mantem.
+-- Correcao: 6072/6764 = 89.77% (arredondado a 2 casas). A etapa 4
+-- registrou 89.76%; o par "9999/99" da etapa 3 vale para 6068 registros.
+-- -----------------------------------------------------------------------
+SELECT
+  ano_competencia_final,
+  mes_competencia_final,
+  COUNT(*) AS total
+FROM `basedosdados.br_ms_cnes.habilitacao`
+WHERE sigla_uf = 'SP'
+  AND ano = 2025
+  AND mes = 11
+  AND (ano_competencia_final = 9999 OR mes_competencia_final = 99)
+GROUP BY ano_competencia_final, mes_competencia_final
+ORDER BY ano_competencia_final DESC, mes_competencia_final DESC;

@@ -72,7 +72,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A5 | Cadastros classificados como desatualizados | 22.868 de 110.362 (20,72%) | Atualidade | Fato segundo critério do projeto | **Alta** |
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
-| A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,76%); 0 vencidas após tratamento | Consistência | Fato | **Média** |
+| A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Consistência | Fato | **Média** |
 | A3 | Divergência entre quantidades de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 (50,1%); 7.312 leitos; 547 estabelecimentos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A8 | Código 16 sem significado semântico confirmado | 5 estabelecimentos; 37 de 38 códigos reconciliados | Consistência | Fato; interpretação é hipótese | **Média** |

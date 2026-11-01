@@ -262,6 +262,8 @@ WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11;
 ```
 **Resultado:** ano de 2025 a 9999, mês de 1 a 99 — **sentinela 9999/99 identificado**.
 
+> **Nota de correção (31/10/2026):** MIN/MAX calculados por coluna não mostram quais valores aparecem juntos no mesmo registro. A verificação por par (etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`) encontrou 9999/99 em 6.068 registros e 9999/9 em 4; o sentinela é identificado pelo ano 9999.
+
 **Query 4 — regra corrigida:**
 ```sql
 SELECT
@@ -272,6 +274,8 @@ FROM `basedosdados.br_ms_cnes.habilitacao`
 WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11;
 ```
 **Resultado:** 6.764 total, 6.072 indeterminadas (89,76%), 692 com data definida, 0 vencidas.
+
+> **Nota de correção (31/10/2026):** recálculo 6.072/6.764 = 89,77% (arredondado a 2 casas); valor original registrado acima: 89,76%. Registro da correção: etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`.
 
 **Query 5 — confirmação:**
 ```sql

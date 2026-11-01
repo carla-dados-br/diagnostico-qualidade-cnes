@@ -26,7 +26,7 @@ Por fim, devido à limitação metodológica de operar sobre o recorte de uma ú
 - **Responsável pela execução:** área de gestão do dado cadastral.
 - **Responsável pela validação:** responsável pela qualidade dos dados.
 - **Ação em caso de violação:** gerar alerta para a área de gestão cadastral, informando o campo afetado, a quantidade de registros com valores sentinela, a competência da carga e os valores encontrados.
-- **Achados que originaram esta regra:** `id_regiao_saude` (54,70% dos registros com `"nan"` no lugar de valor ausente); `ano_competencia_final` (89,76% usando o sentinela 9999/99 para "sem prazo definido").
+- **Achados que originaram esta regra:** `id_regiao_saude` (54,70% dos registros com `"nan"` no lugar de valor ausente); `ano_competencia_final` (89,77% usando o sentinela de ano 9999 para "sem prazo definido").
 - **Indicador de monitoramento:** percentual de ocorrência de sentinelas, estratificado por tabela e por campo monitorado (não um percentual global — denominadores muito diferentes entre tabelas distorceriam a leitura).
 
 ---

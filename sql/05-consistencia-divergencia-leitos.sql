@@ -23,7 +23,7 @@ LIMIT 10;
 
 -- -----------------------------------------------------------------------
 -- 2. Agregacao previa de `habilitacao` - mesma logica
--- Nota: ano_competencia_final/mes_competencia_final (sentinela 9999/99,
+-- Nota: ano_competencia_final/mes_competencia_final (sentinela pelo ano 9999,
 -- ver achado anterior) nao interfere aqui - quantidade_leitos e campo
 -- independente da data de validade da habilitacao.
 -- -----------------------------------------------------------------------
