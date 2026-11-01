@@ -72,7 +72,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A5 | Cadastros classificados como desatualizados | 22.868 de 110.362 (20,72%) | Atualidade | Fato segundo critério do projeto | **Alta** |
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
-| A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Consistência | Fato | **Média** |
+| A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
 | A3 | Divergência entre quantidades de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 (50,1%); 7.312 leitos; 547 estabelecimentos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A8 | Código 16 sem significado semântico confirmado | 5 estabelecimentos; 37 de 38 códigos reconciliados | Consistência | Fato; interpretação é hipótese | **Média** |
@@ -122,6 +122,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 - **Alcance:** O achado abrange de 33.368 a 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` no recorte de São Paulo, competência novembro de 2025. A validação matemática não comprova existência cadastral, titularidade, situação cadastral nem tipo fiscal efetivo dos documentos. O resultado está restrito ao recorte analisado e não deve ser extrapolado para outras competências ou Unidades da Federação.
 
 - **Prioridade:** Alta. A classificação justifica-se pelo volume de valores compatíveis com CPF, cerca de um terço dos valores preenchidos, em uma base de acesso público, o que representa um risco potencial de presença de dados pessoais. Esse risco justifica a atenção no documento e o cuidado com o campo em todas as etapas que o utilizem, independentemente da confirmação de que os valores correspondam, de fato, a documentos de pessoas físicas.
+
+#### A2 — Valor sentinela nas habilitações
+
+- **Achado:** O campo de competência final (`ano_competencia_final` / `mes_competencia_final`, tabela `habilitacao`) não utiliza um valor ausente (`NULL`) para representar habilitações sem prazo definido, mas sim um valor sentinela que não corresponde a um prazo real. O marcador consistente para esse sentinela é o ano `9999`, presente em 6.072 das 6.764 habilitações (89,77%). O limite do padrão é que o mês associado não é fixo: o ano `9999` aparece combinado com o mês `99` em 6.068 registros e com o mês `9` em 4 ocorrências. Após o tratamento desse marcador, o resultado foi de zero habilitações vencidas.
+
+- **Evidência:** O perfilamento está registrado em `sql/04-consistencia-habilitacao-vencida.sql` e na seção "Habilitação vencida ainda registrada — consistência" do `docs/log-de-queries.md`. As etapas 1 a 6 não possuem data de execução registrada. A etapa 4 aplicou a regra com exclusão do sentinela e forneceu as contagens principais: 6.072 registros com ano `9999` e 692 com data definida. A etapa 5 confirmou que a competência final mínima é 202511, comprovando que o resultado de zero vencidas (obtido na etapa 4) é genuíno. A etapa 7 (executada em 31/10/2026) verificou que o mês `99` só ocorre associado ao ano `9999`, mas que o mês associado ao ano `9999` varia entre `99` e `9`.
+
+- **Dimensão:** Completude. O achado surgiu na construção de uma regra de consistência, mas descreve uma ausência mascarada, e não uma contradição entre campos. O uso do ano `9999` oculta o fato de que a habilitação não possui um prazo de validade definido, da mesma forma que o `"nan"` atua na ausência de região de saúde (achado A1). Se aceito de forma bruta, o sentinela inflaria falsamente a completude do campo com informações que não representam datas reais.
+
+- **Onde ocorre no processo:** O padrão foi identificado na Fase 3 (Indicadores e regras de consistência). O tratamento exigiu a exclusão explícita do ano `9999` antes de calcular a regra de habilitação vencida. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa específica.
+
+- **Causa provável (hipótese):** O registro de um ano futuro extremado (`9999`) sugere o uso de uma convenção sistêmica pela origem para designar habilitações de prazo indeterminado. Essa interpretação foi deduzida pelo comportamento dos dados, sem confirmação na documentação oficial da fonte. A hipótese de convenção sistemática não explica, porém, por que 4 dos registros apresentam o mês `9`.
+
+- **Alcance:** O sentinela afeta 6.072 (89,77%) das 6.764 habilitações no recorte de São Paulo (competência novembro/2025). O resultado de zero vencidas foi medido sobre o universo de 692 registros com data definida. O diagnóstico é estrito a este recorte e não deve ser extrapolado.
+
+- **Prioridade:** Média. Diferente do A1, em que o `"nan"` mascarava a ausência de uma informação estrutural para o planejamento (a região de saúde), a ausência de prazo de validade em uma habilitação pode refletir uma situação cadastral legítima, como habilitações sem prazo de vencimento, apenas registrada de forma inadequada, e não necessariamente uma falha na coleta do dado. Além disso, diferente do A10, não há risco de privacidade. O tratamento (isolar o sentinela) não bloqueia o projeto; ele exige manter a exclusão nos cálculos e o monitoramento previsto na Regra 1 de `docs/framework-governanca.md`, para evitar que o sentinela distorça cálculos temporais e dilua o percentual de vencidas.
 
 #### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
 
