@@ -471,7 +471,7 @@ O padrão é sistemático e compatível com a hipótese de que os campos possam 
 
 Foram avaliadas **1.103 combinações estabelecimento + categoria de UTI**. Dessas, **553 (50,1%)** não apresentaram habilitação correspondente segundo o de-para utilizado no projeto.
 
-Essas combinações representam **7.312 leitos** em **547 estabelecimentos**.
+Essas combinações somam **7.312 leitos**. As 1.103 combinações avaliadas pertencem a **547 estabelecimentos** com algum tipo de UTI; o número de estabelecimentos com pelo menos uma combinação sem habilitação não foi calculado.
 
 O de-para entre categorias de UTI e habilitações utilizado pelo projeto foi construído como hipótese de correspondência e testado empiricamente no recorte analisado; ele não equivale, por si só, a uma validação terminológica oficial da relação entre os dois domínios. Assim, as 553 combinações sem correspondência descrevem o resultado da verificação segundo o de-para adotado e não comprovam, isoladamente, irregularidade regulatória ou erro cadastral.
 
