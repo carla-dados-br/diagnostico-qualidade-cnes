@@ -237,3 +237,29 @@ FROM leitos_uti AS l
 LEFT JOIN habilitacoes_uti AS h
   ON l.id_estabelecimento_cnes = h.id_estabelecimento_cnes
   AND l.categoria_uti = h.categoria_uti;
+
+
+-- -----------------------------------------------------------------------
+-- 9. Verificacao - tipo_leito nos codigos de UTI
+-- Executada em 01/11/2026 (Fase 7, revisao do achado A4).
+-- Pergunta: a etapa 8 agrupa so por tipo_especialidade_leito, mas o
+-- log ("Codigos de especialidade e tipo de leito (UTI)") registra a
+-- decisao de agregar por tipo_especialidade_leito E tipo_leito.
+-- Os codigos de UTI aparecem com mais de um tipo_leito?
+-- Resultado: nao. Cada um dos 12 codigos aparece com um unico
+-- tipo_leito (3); total de 1.103 linhas (igual ao total de combinacoes
+-- da etapa 8) e 16.301 leitos de UTI no recorte. Agrupar so pela
+-- especialidade nao altera o resultado da etapa 8 neste recorte.
+-- -----------------------------------------------------------------------
+SELECT
+  tipo_especialidade_leito,
+  tipo_leito,
+  COUNT(*) AS linhas,
+  SUM(quantidade_total) AS leitos
+FROM `basedosdados.br_ms_cnes.leito`
+WHERE sigla_uf = 'SP'
+  AND ano = 2025
+  AND mes = 11
+  AND tipo_especialidade_leito IN ('74','75','76','77','78','79','80','81','82','83','85','86')
+GROUP BY tipo_especialidade_leito, tipo_leito
+ORDER BY tipo_especialidade_leito, tipo_leito;

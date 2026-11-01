@@ -402,6 +402,18 @@ FROM leitos_uti l LEFT JOIN habilitacoes_uti h
 ```
 **Resultado:** 1.103 combinações avaliadas, 553 sem habilitação (50,1%), 7.312 leitos afetados.
 
+**Query de verificação — `tipo_leito` nos códigos de UTI (executada em 01/11/2026):** a query final agrupa só por `tipo_especialidade_leito`, mas a decisão técnica da seção "Códigos de especialidade e tipo de leito (UTI)" exige também `tipo_leito`. Os códigos de UTI aparecem com mais de um `tipo_leito`?
+
+```sql
+SELECT tipo_especialidade_leito, tipo_leito, COUNT(*) AS linhas, SUM(quantidade_total) AS leitos
+FROM `basedosdados.br_ms_cnes.leito`
+WHERE sigla_uf='SP' AND ano=2025 AND mes=11
+  AND tipo_especialidade_leito IN ('74','75','76','77','78','79','80','81','82','83','85','86')
+GROUP BY tipo_especialidade_leito, tipo_leito
+ORDER BY tipo_especialidade_leito, tipo_leito;
+```
+**Resultado:** não. Cada um dos 12 códigos aparece com um único `tipo_leito` (3); 1.103 linhas (igual ao total de combinações da query final) e 16.301 leitos de UTI. A decisão técnica não altera o resultado desta regra no recorte.
+
 ---
 
 ## `tipo_unidade` — completude
