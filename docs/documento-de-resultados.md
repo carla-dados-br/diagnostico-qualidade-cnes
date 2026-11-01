@@ -139,6 +139,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Média. Diferente do A1, em que o `"nan"` mascarava a ausência de uma informação estrutural para o planejamento (a região de saúde), a ausência de prazo de validade em uma habilitação pode refletir uma situação cadastral legítima, como habilitações sem prazo de vencimento, apenas registrada de forma inadequada, e não necessariamente uma falha na coleta do dado. Além disso, diferente do A10, não há risco de privacidade. O tratamento (isolar o sentinela) não bloqueia o projeto; ele exige manter a exclusão nos cálculos e o monitoramento previsto na Regra 1 de `docs/framework-governanca.md`, para evitar que o sentinela distorça cálculos temporais e dilua o percentual de vencidas.
 
+#### A3 — Divergência entre quantidade de leitos e habilitações
+
+- **Achado:** A quantidade total de leitos informada é sistematicamente maior do que a quantidade de leitos habilitados para o mesmo estabelecimento. A divergência afeta 100% dos 768 estabelecimentos avaliados e, em todos os casos, `leito` > `habilitacao`. As diferenças variam de 1 a 1.309 leitos por unidade, com uma média de 97,88.
+
+- **Evidência:** O diagnóstico está documentado na seção "Divergência de quantidade de leitos — consistência" do `docs/log-de-queries.md` (linha 314) e operacionalizado em `sql/05-consistencia-divergencia-leitos.sql`. A etapa 4 da query (linhas 82–118) consolidou o volume (768 de 768 estabelecimentos divergentes). A etapa 5 (linhas 121–157) provou a direção positiva constante e calculou os valores de mínimo (1), máximo (1.309) e a média (97,88) — sendo que a média foi calculada exclusivamente na `sql/05` (linha 152), não estando presente na query resumida do log. Nenhum dos dois arquivos possui data de execução registrada para essas etapas.
+
+- **Dimensão:** Consistência. O achado mantém essa classificação porque nasceu da aplicação de uma regra de consistência cruzada entre fontes. No entanto, se a hipótese de que os campos medem conceitos diferentes se confirmar, não existirá uma inconsistência real nos dados, mas sim uma falta de definição documentada sobre as regras de negócio de cada tabela.
+
+- **Onde ocorre no processo:** A divergência materializa-se na relação entre o volume de leitos declarados e a quantidade de leitos registrada nas habilitações. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa de preenchimento específica.
+
+- **Causa provável (hipótese):** O fato de a divergência ser sistemática, direcional e atingir todos os casos observados é compatível com a hipótese de que os campos medem conceitos diferentes (por exemplo, capacidade física instalada vs. cota de financiamento). Contudo, o mesmo padrão também poderia refletir um preenchimento sistematicamente incompleto do campo de habilitações. A interpretação de conceitos diferentes é uma dedução do comportamento analítico e não foi verificada junto à fonte.
+
+- **Alcance:** O achado incide sobre 768 estabelecimentos. Este número não representa a totalidade das unidades de saúde de São Paulo em nov/2025, mas exclusivamente o subconjunto de estabelecimentos que registraram presença simultânea nas duas tabelas (`INNER JOIN`).
+
+- **Prioridade:** Média. Assim como o A2, esse achado expõe um padrão estrutural que, se interpretado diretamente como erro, poluiria os indicadores de qualidade do projeto com possíveis falsos positivos de inconsistência. A diferença fundamental é que, no A2, os dados permitiram um tratamento técnico imediato (a exclusão do sentinela 9999) para isolar o problema. No A3, não há filtro ou tratamento matemático aplicável que corrija a divergência antes que o significado real dos campos seja esclarecido junto à fonte.
+
 #### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
 
 - **Achado:** O campo `cnpj_mantenedora` apresenta 98.098 registros vazios, correspondentes a 88,89% dos 110.362 estabelecimentos analisados. Entretanto, o vazio bruto não representa, por si só, uma falha de completude, pois o preenchimento do campo depende da situação cadastral do estabelecimento. A análise identificou que os registros vazios correspondem aos estabelecimentos classificados como `tipo_grau_dependencia = 1` (Individual), enquanto os registros classificados como `tipo_grau_dependencia = 3` (Mantida) apresentam o CNPJ da mantenedora preenchido.
