@@ -296,6 +296,17 @@ ORDER BY ano_competencia_final DESC, mes_competencia_final DESC LIMIT 15;
 ```
 **Resultado:** `2999/12` aparece 1 única vez — outlier isolado, não um segundo sentinela. Causa não determinável pelos dados (não documentada como erro de digitação sem confirmação da fonte).
 
+**Query 7 — verificação do par ano/mês (executada em 31/10/2026):**
+```sql
+SELECT ano_competencia_final, mes_competencia_final, COUNT(*) AS total
+FROM `basedosdados.br_ms_cnes.habilitacao`
+WHERE sigla_uf='SP' AND ano=2025 AND mes=11
+  AND (ano_competencia_final = 9999 OR mes_competencia_final = 99)
+GROUP BY ano_competencia_final, mes_competencia_final
+ORDER BY ano_competencia_final DESC, mes_competencia_final DESC;
+```
+**Resultado:** `9999/99` em 6.068 registros e `9999/9` em 4; nenhum outro ano com mês 99. O ano 9999 identifica o sentinela (6.068 + 4 = 6.072); o mês associado não é fixo. A contagem da Query 4 se mantém.
+
 **Decisão:** regra final exclui sentinela 9999 antes de comparar datas.
 
 ---
