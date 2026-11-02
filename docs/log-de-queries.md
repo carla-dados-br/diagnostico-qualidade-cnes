@@ -333,7 +333,7 @@ SELECT COUNT(*) AS total_avaliaveis,
 FROM leitos_agregados l JOIN habilitacoes_agregadas h
   ON l.id_estabelecimento_cnes = h.id_estabelecimento_cnes;
 ```
-**Resultado:** 768 avaliáveis, 768 com divergência (100%).
+**Resultado:** 768 avaliáveis, 768 com divergência (100%). **[Nota de verificação, 02/11/2026:** a query soma habilitações de todos os tipos; 464 dos 768 (60,4%) têm total habilitado igual a 0 porque só possuem habilitações sem leitos. Restrita às habilitações com leitos, a comparação tem 304 estabelecimentos; com os leitos SUS, 299 têm mais leitos que habilitados, 4 têm o mesmo número e 1 tem menos (`sql/05`, etapas 6 a 8).**]**
 
 **Query de investigação da direção:**
 ```sql
@@ -345,7 +345,7 @@ FROM leitos_agregados l JOIN habilitacoes_agregadas h
 ```
 **Resultado:** diferença de 1 a 1.309, média 97,88. Em 768 de 768 casos, `leito` ≥ `habilitacao`, nunca o contrário.
 
-**Decisão:** divergência sistemática e direcional, não erro aleatório. Hipótese (não confirmada): os campos medem conceitos diferentes.
+**Decisão:** divergência sistemática e direcional, não erro aleatório. Hipótese (não confirmada): os campos medem conceitos diferentes. **[Nota de verificação, 02/11/2026:** a direção decorre em grande parte da construção da regra (nota acima); a leitura vigente é a descritiva registrada no A3 do documento de resultados.**]**
 
 ---
 
