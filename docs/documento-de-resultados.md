@@ -24,7 +24,7 @@
 1. **Região de saúde ausente** em 60.366 estabelecimentos (54,70%). A ausência aparece como o texto `"nan"`, que verificações comuns de campo vazio não detectam, e varia de 0% a 99,18% entre municípios (A1, A6).
 2. **Cadastros desatualizados:** 22.868 estabelecimentos (20,72%) sem atualização há mais de 24 meses, segundo critério do projeto (A5).
 3. **Possível dado pessoal em base pública:** até 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` são compatíveis com CPF (A10).
-4. **Leitos e habilitações não se correspondem:** em 768 de 768 estabelecimentos, o total de leitos supera o das habilitações; 553 de 1.103 combinações de UTI (50,1%) não têm habilitação correspondente segundo o de-para do projeto. A interpretação depende de confirmação junto à fonte (A3, A4).
+4. **Leitos de UTI sem habilitação correspondente:** 553 de 1.103 combinações de UTI (50,1%) não têm habilitação correspondente segundo o de-para do projeto; a interpretação depende de confirmação junto à fonte (A4). Na comparação agregada entre leitos e habilitações, restrita às habilitações que têm leitos, só 1 de 304 estabelecimentos tem mais leitos habilitados do que leitos SUS (A3).
 5. **Prazo final não informado:** 6.072 de 6.764 habilitações (89,77%) usam o ano `9999` no lugar de uma data (A2).
 
 **Impacto.** O impacto financeiro, clínico ou regulatório dos achados não foi medido neste projeto.
@@ -98,7 +98,7 @@ As medições foram feitas com consultas em SQL sobre a base disponibilizada no 
 
 Os resultados de completude e unicidade foram calculados em SQL e refeitos de forma independente em Python. A conferência identificou cinco registros com texto em branco no campo região de saúde que não estavam sendo contabilizados pela consulta SQL. Isso levou à correção da métrica de 54,69% para 54,70%; após a correção, os dois caminhos passaram a apresentar o mesmo resultado. A alteração foi registrada na documentação do projeto.
 
-Os resultados de consistência e atualidade não passaram por essa reprodução independente em Python. Além disso, resultados extremos, como os 100% de divergência encontrados na comparação entre leitos e habilitações, foram investigados antes de serem aceitos como achados, para verificar se representavam um erro confirmado ou uma situação que exigia análise adicional. O resultado dessa investigação é apresentado na seção 5, junto aos demais resultados do diagnóstico.
+Os resultados de consistência e atualidade não passaram por essa reprodução independente em Python. Além disso, resultados extremos foram investigados antes de serem aceitos como achados. No caso dos 100% de divergência entre leitos e habilitações, a primeira investigação não identificou que a regra somava habilitações sem leitos; isso foi detectado na auditoria de 02/11/2026, e o resultado corrigido está no A3. Os resultados dessas investigações são apresentados na seção 5, junto aos demais resultados do diagnóstico.
 
 As consultas, os critérios técnicos de cada medição e o registro das decisões estão listados na seção 9 (Anexos).
 
@@ -115,9 +115,9 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
 | A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
-| A3 | Divergência entre quantidade de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | Leito de UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 combinações (50,1%); 7.312 leitos; universo de 547 estabelecimentos com UTI | Consistência | Fato; interpretação é hipótese | **Média** |
 | A8 | Código 16 de `tipo_unidade` sem significado semântico confirmado | 5 de 110.362 estabelecimentos; 37 de 38 códigos presentes no ValueSet FHIR e na tabela `dicionario` | Consistência | Fato; interpretação é hipótese | **Média** |
+| A3 | Comparação agregada entre leitos e habilitações | 304 estabelecimentos com habilitação de leitos; 1 com mais leitos habilitados do que leitos SUS | Consistência | Fato; interpretação é hipótese | **Baixa** |
 | A7 | Ausência de duplicidade do identificador CNES | 0 duplicados em 110.362 registros | Unicidade | Fato | **Baixa** |
 | A9 | Completude do CNPJ da mantenedora depende da aplicabilidade | 88,89% vazio bruto; 100% preenchido entre 12.264 mantidos | Completude | Fato | **Baixa** |
 
@@ -187,22 +187,6 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Média. Diferente do A1, em que o `"nan"` mascarava a ausência de uma informação estrutural para o planejamento (a região de saúde), a ausência de prazo de validade em uma habilitação pode refletir uma situação cadastral legítima, como habilitações sem prazo de vencimento, apenas registrada de forma inadequada, e não necessariamente uma falha na coleta do dado. Além disso, diferente do A10, não há risco de privacidade. O tratamento (isolar o sentinela) não bloqueia o projeto; ele exige manter a exclusão nos cálculos e o monitoramento previsto na Regra 1 de `docs/framework-governanca.md`, para evitar que o sentinela distorça cálculos temporais e dilua o percentual de vencidas.
 
-#### A3 — Divergência entre quantidade de leitos e habilitações
-
-- **Achado:** A quantidade total de leitos informada é sistematicamente maior do que a quantidade de leitos habilitados para o mesmo estabelecimento. A divergência afeta 100% dos 768 estabelecimentos avaliados e, em todos os casos, `leito` > `habilitacao`. As diferenças variam de 1 a 1.309 leitos por unidade, com uma média de 97,88.
-
-- **Evidência:** O diagnóstico está documentado na seção "Divergência de quantidade de leitos — consistência" do `docs/log-de-queries.md` (linha 314) e operacionalizado em `sql/05-consistencia-divergencia-leitos.sql`. A etapa 4 da query (linhas 82–118) consolidou o volume (768 de 768 estabelecimentos divergentes). A etapa 5 (linhas 121–157) provou a direção positiva constante e calculou os valores de mínimo (1), máximo (1.309) e a média (97,88) — sendo que a média foi calculada exclusivamente na `sql/05` (linha 152), não estando presente na query resumida do log. Nenhum dos dois arquivos possui data de execução registrada para essas etapas.
-
-- **Dimensão:** Consistência. O achado mantém essa classificação porque nasceu da aplicação de uma regra de consistência cruzada entre fontes. No entanto, se a hipótese de que os campos medem conceitos diferentes se confirmar, não existirá uma inconsistência real nos dados, mas sim uma falta de definição documentada sobre as regras de negócio de cada tabela.
-
-- **Onde ocorre no processo:** A divergência materializa-se na relação entre o volume de leitos declarados e a quantidade de leitos registrada nas habilitações. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa de preenchimento específica.
-
-- **Causa provável (hipótese):** O fato de a divergência ser sistemática, direcional e atingir todos os casos observados é compatível com a hipótese de que os campos medem conceitos diferentes (por exemplo, capacidade física instalada vs. cota de financiamento). Contudo, o mesmo padrão também poderia refletir um preenchimento sistematicamente incompleto do campo de habilitações. A interpretação de conceitos diferentes é uma dedução do comportamento analítico e não foi verificada junto à fonte.
-
-- **Alcance:** O achado incide sobre 768 estabelecimentos. Este número não representa a totalidade das unidades de saúde de São Paulo em nov/2025, mas exclusivamente o subconjunto de estabelecimentos que registraram presença simultânea nas duas tabelas (`INNER JOIN`).
-
-- **Prioridade:** Média. Assim como o A2, esse achado expõe um padrão estrutural que, se interpretado diretamente como erro, poluiria os indicadores de qualidade do projeto com possíveis falsos positivos de inconsistência. A diferença fundamental é que, no A2, os dados permitiram um tratamento técnico imediato (a exclusão do sentinela 9999) para isolar o problema. No A3, não há filtro ou tratamento matemático aplicável que corrija a divergência antes que o significado real dos campos seja esclarecido junto à fonte.
-
 #### A4 — Leito de UTI sem habilitação correspondente segundo o de-para
 
 - **Achado:** Das 1.103 combinações estabelecimento + categoria de UTI do recorte, 553 (50,1%) não apresentam habilitação de UTI correspondente segundo o de-para construído pelo projeto. Essas combinações somam 7.312 dos 16.301 leitos de UTI do recorte (44,86%). As 1.103 combinações pertencem a 547 estabelecimentos com algum tipo de UTI cadastrado; o número de estabelecimentos com pelo menos uma combinação sem habilitação não foi calculado.
@@ -217,7 +201,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Alcance:** 553 combinações e 7.312 leitos (44,86% dos leitos de UTI do recorte), dentro de um universo de 547 estabelecimentos com UTI, em São Paulo (competência novembro/2025). Os códigos de habilitação 2612, 2613, 2699, 8217 e 8218 não ocorrem no recorte (`sql/06`, linhas 102–106); em outros recortes, o de-para precisaria ser revisto. O diagnóstico não deve ser extrapolado.
 
-- **Prioridade:** Média. Comparado ao A3, que também é Consistência com interpretação em hipótese, o A4 tem maior relevância assistencial, porque trata de leitos de terapia intensiva em nível de categoria. No entanto, a força da sua evidência é menor: o A3 compara dois campos diretamente, enquanto o A4 depende de um de-para construído pelo próprio projeto. Assim como no A3, e diferente do A2, não há tratamento técnico que resolva o achado antes de esclarecer com a fonte o significado da correspondência. A prioridade não sobe para Alta porque a força da recomendação não pode exceder a força da evidência.
+- **Prioridade:** Média. O A4 trata de leitos de terapia intensiva em nível de categoria, o que lhe dá relevância assistencial maior que a do A3, cuja comparação agregada não testa a correspondência entre leitos e habilitações. A força da sua evidência, porém, depende de um de-para construído pelo próprio projeto. Diferente do A2, não há tratamento técnico que resolva o achado antes de esclarecer com a fonte o significado da correspondência. A prioridade não sobe para Alta porque a força da recomendação não pode exceder a força da evidência.
 
 #### A8 — Código 16 de `tipo_unidade` sem significado semântico confirmado
 
@@ -233,7 +217,23 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Alcance:** No recorte, 5 de 110.362 estabelecimentos (cerca de 0,005%). A contagem equivale a estabelecimentos porque não há duplicidade de `id_estabelecimento_cnes` no recorte (A7). Fora do recorte, 43 estabelecimentos em 15 UFs na mesma competência (2025-11) e 86 em 18 UFs em 2026-02. O universo nacional de estabelecimentos não foi calculado, por isso não há percentual nacional.
 
-- **Prioridade:** Média. Em comparação com o A3 e o A4, a evidência do fato é mais forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é muito menor. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Diferente do A3, já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
+- **Prioridade:** Média. Em comparação com o A4, a evidência do fato é mais forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é muito menor. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Diferente do A4, já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
+
+#### A3 — Comparação agregada entre leitos e habilitações
+
+- **Achado:** A comparação original somava a quantidade de leitos de todas as habilitações do estabelecimento, inclusive as que não envolvem leitos, e apontava divergência em 768 de 768 estabelecimentos. Restrita às habilitações que têm leitos, a comparação abrange 304 estabelecimentos. O total de leitos cadastrados é maior que o de leitos habilitados em todos eles, o que é esperado, porque o total inclui leitos que não dependem de habilitação e leitos não SUS. Em relação aos leitos SUS, 299 estabelecimentos têm mais leitos SUS do que habilitados, 4 têm o mesmo número e 1 tem 18 leitos habilitados a mais do que leitos SUS cadastrados.
+
+- **Evidência:** `sql/05`, etapas 6 a 8, executadas em 02/11/2026, depois da auditoria do projeto. A etapa 6 mostrou que 464 dos 768 estabelecimentos da comparação original (60,4%) tinham total habilitado igual a 0, porque só possuíam habilitações sem leitos. A etapa 7 mostrou que só 18 dos 191 tipos de habilitação do recorte têm leitos (803 registros e 9.307 leitos habilitados). A etapa 8 aplicou a comparação restrita a esses tipos (critério empírico `quantidade_leitos > 0`) e produziu os números do achado; a diferença entre leitos SUS e leitos habilitados vai de −18 a 1.242, com média de 123,5. O resultado original (etapas 4 e 5, sem data de execução registrada) está preservado, com nota datada, na `sql/05` (linha 84) e no `docs/log-de-queries.md` (linha 336).
+
+- **Dimensão:** Consistência, restrita ao único caso em que há mais leitos habilitados do que leitos SUS cadastrados. A diferença no sentido oposto não é tratada como inconsistência, porque os dois campos não medem o mesmo conjunto de leitos.
+
+- **Onde ocorre no processo:** Na relação entre o cadastro de leitos e o registro das habilitações do mesmo estabelecimento. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o caso observado a uma etapa específica.
+
+- **Causa provável (hipótese):** O caso com mais leitos habilitados do que leitos SUS é compatível com defasagem entre a atualização do cadastro de leitos e a das habilitações, ou com habilitação registrada para leitos ainda não cadastrados como SUS. Os dados não distinguem essas explicações, e nenhuma foi verificada junto à fonte. O estabelecimento não foi identificado nesta verificação.
+
+- **Alcance:** 304 estabelecimentos com pelo menos uma habilitação que tem leitos, em São Paulo (competência novembro/2025), com 1 caso a investigar. O universo da comparação original (768) incluía estabelecimentos sem nenhuma habilitação com leitos e não deve ser usado.
+
+- **Prioridade:** Baixa. Como o A7 e o A9, o A3 descreve uma relação que, no recorte, não indica problema em escala: só 1 de 304 estabelecimentos fica fora do esperado. Diferente deles, há um caso a investigar. A comparação por categoria de leito, que testa de fato a correspondência entre leitos e habilitações, é feita no A4.
 
 #### A7 — Ausência de duplicidade do identificador CNES
 
@@ -347,11 +347,11 @@ Três tipos de controle são usados: **preventivo**, que impede o problema antes
 
 #### R7 — Confirmar o significado das duas quantidades de leitos antes de cruzá-las (A3)
 
-- **Ação:** verificar o significado dos campos junto à fonte antes de utilizá-los em indicadores cruzados. Até lá, registrar a divergência como investigação, e não como violação.
+- **Ação:** comparar leitos e habilitações só entre as habilitações que têm leitos e, de preferência, por categoria de leito, como no A4; investigar o estabelecimento com mais leitos habilitados do que leitos SUS; confirmar junto à fonte o significado de `habilitacao.quantidade_leitos`.
 
 - **Controle:** investigação (framework, Regra 2).
 
-- **Indicador:** percentual de estabelecimentos com divergência entre `leito.quantidade_total` e `habilitacao.quantidade_leitos`, lido como descrição e não como taxa de erro. Linha de base: 768 de 768.
+- **Indicador:** número de estabelecimentos com mais leitos habilitados do que leitos SUS, entre os que têm habilitação com leitos. Linha de base: 1 de 304.
 
 - **Responsável sugerido:** execução pela qualidade ou análise de dados; validação pela área de negócio do CNES ou da regulação.
 
@@ -420,7 +420,7 @@ Os resultados valem para o dado observado em SP, competência novembro de 2025, 
 Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as interpretações abaixo. Elas estão marcadas como hipótese nos achados e geram recomendações de investigação (seção 6).
 
 - O ano `9999` como prazo indeterminado, e o mês `9` em 4 registros (A2).
-- O significado de `leito.quantidade_total` e `habilitacao.quantidade_leitos`, e se as duas medidas deveriam coincidir (A3).
+- O significado de `habilitacao.quantidade_leitos` e sua relação com os leitos SUS cadastrados (A3).
 - O de-para entre leitos de UTI e habilitações, incluindo os códigos 2610 e 2611 tratados como sinônimos, e a premissa de que todo leito de UTI exige habilitação (A4).
 - O significado do código 16 de `tipo_unidade`. A ausência no ValueSet versão 1.1.0, ativo desde 2026-08-22, não prova ausência de significado em 2025-11 (A8).
 - A origem do texto `"nan"` na região de saúde (A1).
@@ -442,7 +442,7 @@ Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as 
 - **Comparações manuais.** A correspondência de 37 dos 38 códigos de `tipo_unidade` com a tabela `dicionario` resultou da comparação manual de duas listas (`sql/07`, etapas 1 e 2), sem consulta que faça o cruzamento.
 - **Valores fora do log.** A média de 97,88 leitos de diferença no A3 só é calculada na `sql/05` (linha 152); a consulta registrada no log não a produz.
 - **Base sujeita a atualização.** A Base dos Dados pode reprocessar tabelas publicadas. Uma nova execução das consultas pode produzir números diferentes sem que o método tenha mudado.
-- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados.
+- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados. No mesmo dia, depois da auditoria do projeto, a comparação do A3 foi verificada e restrita às habilitações que têm leitos (`sql/05`, etapas 6 a 8), com nota datada na `sql/05` (linha 84) e no log (linha 336 e decisão da mesma seção).
 
 ### 7.5 Premissas adotadas
 

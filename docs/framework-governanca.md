@@ -35,7 +35,7 @@ Por fim, devido à limitação metodológica de operar sobre o recorte de uma ú
 
 - **Base da regra:** hipótese / tarefa formal de investigação.
 
-A comparação agregada entre `leito.quantidade_total` e `habilitacao.quantidade_leitos` encontrou divergência nos 768 estabelecimentos presentes nas duas fontes, sempre com o total de leitos superior ao total informado nas habilitações. Esse padrão é um achado reproduzível, mas não demonstra, por si só, que as duas medidas devam ser iguais ou que exista erro cadastral.
+A comparação agregada entre `leito.quantidade_total` e `habilitacao.quantidade_leitos`, restrita às habilitações que têm leitos, abrange 304 estabelecimentos: o total de leitos supera o de leitos habilitados em todos, o que é esperado, e só 1 tem mais leitos habilitados do que leitos SUS. A versão original da comparação (768 de 768 com divergência) somava habilitações sem leitos e foi substituída em 02/11/2026 (`sql/05`, etapas 6 a 8). O caso restante não demonstra, por si só, erro cadastral.
 
 Em análise distinta, específica para UTI, o de-para semântico utilizado pelo projeto encontrou 553 de 1.103 combinações estabelecimento + categoria de UTI sem habilitação correspondente segundo os códigos considerados. Essas combinações concentram 7.312 leitos. O resultado também não é tratado isoladamente como irregularidade regulatória, porque sua interpretação depende da validação da relação de negócio entre os cadastros.
 
@@ -45,7 +45,7 @@ Até que essa relação seja confirmada por documentação oficial ou por regra 
 - **Responsável pela execução:** área de Qualidade de Dados / Análise de Dados, com apoio da Engenharia de Dados para reprodução das consultas.
 - **Responsável pela validação:** área de negócio responsável pelo CNES, regulação ou gestão assistencial, capaz de confirmar a relação esperada entre os conceitos comparados.
 - **Ação diante do achado:** abrir registro de investigação contendo competência, código CNES, consulta de origem e medidas observadas. Não gerar alerta de violação, conclusão de irregularidade ou inferência de risco de glosa enquanto a relação semântica entre os campos não estiver confirmada.
-- **Achados que originaram esta investigação:** no `sql/05`, 768 de 768 estabelecimentos avaliáveis apresentaram diferença entre os totais agregados, sempre com `total_leitos > total_leitos_habilitados`; no `sql/06`, 553 de 1.103 combinações estabelecimento + categoria de UTI não encontraram habilitação correspondente segundo o de-para aplicado pelo projeto, concentrando 7.312 leitos.
+- **Achados que originaram esta investigação:** no `sql/05` (etapa 8), 1 de 304 estabelecimentos com habilitação de leitos tem mais leitos habilitados do que leitos SUS; no `sql/06`, 553 de 1.103 combinações estabelecimento + categoria de UTI não encontraram habilitação correspondente segundo o de-para aplicado pelo projeto, concentrando 7.312 leitos.
 - **Indicadores de acompanhamento:** percentual de estabelecimentos com divergência entre os totais agregados e percentual de combinações estabelecimento + categoria de UTI sem correspondência segundo o de-para aplicado. Esses indicadores descrevem os achados e não representam, nesta etapa, percentuais de violação.
 - **Condição para futura automação:** somente transformar o achado em regra de alerta após confirmar, em documentação oficial ou regra de negócio validada, qual relação deve existir entre os campos, em qual granularidade e quais códigos podem ser considerados semanticamente correspondentes.
 

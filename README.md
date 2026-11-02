@@ -457,19 +457,19 @@ No recorte, **6.072 de 6.764 habilitações (89,77%)** utilizam esse padrão.
 
 A regra de habilitação vencida precisou excluir explicitamente o sentinela antes da comparação temporal. Após o tratamento correto, **0 habilitações vencidas** foram encontradas no recorte.
 
-### Divergência sistemática entre quantidades de leitos
+### Comparação entre leitos e habilitações
 
-Foram encontrados **768 estabelecimentos avaliáveis** presentes simultaneamente nas tabelas necessárias para a comparação.
+A primeira versão da regra somava a quantidade de leitos de todas as habilitações e encontrou divergência em 768 de 768 estabelecimentos. A auditoria de 02/11/2026 mostrou que 464 deles só tinham habilitações sem leitos, o que tornava a divergência inevitável.
 
-Em todos eles:
+Restrita às habilitações que têm leitos (18 dos 191 tipos), a comparação abrange **304 estabelecimentos**. Em relação aos leitos SUS:
 
 ```text
-leito.quantidade_total > habilitacao.quantidade_leitos
+299 com mais leitos SUS do que habilitados
+  4 com o mesmo número
+  1 com mais leitos habilitados do que leitos SUS
 ```
 
-Nenhum dos 768 apresentou igualdade entre as duas medidas.
-
-O padrão é sistemático e compatível com a hipótese de que os campos possam representar conceitos diferentes. Essa interpretação permanece documentada como hipótese enquanto não houver confirmação semântica suficiente da fonte.
+A diferença no primeiro sentido é esperada, porque o total de leitos inclui tipos que não dependem de habilitação. O único caso a investigar é o estabelecimento com mais leitos habilitados do que leitos SUS.
 
 ### UTI sem habilitação correspondente
 

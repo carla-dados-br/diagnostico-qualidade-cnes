@@ -49,17 +49,19 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 ## `leito.quantidade_total` × `habilitacao.quantidade_leitos`
 
 - **Tipo:** INT64 (ambos os campos)
-- **O que representam:** o mesmo fato — quantidade de leitos de um estabelecimento — registrado em duas tabelas diferentes do CNES. Redundância já identificada na verificação de estrutura (`docs/achados-verificacao-estrutura.md`).
+- **O que representam:** quantidades de leitos registradas em duas tabelas diferentes do CNES. `leito.quantidade_total` é o total de leitos cadastrados por tipo de leito; `habilitacao.quantidade_leitos` só é preenchido nas habilitações que envolvem leitos (18 dos 191 tipos no recorte; `sql/05`, etapa 7). As duas colunas não medem o mesmo conjunto de leitos.
 - **Granularidade original:** ambas as tabelas têm múltiplas linhas por estabelecimento (uma por especialidade/tipo de leito, ou por habilitação). Regra de agregação prévia aplicada antes do JOIN: `SUM()` agrupado por `id_estabelecimento_cnes`.
 - **Tipo de junção usado:** `INNER JOIN` (não `LEFT JOIN`) — a regra avalia divergência **entre estabelecimentos presentes nas duas fontes**. Estabelecimentos com leito cadastrado mas sem nenhuma habilitação correspondente (ou vice-versa) não entram nesta regra; essa é a regra seguinte, de UTI sem habilitação.
 - **Resultado da regra (SP, nov/2025):**
 
-  | Estabelecimentos avaliáveis (nas 2 tabelas) | Com divergência | % |
-  |---|---|---|
-  | 768 | 768 | 100% |
+  | Comparação | Avaliáveis | Leitos maiores | Iguais | Leitos menores |
+  |---|---|---|---|---|
+  | Original, todas as habilitações (sem data) | 768 | 768 | 0 | 0 |
+  | Restrita, total de leitos (02/11/2026) | 304 | 304 | 0 | 0 |
+  | Restrita, leitos SUS (02/11/2026) | 304 | 299 | 4 | 1 |
 
-- **Investigação do padrão:** a divergência não é aleatória. Em 768 de 768 casos, `leito.quantidade_total` é maior que `habilitacao.quantidade_leitos` — nunca o contrário. Diferença mínima de 1, máxima de 1.309, média de 97,88.
-- **Hipótese explicativa (não confirmada pelos dados; requer verificação na documentação oficial do CNES):** as duas colunas podem medir conceitos diferentes — `leito.quantidade_total` possivelmente reflete leitos físicos existentes no estabelecimento, enquanto `habilitacao.quantidade_leitos` possivelmente reflete apenas os leitos que passaram por processo formal de habilitação/autorização para financiamento do SUS, um subconjunto do total físico. O padrão observado (leito sempre ≥ habilitação) é compatível com essa hipótese, mas os dados por si só não a confirmam — nenhuma causa é declarada como fato sem verificação na fonte oficial.
+- **Investigação do padrão:** na comparação original, a diferença ia de 1 a 1.309 (média 97,88), sempre com mais leitos do que habilitações; 464 dos 768 estabelecimentos tinham total habilitado igual a 0, porque só possuíam habilitações sem leitos. Na comparação restrita aos leitos SUS, a diferença vai de −18 a 1.242 (média 123,5).
+- **Interpretação:** a diferença no sentido leitos > habilitados é esperada, porque o total de leitos inclui tipos que não dependem de habilitação e leitos não SUS. O único caso a investigar é o estabelecimento com mais leitos habilitados do que leitos SUS; a causa não foi verificada junto à fonte.
 - **Query de referência:** ver `sql/05-consistencia-divergencia-leitos.sql`
 
 ---
