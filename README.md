@@ -1,5 +1,4 @@
 <p align="center">
-  <b>Nexis — Dados em Saúde</b> · Projeto CNES<br/>
   <img src="https://img.shields.io/badge/status-conclu%C3%ADdo-ed93b1?style=flat-square" alt="Status: concluído">
   <img src="https://img.shields.io/badge/dados-p%C3%BAblicos-f4c0d1?style=flat-square&labelColor=d4537e" alt="Dados públicos">
   <img src="https://img.shields.io/badge/fases-7%20de%207%20conclu%C3%ADdas-d4537e?style=flat-square" alt="7 de 7 fases concluídas">
@@ -7,44 +6,26 @@
 
 # Diagnóstico de Qualidade e Governança de Dados em Estabelecimentos de Saúde (CNES/DATASUS)
 
-> Diagnóstico da qualidade do cadastro de **110.362 estabelecimentos de saúde de São Paulo** (CNES/DATASUS, competência novembro de 2025): completude, consistência, atualidade e unicidade, com regras de governança e mapeamento FHIR R4 validado. Projeto de portfólio de uma profissional em formação em Biomedicina e Ciência de Dados e IA.
+**Carla Rodrigues de Moraes** · Nexis — Dados em Saúde · [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
 
-> [!NOTE]
-> Projeto com **dados públicos** do CNES/DATASUS. O projeto utiliza dados de estabelecimentos. Nenhum dado de paciente é utilizado.
+> Avaliei a qualidade do cadastro oficial de **110.362 estabelecimentos de saúde de São Paulo** (dados públicos do Ministério da Saúde, sem dados de pacientes, competência novembro de 2025), propus regras de governança e preparei os dados para interoperabilidade no padrão FHIR.
 
-## Em resumo
+![Completude por campo: a região de saúde está ausente em 54,70% dos cadastros](dashboard/completude-por-campo.png)
 
-**Pergunta.** Quanto do cadastro está incompleto, inconsistente ou desatualizado, e quais controles reduziriam esses problemas?
+### Principais resultados
 
-**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco não registra alteração no cadastro há mais de 24 meses e, nos leitos de UTI do SUS, toda categoria cadastrada tem a habilitação correspondente.
+- **54,7% dos cadastros sem região de saúde.** Uma checagem comum de campo vazio mostraria 0%, porque a ausência está gravada como texto.
+- **Até 34 mil valores compatíveis com CPF** num campo público. Tratei o risco de dado pessoal (LGPD) publicando só contagens agregadas.
+- **Regra de UTI confirmada pelas portarias do Ministério da Saúde:** 0 de 550 leitos SUS sem habilitação.
+- **Revisei a própria análise em uma auditoria**, feita com apoio de IA, e corrigi 3 regras, cada correção registrada e datada.
 
-| Resultado | Número | O que significa |
-|---|---|---|
-| Região de saúde ausente, gravada como texto `"nan"` | 60.366 (54,70%) | Uma verificação com `IS NULL` mostraria 0%. A ausência varia de 0% a 99,18% entre 347 municípios. |
-| Cadastros sem alteração há mais de 24 meses | 22.868 (20,72%) | Critério do projeto. Não equivale à regra de desativação da Portaria SAS/MS nº 118/2014. |
-| Valores de `cpf_cnpj` compatíveis com CPF | até 34.318 de 98.559 | Risco de dado pessoal em base pública; o projeto publica só contagens agregadas. |
-| Habilitações com ano `9999` no lugar da data final | 6.072 de 6.764 (89,77%) | Isolado o valor sentinela, 0 habilitações vencidas. |
-| Leitos de UTI do SUS sem habilitação correspondente | 0 de 550 | O de-para do projeto coincide com as Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025. |
-| Tipo de estabelecimento sem significado oficial | código `16`, 5 estabelecimentos | Já presente na origem do DATASUS; exportado ao FHIR sem rótulo inventado. |
-| Identificadores CNES duplicados | 0 de 110.362 | O código CNES funciona como chave única no recorte. |
+### Competências aplicadas
 
-**Entregas**
+Qualidade de dados · Governança de dados · LGPD · SQL (BigQuery) · Python (pandas) · Power BI · Interoperabilidade FHIR R4 · Git
 
-- [Documento de resultados](docs/documento-de-resultados.md): resumo executivo, 10 achados com evidência, 11 recomendações e limitações.
-- [Framework de governança](docs/framework-governanca.md): 10 regras, cada uma ligada a um achado.
-- [Dashboard](dashboard/): três painéis em PDF (completude, atualidade e distribuição regional).
-- [Mapeamento CNES → FHIR R4](docs/mapeamento-cnes-fhir.md), [conversor](python/fase6-conversor-fhir.py) e [5 exemplos validados](fhir/exemplos/) (0 erros, 0 avisos).
-- [19 consultas SQL](sql/) e o [registro de cada consulta](docs/log-de-queries.md).
+### Para ler em 5 minutos
 
-**Ferramentas:** SQL (Google BigQuery) · Python (pandas) · Power BI · FHIR R4 (HL7 Validator) · Docker e PySUS · Git
-
-**O que este projeto demonstra**
-
-- Encontrar ausência que verificações comuns não veem: texto `"nan"`, texto vazio e o ano `9999`.
-- Conferir os números por dois caminhos (SQL e Python) e corrigir quando divergem.
-- Revisar as próprias regras: a auditoria de 02/11/2026 refez duas regras de consistência e uma interpretação, com registro datado no histórico.
-- Separar fato, hipótese e critério do projeto, e consultar a norma oficial antes de concluir.
-- Transformar achados em regras de governança e em recursos FHIR validados, sem inventar significado para códigos.
+[Resumo executivo](docs/documento-de-resultados.md#1-resumo-executivo) · [Regras de governança](docs/framework-governanca.md) · [Painéis](dashboard/) · [Todos os achados](#4-achados)
 
 ---
 
@@ -85,6 +66,8 @@ A pergunta central do projeto é:
 
 Cada indicador calculado deve responder a uma necessidade analítica ou de governança identificável.
 
+**Resposta curta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco não registra alteração no cadastro há mais de 24 meses e, nos leitos de UTI do SUS, toda categoria cadastrada tem a habilitação correspondente.
+
 ---
 
 ## 2. Contexto do processo
@@ -116,6 +99,18 @@ A justificativa completa do recorte está documentada em [`docs/decisao-recorte.
 ## 4. Achados
 
 O [documento de resultados](docs/documento-de-resultados.md) consolida os 10 achados (A1 a A10), com evidência, prioridade, recomendações e limitações. Abaixo, um resumo dos principais.
+
+### Resultados em números
+
+| Resultado | Número | O que significa |
+|---|---|---|
+| Região de saúde ausente, gravada como texto `"nan"` | 60.366 (54,70%) | Uma verificação com `IS NULL` mostraria 0%. A ausência varia de 0% a 99,18% entre 347 municípios. |
+| Cadastros sem alteração há mais de 24 meses | 22.868 (20,72%) | Critério do projeto. Não equivale à regra de desativação da Portaria SAS/MS nº 118/2014. |
+| Valores de `cpf_cnpj` compatíveis com CPF | até 34.318 de 98.559 | Risco de dado pessoal em base pública; o projeto publica só contagens agregadas. |
+| Habilitações com ano `9999` no lugar da data final | 6.072 de 6.764 (89,77%) | Isolado o valor sentinela, 0 habilitações vencidas. |
+| Leitos de UTI do SUS sem habilitação correspondente | 0 de 550 | O de-para do projeto coincide com as Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025. |
+| Tipo de estabelecimento sem significado oficial | código `16`, 5 estabelecimentos | Já presente na origem do DATASUS; exportado ao FHIR sem rótulo inventado. |
+| Identificadores CNES duplicados | 0 de 110.362 | O código CNES funciona como chave única no recorte. |
 
 ### Ausência mascarada em `id_regiao_saude`
 
@@ -684,6 +679,14 @@ Arquivos JSON não são ignorados globalmente porque a Fase 6 inclui exemplos de
 
 ## 11. Estrutura do repositório
 
+**Principais entregas**
+
+- [Documento de resultados](docs/documento-de-resultados.md): resumo executivo, 10 achados com evidência, 11 recomendações e limitações.
+- [Framework de governança](docs/framework-governanca.md): 10 regras, cada uma ligada a um achado.
+- [Dashboard](dashboard/): três painéis em PDF (completude, atualidade e distribuição regional).
+- [Mapeamento CNES → FHIR R4](docs/mapeamento-cnes-fhir.md), [conversor](python/fase6-conversor-fhir.py) e [5 exemplos validados](fhir/exemplos/) (0 erros, 0 avisos).
+- [19 consultas SQL](sql/) e o [registro de cada consulta](docs/log-de-queries.md).
+
 ```text
 .
 ├── sql/
@@ -804,6 +807,6 @@ Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dad
 
 As decisões de escopo, tratamento, qualidade, governança e interoperabilidade deste projeto são documentadas para tornar o processo reproduzível e auditável.
 
-**Autoria e apoio ao desenvolvimento:** este projeto foi idealizado, desenvolvido e executado pela autora. Durante o processo, foi utilizada IA generativa como ferramenta de apoio à aprendizagem, orientação técnica, revisão e discussão de alternativas. A IA não executou o projeto de forma autônoma nem substituiu a tomada de decisão da autora: consultas, códigos, testes, validações, análises, correções e decisões documentadas foram executados, conferidos e aprovados pela autora.
+**Autoria e apoio de IA:** este projeto foi idealizado, desenvolvido e executado pela autora, com auxílio de IA generativa como ferramenta de apoio: aprendizagem, orientação técnica, revisão, auditoria e apoio na redação de textos e scripts. A IA não executou o projeto de forma autônoma nem substituiu a decisão da autora: as consultas foram executadas por ela, e todas as análises, correções, decisões e textos publicados foram conferidos e aprovados por ela.
 
 [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
