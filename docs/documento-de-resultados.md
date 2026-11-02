@@ -227,7 +227,141 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 ## 6. Recomendações e controles
 
-_Em construção._
+As recomendações seguem a ordem de prioridade da tabela 5.1. Cada uma indica o achado que trata, o tipo de controle e o indicador de acompanhamento, com a linha de base medida no recorte. O detalhamento operacional (gatilho, responsáveis pela execução e pela validação, ação em caso de violação) está em `docs/framework-governanca.md`, na regra indicada.
+
+Três tipos de controle são usados: **preventivo**, que impede o problema antes do uso do dado; **detectivo**, que identifica o problema a cada carga; e **investigação**, que verifica uma interpretação antes de qualquer alerta automático. Achados cuja interpretação é hipótese (A3, A4, A8) começam por investigação junto à fonte. Responsáveis e prazos são sugestões. O projeto não mediu impacto financeiro, clínico ou regulatório, e nenhuma recomendação pressupõe esse impacto.
+
+#### R1 — Tratar `"nan"` e texto em branco como ausência na região de saúde (A1)
+
+- **Ação:** converter `"nan"` e texto em branco em ausência antes de qualquer cálculo com `id_regiao_saude`, e medir o campo pelas três formas de ausência (nulo, `"nan"` e texto em branco).
+
+- **Controle:** detectivo, a cada carga (framework, Regra 1).
+
+- **Indicador:** percentual de estabelecimentos sem região de saúde, somando as três formas de ausência. Linha de base: 60.366 de 110.362 (54,70%).
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela qualidade de dados.
+
+- **Prazo sugerido:** antes do próximo uso do campo em indicador ou painel.
+
+#### R2 — Verificar se o `"nan"` já está na origem (A1)
+
+- **Ação:** aplicar ao campo região de saúde o teste de proveniência usado para o código 16 (PySUS, `source="origin"`), versionando o script e registrando a data de execução.
+
+- **Controle:** investigação, sem alerta automático.
+
+- **Indicador:** teste executado e registrado; resultado: `"nan"` presente ou ausente na origem consultada.
+
+- **Responsável sugerido:** análise de dados.
+
+- **Prazo sugerido:** próxima revisão do projeto.
+
+#### R3 — Priorizar os municípios com maior ausência de região de saúde (A6)
+
+- **Ação:** usar a distribuição municipal da ausência para direcionar apoio ao cadastro, começando pelos municípios acima de 75% de ausência, entre os 347 com pelo menos 20 estabelecimentos.
+
+- **Controle:** detectivo, a cada fechamento de competência (framework, Regra 8).
+
+- **Indicador:** proporção de municípios em cada faixa de ausência. Linha de base: taxas de 0% a 99,18%.
+
+- **Responsável sugerido:** execução pela engenharia de dados ou suporte analítico; validação pela governança com a gestão regional.
+
+- **Prazo sugerido:** a cada fechamento de competência.
+
+#### R4 — Monitorar a atualidade cadastral e ratificar o corte de 24 meses (A5)
+
+- **Ação:** acompanhar a cada carga os estabelecimentos sem atualização há mais de 24 meses e submeter esse corte à área de gestão, porque ele é critério do projeto e não regra oficial.
+
+- **Controle:** detectivo, mensal (framework, Regra 7).
+
+- **Indicador:** percentual de estabelecimentos desatualizados. Linha de base: 22.868 de 110.362 (20,72%).
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela governança com a gestão em saúde.
+
+- **Prazo sugerido:** ratificar o corte antes de usar o indicador como meta.
+
+#### R5 — Restringir `cpf_cnpj` a resultados agregados (A10)
+
+- **Ação:** não publicar, versionar nem exportar valores individuais do campo; não gerar identificador de CPF ou CNPJ nos recursos FHIR desta versão; submeter qualquer uso individual futuro a revisão de privacidade.
+
+- **Controle:** preventivo, em toda consulta ou artefato que use o campo (framework, Regra 10).
+
+- **Indicador:** número de valores individuais de `cpf_cnpj` em arquivos versionados ou artefatos públicos. Meta: zero.
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela governança e pela área de privacidade.
+
+- **Prazo sugerido:** imediato e contínuo.
+
+#### R6 — Tratar o ano 9999 como prazo não definido (A2)
+
+- **Ação:** excluir `ano_competencia_final = 9999` das comparações de data, contá-lo à parte como "sem prazo definido" e consultar a fonte sobre o significado do sentinela e dos 4 registros com mês `9`.
+
+- **Controle:** detectivo, a cada carga (framework, Regra 1).
+
+- **Indicador:** percentual de habilitações com o sentinela. Linha de base: 6.072 de 6.764 (89,77%).
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela qualidade de dados.
+
+- **Prazo sugerido:** antes do próximo cálculo da regra de habilitação vencida.
+
+#### R7 — Confirmar o significado das duas quantidades de leitos antes de cruzá-las (A3)
+
+- **Ação:** verificar o significado dos campos junto à fonte antes de utilizá-los em indicadores cruzados. Até lá, registrar a divergência como investigação, e não como violação.
+
+- **Controle:** investigação (framework, Regra 2).
+
+- **Indicador:** percentual de estabelecimentos com divergência entre `leito.quantidade_total` e `habilitacao.quantidade_leitos`, lido como descrição e não como taxa de erro. Linha de base: 768 de 768.
+
+- **Responsável sugerido:** execução pela qualidade ou análise de dados; validação pela área de negócio do CNES ou da regulação.
+
+- **Prazo sugerido:** antes de publicar qualquer indicador que use os dois campos juntos.
+
+#### R8 — Validar o de-para entre leitos de UTI e habilitações (A4)
+
+- **Ação:** submeter o de-para construído pelo projeto à validação da área assistencial ou regulatória, incluindo a premissa de que todo leito de UTI exige habilitação; só depois calcular o número de estabelecimentos afetados.
+
+- **Controle:** investigação (framework, Regra 2).
+
+- **Indicador:** percentual de combinações estabelecimento + categoria de UTI sem habilitação correspondente segundo o de-para. Linha de base: 553 de 1.103 (50,1%), com 7.312 leitos.
+
+- **Responsável sugerido:** execução pela análise de dados; validação pela regulação ou gestão assistencial.
+
+- **Prazo sugerido:** antes de qualquer uso do resultado como indicador de conformidade.
+
+#### R9 — Confirmar o significado do código 16 de `tipo_unidade` (A8)
+
+- **Ação:** consultar a documentação oficial do CNES/DATASUS sobre o tipo de estabelecimento 16; até a confirmação, manter o código sem rótulo inferido no mapeamento FHIR e acompanhar sua ocorrência nas próximas competências.
+
+- **Controle:** investigação, com controle preventivo no mapeamento FHIR (`docs/investigacao-proveniencia-tipo-unidade-16.md`, seção 7). Não há regra própria no framework.
+
+- **Indicador:** número de estabelecimentos com `tipo_unidade = 16` por competência. Linha de base: 5 em SP e 43 no Brasil, em 2025-11.
+
+- **Responsável sugerido:** execução pela análise de dados; validação pela governança de dados.
+
+- **Prazo sugerido:** antes da próxima versão do mapeamento FHIR.
+
+#### R10 — Calcular a completude de `cnpj_mantenedora` só onde o campo se aplica (A9)
+
+- **Ação:** calcular a métrica sobre os estabelecimentos Mantidos e disponibilizar uma visão com o status "Preenchido", "Faltante" ou "Não se aplica".
+
+- **Controle:** preventivo (framework, Regra 6).
+
+- **Indicador:** percentual de estabelecimentos Mantidos com o campo preenchido. Linha de base: 12.264 de 12.264 (100%).
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela análise de dados ou governança.
+
+- **Prazo sugerido:** na próxima publicação do indicador.
+
+#### R11 — Repetir o teste de unicidade a cada carga (A7)
+
+- **Ação:** verificar a duplicidade de `id_estabelecimento_cnes` em cada nova competência, antes de usar contagens de registros como contagens de estabelecimentos.
+
+- **Controle:** detectivo, a cada carga. Não há regra própria no framework.
+
+- **Indicador:** número de identificadores repetidos. Linha de base: 0 em 110.362.
+
+- **Responsável sugerido:** execução pela engenharia de dados; validação pela qualidade de dados.
+
+- **Prazo sugerido:** a cada carga.
 
 ## 7. Limitações e premissas
 
