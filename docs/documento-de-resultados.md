@@ -365,7 +365,49 @@ Três tipos de controle são usados: **preventivo**, que impede o problema antes
 
 ## 7. Limitações e premissas
 
-_Em construção._
+Os resultados valem para o dado observado em SP, competência novembro de 2025, no estado em que foi consultado na Base dos Dados. As limitações abaixo dizem o que não foi possível verificar; nenhuma delas altera os números publicados na seção 5.
+
+### 7.1 Alcance do recorte
+
+- O diagnóstico cobre uma UF e uma competência. Os resultados não devem ser estendidos a outras UFs ou competências sem nova medição.
+- A completude foi medida em cinco campos escolhidos na exploração inicial, sem critério formal prévio (seção 4.1); não descreve a completude de todo o cadastro.
+- Os dados foram coletados depois do tratamento pela Base dos Dados. O projeto não acompanhou o cadastramento na origem e não atribui os problemas a uma etapa específica (seção 3). A única exceção é o código 16 (A8), cuja presença foi testada na origem consultada.
+
+### 7.2 Interpretações não verificadas junto à fonte
+
+Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as interpretações abaixo. Elas estão marcadas como hipótese nos achados e geram recomendações de investigação (seção 6).
+
+- O ano `9999` como prazo indeterminado, e o mês `9` em 4 registros (A2).
+- O significado de `leito.quantidade_total` e `habilitacao.quantidade_leitos`, e se as duas medidas deveriam coincidir (A3).
+- O de-para entre leitos de UTI e habilitações, incluindo os códigos 2610 e 2611 tratados como sinônimos, e a premissa de que todo leito de UTI exige habilitação (A4).
+- O significado do código 16 de `tipo_unidade`. A ausência no ValueSet versão 1.1.0, ativo desde 2026-08-22, não prova ausência de significado em 2025-11 (A8).
+- A origem do texto `"nan"` na região de saúde (A1).
+- O corte de 24 meses para atualidade, que é critério do projeto e não regra oficial (A5).
+
+### 7.3 O que não foi medido
+
+- O número de estabelecimentos afetados no A4: o resultado está em combinações estabelecimento + categoria de UTI (553 de 1.103) e em leitos (7.312); 547 é o universo de estabelecimentos com UTI.
+- A duplicidade de um mesmo estabelecimento real com códigos CNES diferentes (A7).
+- O impacto financeiro, clínico ou regulatório de qualquer achado.
+- A inspeção individual, por amostra, dos estabelecimentos apontados nas regras de consistência, prevista no planejamento: este documento não apresenta o resultado dessa inspeção.
+- A reprodução independente em Python dos resultados de consistência e atualidade (seção 4.3).
+
+### 7.4 Rastreabilidade e reprodutibilidade
+
+- **Datas de execução.** As consultas das Fases 1 a 3 (`sql/01` a `sql/10` e `sql/13`) não registram data de execução. Nos arquivos `sql/11` e `sql/12`, a data registrada (2026-10-04) é a de uma verificação posterior, não a da execução original. As consultas da Fase 6 (`sql/14` a `sql/19`) registram datas entre 2026-10-01 e 2026-10-04. A etapa 9 da `sql/06` registra execução em 01/11/2026.
+- **Reproduções.** Em `sql/17`, `sql/18` e `sql/19`, os resultados são reproduções independentes; a consulta original do histórico do código 16 não foi versionada.
+- **Teste de proveniência do código 16.** Foi executado com PySUS 2.11.1, na imagem Docker `alertadengue/pysus`, sem script versionado, sem data registrada e sem registro da versão do Docker ou do identificador exato (digest) da imagem.
+- **Comparações manuais.** A correspondência de 37 dos 38 códigos de `tipo_unidade` com a tabela `dicionario` resultou da comparação manual de duas listas (`sql/07`, etapas 1 e 2), sem consulta que faça o cruzamento.
+- **Valores fora do log.** A média de 97,88 leitos de diferença no A3 só é calculada na `sql/05` (linha 152); a consulta registrada no log não a produz.
+- **Base sujeita a atualização.** A Base dos Dados pode reprocessar tabelas publicadas. Uma nova execução das consultas pode produzir números diferentes sem que o método tenha mudado.
+- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados.
+
+### 7.5 Premissas adotadas
+
+- A chave de um estabelecimento é `id_estabelecimento_cnes` + `ano` + `mes`; com a competência fixa, o código basta (A7).
+- As tabelas `leito` e `habilitacao` foram agregadas a uma linha por estabelecimento antes de qualquer junção.
+- O texto `"nan"` e o texto em branco foram tratados como ausência de informação.
+- A competência de novembro de 2025, e não a data da consulta, é a referência de tempo para a atualidade.
 
 ## 8. Próximos passos
 

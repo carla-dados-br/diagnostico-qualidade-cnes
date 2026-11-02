@@ -359,7 +359,7 @@ SELECT chave, valor FROM `basedosdados.br_ms_cnes.dicionario`
 WHERE nome_coluna='tipo_habilitacao'
   AND (LOWER(valor) LIKE '%terapia intensiva%' OR LOWER(valor) LIKE '%uti%');
 ```
-**Resultado:** 19 códigos candidatos (com falsos positivos de "terapêutica" descartados manualmente) — 14 realmente relacionados a UTI.
+**Resultado:** 19 códigos candidatos (com falsos positivos de "terapêutica" descartados manualmente) — 14 realmente relacionados a UTI. **[Nota de correção, 02/11/2026:** dois números deste trecho estavam descritos de forma incorreta. (1) Os 19 códigos já são o resultado após o descarte manual dos falsos positivos (`sql/06`, linhas 50–54); a redução para 14 corresponde aos 5 códigos sem uso no recorte (2612, 2613, 2699, 8217 e 8218; `sql/06`, linhas 102–106). (2) O de-para tem 10 pares diretos e 2 pares com sinônimo, 12 no total (`sql/06`, linhas 85–100), e não 12 pares diretos mais 2.**]**
 
 **De-para construído:** 12 pares diretos por igualdade semântica (ex.: leito 74 = "UTI adulto tipo I" ↔ habilitação 2696) + 2 pares com sinônimo, validados empiricamente:
 

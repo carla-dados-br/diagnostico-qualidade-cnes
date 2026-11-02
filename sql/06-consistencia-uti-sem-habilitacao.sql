@@ -82,7 +82,7 @@ ORDER BY chave;
 -- DE-PARA SEMANTICO (leito x habilitacao) - nao numerico, os dois
 -- campos pertencem a dominios de codigo diferentes.
 --
--- 12 pares diretos confirmados por igualdade semantica e mesma
+-- 12 pares diretos confirmados por igualdade semantica e mesma  [NOTA DE CORRECAO 2026-11-02: a lista abaixo tem 10 pares diretos; com os 2 pares das linhas 98-100, o de-para tem 12 pares no total]
 -- granularidade (tipo I/II/III preservado nos dois lados):
 --   leito 74 -> habilitacao 2696  (uti adulto tipo I)
 --   leito 75 -> habilitacao 2601  (uti adulto tipo II)
