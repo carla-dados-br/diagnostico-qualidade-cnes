@@ -101,7 +101,7 @@ ORDER BY ano_atualizacao DESC;
 -- adotada por representar um intervalo operacional razoavel para
 -- avaliar atualidade de um cadastro nacional de estabelecimentos de
 -- saude, evitando classificar como desatualizados registros ainda
--- dentro de um ciclo bienal de manutencao. NAO e uma definicao
+-- dentro de um ciclo bienal de manutencao. NAO e uma definicao [NOTA 2026-11-02: ha norma - Portaria SAS/MS 118/2014, 6 meses sem transmissao; ver etapa 6]
 -- normativa do DATASUS sobre prazo de validade cadastral - nenhuma
 -- fonte oficial desse tipo foi verificada.
 --
@@ -139,3 +139,43 @@ FROM `basedosdados.br_ms_cnes.estabelecimento`
 WHERE sigla_uf = 'SP'
   AND ano = 2025
   AND mes = 11;
+
+-- -----------------------------------------------------------------------
+-- 6. Verificacao pos-auditoria - janela normativa de 6 meses
+-- (executada em 2026-11-02; jobs job_K3Rqj8Ne8tI2f9DMAVPb2alkXU_Q
+-- e job_sIMbQ0E1pUhdabFWotExsgJEIbTc)
+-- Motivo: a Portaria SAS/MS n. 118/2014 (republicada) determina que o
+-- SCNES marque como desativados os estabelecimentos ha mais de 6 meses
+-- sem atualizacao cadastral. Pelo par. 1 do art. 1, "atualizacao" e a
+-- exportacao da base local e a transmissao sem rejeicao para a base
+-- nacional, inclusive de cadastros sem alteracao (par. 3).
+-- Resultado:
+--   total 110.362 (igual ao recorte);
+--   ultima alteracao antes de 2025-05 (mais de 6 meses): 50.785 (46,02%);
+--   antes de 2023-11 (mais de 24 meses): 22.868 (igual a etapa 5);
+--   posterior a competencia: 2.971 (igual a etapa 3).
+--   A tabela estabelecimento nao tem coluna de situacao ou desativacao
+--   (busca em INFORMATION_SCHEMA por desativ|motivo|situac|ativ|
+--   atualiz|data|inclus: so ano/mes_atualizacao, datas de contrato e
+--   alvara e colunas sem relacao).
+-- Leitura: se ano/mes_atualizacao fossem a data da transmissao usada
+-- pela portaria, esses 50.785 cadastros ja deveriam estar desativados.
+-- O mais provavel e que o campo registre a ultima alteracao do cadastro;
+-- a definicao do campo nao foi confirmada na fonte, e tambem nao foi
+-- verificado se o arquivo publicado inclui estabelecimentos desativados.
+-- O indicador do projeto mede tempo desde a ultima alteracao registrada;
+-- nao mede o cumprimento da regra de desativacao.
+-- -----------------------------------------------------------------------
+SELECT
+  COUNT(*) AS total,
+  COUNTIF(ano_atualizacao * 100 + mes_atualizacao < 202505) AS mais_de_6_meses,
+  COUNTIF(ano_atualizacao * 100 + mes_atualizacao < 202311) AS mais_de_24_meses,
+  COUNTIF(ano_atualizacao * 100 + mes_atualizacao > 202511) AS posterior_a_competencia
+FROM `basedosdados.br_ms_cnes.estabelecimento`
+WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11;
+
+SELECT column_name, data_type
+FROM `basedosdados.br_ms_cnes.INFORMATION_SCHEMA.COLUMNS`
+WHERE table_name = 'estabelecimento'
+  AND REGEXP_CONTAINS(LOWER(column_name), r'desativ|motivo|situac|ativ|atualiz|data|inclus')
+ORDER BY ordinal_position;

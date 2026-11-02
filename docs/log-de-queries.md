@@ -507,7 +507,7 @@ SELECT COUNT(*) AS total,
 FROM `basedosdados.br_ms_cnes.estabelecimento`
 WHERE sigla_uf='SP' AND ano=2025 AND mes=11;
 ```
-**Resultado:** 87.494 atualizados, 22.868 desatualizados (**20,72%**), 0 não informado.
+**Resultado:** 87.494 atualizados, 22.868 desatualizados (**20,72%**), 0 não informado. **[Nota de verificação, 02/11/2026:** existe norma de desatualização: a Portaria SAS/MS nº 118/2014 manda desativar estabelecimentos há mais de 6 meses sem atualização cadastral, entendida como exportação e transmissão sem rejeição para a base nacional, mesmo sem alteração de dados. Pelo campo `ano_atualizacao`, 50.785 estabelecimentos (46,02%) passam de 6 meses, o que indica que o campo registra a última alteração do cadastro e não a transmissão (definição não confirmada na fonte; também não foi verificado se o arquivo publicado inclui estabelecimentos desativados). O indicador mede tempo desde a última alteração registrada, e não o cumprimento da regra (`sql/08`, etapa 6).**]**
 
 ---
 
