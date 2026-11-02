@@ -219,7 +219,7 @@ Atividades já realizadas dentro da Fase 6:
 - [x] Exceção semântica do código `16` documentada
 - [x] Regra de habilitação vencida
 - [x] Investigação da divergência entre quantidades de leitos e habilitações
-- [x] Investigação de UTI sem correspondência segundo o de-para do projeto
+- [x] Correspondência entre leitos de UTI do SUS e habilitações verificada
 - [x] Indicador de atualidade cadastral
 - [x] Indicador de distribuição regional
 - [x] Completude de `id_municipio`
@@ -397,7 +397,7 @@ Foram implementadas três verificações principais, escolhidas para representar
 |---|---|---|---|
 | Habilitação com competência final vencida ainda registrada | `habilitacao` | comparação temporal dentro da própria tabela | Concluída |
 | Comparação agregada entre quantidades de leitos e habilitações | `leito` + `habilitacao` | diferença observada entre medidas agregadas, sem pressupor equivalência semântica | Concluída |
-| UTI sem correspondência segundo o de-para do projeto | `leito` + `habilitacao` | teste da hipótese de correspondência entre categorias de UTI e habilitações | Concluída |
+| Correspondência entre leitos de UTI e habilitações | `leito` + `habilitacao` | correspondência por categoria de UTI, com leitos SUS, conforme as Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025 | Concluída |
 
 A correspondência entre tipos de leito e tipos de habilitação foi investigada separadamente, pois os dois campos utilizam domínios de códigos diferentes.
 
@@ -471,13 +471,18 @@ Restrita às habilitações que têm leitos (18 dos 191 tipos), a comparação a
 
 A diferença no primeiro sentido é esperada, porque o total de leitos inclui tipos que não dependem de habilitação. O único caso a investigar é o estabelecimento com mais leitos habilitados do que leitos SUS.
 
-### UTI sem habilitação correspondente
+### UTI: correspondência entre leitos e habilitações
 
-Foram avaliadas **1.103 combinações estabelecimento + categoria de UTI**. Dessas, **553 (50,1%)** não apresentaram habilitação correspondente segundo o de-para utilizado no projeto.
+Foram avaliadas **1.103 combinações estabelecimento + categoria de UTI**, em 547 estabelecimentos. Com todos os leitos, **553 (50,1%)** não apresentaram habilitação correspondente segundo o de-para do projeto.
 
-Essas combinações somam **7.312 leitos**. As 1.103 combinações avaliadas pertencem a **547 estabelecimentos** com algum tipo de UTI; o número de estabelecimentos com pelo menos uma combinação sem habilitação não foi calculado.
+Com os **leitos SUS**, para os quais a correspondência é definida pelas Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025, o resultado muda:
 
-O de-para entre categorias de UTI e habilitações utilizado pelo projeto foi construído como hipótese de correspondência e testado empiricamente no recorte analisado; ele não equivale, por si só, a uma validação terminológica oficial da relação entre os dois domínios. Assim, as 553 combinações sem correspondência descrevem o resultado da verificação segundo o de-para adotado e não comprovam, isoladamente, irregularidade regulatória ou erro cadastral.
+```text
+550 combinações com leitos SUS
+  0 sem habilitação correspondente
+```
+
+As 553 combinações sem habilitação são exatamente as que têm 0 leitos SUS, em 298 estabelecimentos. O de-para do projeto coincide com a tabela oficial nas categorias que ela cobre.
 
 ### Completude não garante consistência semântica
 
@@ -711,7 +716,7 @@ A comparação SQL × Python permitiu identificar e corrigir divergências reais
 
 O projeto foi concluído na Fase 7. Os próximos passos recomendados, que não fazem parte desta versão, estão na seção 8 do [documento de resultados](docs/documento-de-resultados.md):
 
-1. validar junto à fonte as interpretações ainda não confirmadas (ano `9999`, quantidades de leitos, de-para de UTI e código `16`);
+1. validar junto à fonte as interpretações ainda não confirmadas (ano `9999`, significado de `habilitacao.quantidade_leitos` e código `16`);
 2. testar a origem do texto `"nan"` na região de saúde;
 3. pilotar os controles de menor custo em uma nova competência;
 4. repetir a medição em outra competência;
@@ -733,6 +738,8 @@ Referências citadas na documentação do projeto.
 - Brasil. Ministério da Saúde. Portaria GM/MS nº 1.646, de 2 de outubro de 2015. Institui o Cadastro Nacional de Estabelecimentos de Saúde (CNES). https://bvsms.saude.gov.br/bvs/saudelegis/gm/2015/prt1646_02_10_2015.html
 - Brasil. Ministério da Saúde. Portaria de Consolidação GM/MS nº 1/2017, que incorpora a Portaria nº 1.646/2015.
 - Brasil. Ministério da Saúde. Portaria de Consolidação SAES/MS nº 1/2022 (citada em `docs/mapeamento-cnes-fhir.md`).
+- Brasil. Ministério da Saúde. Portaria SAES/MS nº 2.902, de 26 de junho de 2025. Exclui as habilitações 26.02, 26.05 e 26.97 e vincula os leitos 81 e 82 às habilitações 26.10 e 26.11. https://www.editoraroncarati.com.br/v2/Diario-Oficial/Diario-Oficial/PORTARIA-SAES-MS-N%C2%BA-2-902-DE-26-06-2025.html (acesso em 02/11/2026)
+- Brasil. Ministério da Saúde. Portaria SAES/MS nº 3.511, de 24 de novembro de 2025. Define o registro no CNES e a habilitação de leitos de UTI e UCI. https://ses.sp.bvs.br/wp-content/uploads/2025/12/U_PT-MS-SAES-3511_241125.pdf (acesso em 02/11/2026)
 - Brasil. Lei nº 14.195, de 26 de agosto de 2021. https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2021/lei/l14195.htm
 - DREI. Ofício Circular SEI nº 4856/2022. https://www.gov.br/empresas-e-negocios/pt-br/drei/legislacao/arquivos/oficios-circulares-drei/2022/SEI_30141120_Oficio_Circular_4856.pdf
 

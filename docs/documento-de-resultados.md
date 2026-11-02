@@ -17,14 +17,14 @@
 
 **Pergunta.** Em que medida o cadastro de estabelecimentos do CNES de São Paulo, em novembro de 2025, é completo, consistente, atual e único?
 
-**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco está sem atualização há mais de 24 meses e os dados de leitos e habilitações não podem ser cruzados com segurança sem confirmação junto à fonte.
+**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco está sem atualização há mais de 24 meses e, nos leitos de UTI do SUS, toda categoria cadastrada tem a habilitação correspondente.
 
 **Principais achados** (110.362 estabelecimentos):
 
 1. **Região de saúde ausente** em 60.366 estabelecimentos (54,70%). A ausência aparece como o texto `"nan"`, que verificações comuns de campo vazio não detectam, e varia de 0% a 99,18% entre municípios (A1, A6).
 2. **Cadastros desatualizados:** 22.868 estabelecimentos (20,72%) sem atualização há mais de 24 meses, segundo critério do projeto (A5).
 3. **Possível dado pessoal em base pública:** até 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` são compatíveis com CPF (A10).
-4. **Leitos de UTI sem habilitação correspondente:** 553 de 1.103 combinações de UTI (50,1%) não têm habilitação correspondente segundo o de-para do projeto; a interpretação depende de confirmação junto à fonte (A4). Na comparação agregada entre leitos e habilitações, restrita às habilitações que têm leitos, só 1 de 304 estabelecimentos tem mais leitos habilitados do que leitos SUS (A3).
+4. **Leitos de UTI do SUS com habilitação:** as 550 combinações estabelecimento + categoria de UTI com leitos SUS têm a habilitação correspondente; as 553 sem habilitação têm só leitos não SUS (A4). Na comparação agregada entre leitos e habilitações, restrita às habilitações que têm leitos, só 1 de 304 estabelecimentos tem mais leitos habilitados do que leitos SUS (A3).
 5. **Prazo final não informado:** 6.072 de 6.764 habilitações (89,77%) usam o ano `9999` no lugar de uma data (A2).
 
 **Impacto.** O impacto financeiro, clínico ou regulatório dos achados não foi medido neste projeto.
@@ -33,9 +33,9 @@
 
 1. Tratar `"nan"` e texto em branco como ausência antes de qualquer indicador que use a região de saúde (R1).
 2. Restringir `cpf_cnpj` a resultados agregados, sem publicar valores individuais (R5).
-3. Confirmar junto à fonte o significado das quantidades de leitos e o de-para de UTI antes de usá-los como indicador de conformidade (R7, R8).
+3. Cruzar leitos e habilitações só com leitos SUS e por categoria de leito, como no A4, e não pela comparação agregada (R7, R8).
 
-**Decisão pedida ao leitor.** Validar com a área responsável pelo CNES as interpretações listadas na seção 7.2, incluindo o corte de 24 meses. Até essa validação, os achados A2, A3, A4 e A8 devem ser lidos como evidência para investigação, e não como erro confirmado.
+**Decisão pedida ao leitor.** Validar com a área responsável pelo CNES as interpretações listadas na seção 7.2, incluindo o corte de 24 meses. Até essa validação, os achados A2, A3 e A8 devem ser lidos como evidência para investigação, e não como erro confirmado.
 
 ## 2. Contexto e objetivo
 
@@ -115,8 +115,8 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
 | A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
-| A4 | Leito de UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 combinações (50,1%); 7.312 leitos; universo de 547 estabelecimentos com UTI | Consistência | Fato; interpretação é hipótese | **Média** |
 | A8 | Código 16 de `tipo_unidade` sem significado semântico confirmado | 5 de 110.362 estabelecimentos; 37 de 38 códigos presentes no ValueSet FHIR e na tabela `dicionario` | Consistência | Fato; interpretação é hipótese | **Média** |
+| A4 | Correspondência entre leitos de UTI do SUS e habilitações | 550 de 550 combinações com leitos SUS têm habilitação; as 553 sem habilitação têm só leitos não SUS | Consistência | Fato | **Baixa** |
 | A3 | Comparação agregada entre leitos e habilitações | 304 estabelecimentos com habilitação de leitos; 1 com mais leitos habilitados do que leitos SUS | Consistência | Fato; interpretação é hipótese | **Baixa** |
 | A7 | Ausência de duplicidade do identificador CNES | 0 duplicados em 110.362 registros | Unicidade | Fato | **Baixa** |
 | A9 | Completude do CNPJ da mantenedora depende da aplicabilidade | 88,89% vazio bruto; 100% preenchido entre 12.264 mantidos | Completude | Fato | **Baixa** |
@@ -187,22 +187,6 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Média. Diferente do A1, em que o `"nan"` mascarava a ausência de uma informação estrutural para o planejamento (a região de saúde), a ausência de prazo de validade em uma habilitação pode refletir uma situação cadastral legítima, como habilitações sem prazo de vencimento, apenas registrada de forma inadequada, e não necessariamente uma falha na coleta do dado. Além disso, diferente do A10, não há risco de privacidade. O tratamento (isolar o sentinela) não bloqueia o projeto; ele exige manter a exclusão nos cálculos e o monitoramento previsto na Regra 1 de `docs/framework-governanca.md`, para evitar que o sentinela distorça cálculos temporais e dilua o percentual de vencidas.
 
-#### A4 — Leito de UTI sem habilitação correspondente segundo o de-para
-
-- **Achado:** Das 1.103 combinações estabelecimento + categoria de UTI do recorte, 553 (50,1%) não apresentam habilitação de UTI correspondente segundo o de-para construído pelo projeto. Essas combinações somam 7.312 dos 16.301 leitos de UTI do recorte (44,86%). As 1.103 combinações pertencem a 547 estabelecimentos com algum tipo de UTI cadastrado; o número de estabelecimentos com pelo menos uma combinação sem habilitação não foi calculado.
-
-- **Evidência:** A regra está em `sql/06-consistencia-uti-sem-habilitacao.sql`, etapa 8 (linhas 168–239), que produziu 1.103, 553 e 7.312. O valor 547 vem da linha 235 (`total_estabelecimentos_com_uti`), que conta todos os estabelecimentos com UTI, sem condição de ausência de habilitação. O de-para está documentado nas linhas 81–107, e a validação empírica dos sinônimos está nas etapas 6 e 7 (linhas 110–165): 2610 confirmado em 96 de 98 estabelecimentos e 2611 em 28 de 28. O registro está na seção "Leito de UTI sem habilitação correspondente — consistência" do `docs/log-de-queries.md` (linha 352). As etapas 1 a 8 não possuem data de execução registrada. A etapa 9 (linhas 242–265, executada em 01/11/2026) verificou que cada um dos 12 códigos de UTI aparece com um único `tipo_leito`; com isso, o agrupamento apenas por especialidade não altera o resultado, apesar da decisão técnica registrada no log (linha 184). O total de 16.301 leitos vem dessa etapa.
-
-- **Dimensão:** Consistência. O achado resulta de uma regra de correspondência entre duas tabelas (`leito` e `habilitacao`) do mesmo estabelecimento. A classificação depende de duas condições não verificadas: que o de-para represente corretamente a relação entre os dois domínios de código e que todo leito de UTI cadastrado deva ter uma habilitação correspondente. Se alguma delas não se confirmar, parte das 553 combinações deixa de ser inconsistência no dado e passa a ser efeito do método.
-
-- **Onde ocorre no processo:** Na relação entre o cadastramento dos leitos de UTI e o registro das habilitações do mesmo estabelecimento, que são campos de domínios de código diferentes e sem chave de correspondência oficial entre si. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa de preenchimento específica.
-
-- **Causa provável (hipótese):** O resultado é compatível com pelo menos três explicações, que os dados analisados não permitem distinguir: (1) leitos de UTI cadastrados sem a habilitação formal correspondente registrada; (2) limitações do de-para, construído por semelhança textual e validação empírica, e não por uma tabela oficial de correspondência — como o de-para exige o mesmo tipo (I, II ou III) nos dois lados (linha 86), um estabelecimento com habilitação de outro tipo para a mesma UTI é contado como "sem habilitação"; (3) a premissa de que todo leito de UTI exige habilitação, que não foi verificada. Nenhuma dessas explicações foi verificada junto à fonte.
-
-- **Alcance:** 553 combinações e 7.312 leitos (44,86% dos leitos de UTI do recorte), dentro de um universo de 547 estabelecimentos com UTI, em São Paulo (competência novembro/2025). Os códigos de habilitação 2612, 2613, 2699, 8217 e 8218 não ocorrem no recorte (`sql/06`, linhas 102–106); em outros recortes, o de-para precisaria ser revisto. O diagnóstico não deve ser extrapolado.
-
-- **Prioridade:** Média. O A4 trata de leitos de terapia intensiva em nível de categoria, o que lhe dá relevância assistencial maior que a do A3, cuja comparação agregada não testa a correspondência entre leitos e habilitações. A força da sua evidência, porém, depende de um de-para construído pelo próprio projeto. Diferente do A2, não há tratamento técnico que resolva o achado antes de esclarecer com a fonte o significado da correspondência. A prioridade não sobe para Alta porque a força da recomendação não pode exceder a força da evidência.
-
 #### A8 — Código 16 de `tipo_unidade` sem significado semântico confirmado
 
 - **Achado:** O código `16` aparece no campo `tipo_unidade` em 5 estabelecimentos do recorte, mas seu significado não está documentado em nenhuma das duas referências consultadas: a tabela `dicionario` da Base dos Dados e o ValueSet FHIR `BRTipoEstabelecimentoSaude` (versão 1.1.0). Dos 38 códigos observados no recorte, é o único sem correspondência nas duas.
@@ -217,7 +201,23 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Alcance:** No recorte, 5 de 110.362 estabelecimentos (cerca de 0,005%). A contagem equivale a estabelecimentos porque não há duplicidade de `id_estabelecimento_cnes` no recorte (A7). Fora do recorte, 43 estabelecimentos em 15 UFs na mesma competência (2025-11) e 86 em 18 UFs em 2026-02. O universo nacional de estabelecimentos não foi calculado, por isso não há percentual nacional.
 
-- **Prioridade:** Média. Em comparação com o A4, a evidência do fato é mais forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é muito menor. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Diferente do A4, já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
+- **Prioridade:** Média. A evidência do fato é forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é pequeno. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
+
+#### A4 — Correspondência entre leitos de UTI do SUS e habilitações
+
+- **Achado:** Todas as 550 combinações estabelecimento + categoria de UTI com leitos SUS têm a habilitação correspondente segundo o de-para do projeto. As 553 combinações sem habilitação (50,1% das 1.103 do recorte, com 7.312 leitos, em 298 estabelecimentos) são exatamente as que têm zero leitos SUS, ou seja, são formadas só por leitos não SUS. A habilitação 2602, extinta pela Portaria SAES/MS nº 2.902/2025, ainda aparece em 1 estabelecimento.
+
+- **Evidência:** `sql/06`, etapa 10, executada em 02/11/2026, depois da auditoria do projeto. Ela reproduz o resultado original da etapa 8 (1.103 combinações, 553 sem habilitação, 7.312 leitos e 547 estabelecimentos com UTI) e acrescenta a contagem por leitos SUS: 550 combinações com leitos SUS, 0 sem habilitação; 7.346 leitos SUS de UTI, 0 sem habilitação; 281 estabelecimentos com UTI SUS. O de-para está nas linhas 81–107 da `sql/06`, e a validação empírica de 2610 e 2611, nas etapas 6 e 7 (linhas 110–165). A correspondência oficial entre tipo de leito e habilitação está nas Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025 (coluna "habilitação relacionada aos leitos SUS"); o de-para do projeto coincide com ela nas categorias que ela cobre, inclusive 2610 e 2611 como habilitações dos leitos 81 e 82. A presença da 2602 vem da `sql/05`, etapa 7. O registro original está no `docs/log-de-queries.md` (linha 352), com nota datada na linha 403.
+
+- **Dimensão:** Consistência. A regra testa a correspondência entre duas tabelas do mesmo estabelecimento. Nos leitos SUS, para os quais a correspondência é definida, não há inconsistência no recorte.
+
+- **Onde ocorre no processo:** Na relação entre o cadastro dos leitos de UTI e o registro das habilitações do mesmo estabelecimento. O projeto não acompanhou o cadastramento na origem.
+
+- **Causa provável (hipótese):** As combinações sem habilitação são compatíveis com UTIs que atendem só fora do SUS, para as quais as portarias consultadas não definem habilitação. A presença da 2602 depois da extinção é compatível com defasagem na atualização do cadastro. Nenhuma das duas interpretações foi verificada junto à fonte.
+
+- **Alcance:** 1.103 combinações em 547 estabelecimentos com UTI, em São Paulo (competência novembro/2025): 550 combinações com leitos SUS, em 281 estabelecimentos, todas com habilitação; 553 só com leitos não SUS, em 298 estabelecimentos. A Portaria SAES/MS nº 3.511/2025, publicada em 24/11/2025, altera a tabela a partir da competência seguinte; em outros recortes, o de-para precisa ser revisto. Os códigos 2612, 2613, 2699, 8217 e 8218 não ocorrem no recorte (`sql/06`, linhas 102–106).
+
+- **Prioridade:** Baixa. Como o A7 e o A9, o A4 confirma que o dado atende ao critério testado. Sua relevância está em mostrar que o de-para do projeto, construído antes da consulta às portarias, reproduz a correspondência oficial nos leitos SUS, e em afastar a leitura de que metade das UTIs estaria sem habilitação. O caso da 2602 é pontual e fica registrado para acompanhamento.
 
 #### A3 — Comparação agregada entre leitos e habilitações
 
@@ -271,7 +271,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 As recomendações seguem a ordem de prioridade da tabela 5.1. Cada uma indica o achado que trata, o tipo de controle e o indicador de acompanhamento, com a linha de base medida no recorte. O detalhamento operacional (gatilho, responsáveis pela execução e pela validação, ação em caso de violação) está em `docs/framework-governanca.md`, na regra indicada.
 
-Três tipos de controle são usados: **preventivo**, que impede o problema antes do uso do dado; **detectivo**, que identifica o problema a cada carga; e **investigação**, que verifica uma interpretação antes de qualquer alerta automático. Achados cuja interpretação é hipótese (A3, A4, A8) começam por investigação junto à fonte. Responsáveis e prazos são sugestões. O projeto não mediu impacto financeiro, clínico ou regulatório, e nenhuma recomendação pressupõe esse impacto.
+Três tipos de controle são usados: **preventivo**, que impede o problema antes do uso do dado; **detectivo**, que identifica o problema a cada carga; e **investigação**, que verifica uma interpretação antes de qualquer alerta automático. Achados cuja interpretação é hipótese (A3, A8) começam por investigação junto à fonte. Responsáveis e prazos são sugestões. O projeto não mediu impacto financeiro, clínico ou regulatório, e nenhuma recomendação pressupõe esse impacto.
 
 #### R1 — Tratar `"nan"` e texto em branco como ausência na região de saúde (A1)
 
@@ -357,17 +357,17 @@ Três tipos de controle são usados: **preventivo**, que impede o problema antes
 
 - **Prazo sugerido:** antes de publicar qualquer indicador que use os dois campos juntos.
 
-#### R8 — Validar o de-para entre leitos de UTI e habilitações (A4)
+#### R8 — Calcular a regra de UTI com leitos SUS e manter o de-para alinhado às portarias (A4)
 
-- **Ação:** submeter o de-para construído pelo projeto à validação da área assistencial ou regulatória, incluindo a premissa de que todo leito de UTI exige habilitação; só depois calcular o número de estabelecimentos afetados.
+- **Ação:** calcular a correspondência entre leitos de UTI e habilitações com `quantidade_sus`, usando o de-para alinhado às Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025; revisar o de-para a cada nova portaria (a 3.511/2025 exclui as categorias tipo I a partir da competência 12/2025); acompanhar habilitações extintas ainda registradas, como a 2602.
 
-- **Controle:** investigação (framework, Regra 2).
+- **Controle:** detectivo, a cada carga (framework, Regra 2).
 
-- **Indicador:** percentual de combinações estabelecimento + categoria de UTI sem habilitação correspondente segundo o de-para. Linha de base: 553 de 1.103 (50,1%), com 7.312 leitos.
+- **Indicador:** número de combinações estabelecimento + categoria de UTI com leitos SUS sem habilitação correspondente. Linha de base: 0 de 550.
 
 - **Responsável sugerido:** execução pela análise de dados; validação pela regulação ou gestão assistencial.
 
-- **Prazo sugerido:** antes de qualquer uso do resultado como indicador de conformidade.
+- **Prazo sugerido:** a cada carga e a cada nova portaria sobre leitos ou habilitações de UTI.
 
 #### R9 — Confirmar o significado do código 16 de `tipo_unidade` (A8)
 
@@ -417,18 +417,18 @@ Os resultados valem para o dado observado em SP, competência novembro de 2025, 
 
 ### 7.2 Interpretações não verificadas junto à fonte
 
-Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as interpretações abaixo. Elas estão marcadas como hipótese nos achados e geram recomendações de investigação (seção 6).
+Exceto pela correspondência entre leitos de UTI e habilitações (A4), confirmada nas Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025, nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as interpretações abaixo. Elas estão marcadas como hipótese nos achados e geram recomendações de investigação (seção 6).
 
 - O ano `9999` como prazo indeterminado, e o mês `9` em 4 registros (A2).
 - O significado de `habilitacao.quantidade_leitos` e sua relação com os leitos SUS cadastrados (A3).
-- O de-para entre leitos de UTI e habilitações, incluindo os códigos 2610 e 2611 tratados como sinônimos, e a premissa de que todo leito de UTI exige habilitação (A4).
+- A leitura das 553 combinações de UTI só com leitos não SUS como UTIs que atendem fora do SUS, e a presença da habilitação 2602 depois da extinção (A4).
 - O significado do código 16 de `tipo_unidade`. A ausência no ValueSet versão 1.1.0, ativo desde 2026-08-22, não prova ausência de significado em 2025-11 (A8).
 - A origem do texto `"nan"` na região de saúde (A1).
 - O corte de 24 meses para atualidade, que é critério do projeto e não regra oficial (A5).
 
 ### 7.3 O que não foi medido
 
-- O número de estabelecimentos afetados no A4: o resultado está em combinações estabelecimento + categoria de UTI (553 de 1.103) e em leitos (7.312); 547 é o universo de estabelecimentos com UTI.
+- A inspeção dos 298 estabelecimentos com combinações de UTI só com leitos não SUS, para confirmar que não atendem pelo SUS (A4).
 - A duplicidade de um mesmo estabelecimento real com códigos CNES diferentes (A7).
 - O impacto financeiro, clínico ou regulatório de qualquer achado.
 - A inspeção individual, por amostra, dos estabelecimentos apontados nas regras de consistência, prevista no planejamento: este documento não apresenta o resultado dessa inspeção.
@@ -442,7 +442,7 @@ Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as 
 - **Comparações manuais.** A correspondência de 37 dos 38 códigos de `tipo_unidade` com a tabela `dicionario` resultou da comparação manual de duas listas (`sql/07`, etapas 1 e 2), sem consulta que faça o cruzamento.
 - **Valores fora do log.** A média de 97,88 leitos de diferença no A3 só é calculada na `sql/05` (linha 152); a consulta registrada no log não a produz.
 - **Base sujeita a atualização.** A Base dos Dados pode reprocessar tabelas publicadas. Uma nova execução das consultas pode produzir números diferentes sem que o método tenha mudado.
-- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados. No mesmo dia, depois da auditoria do projeto, a comparação do A3 foi verificada e restrita às habilitações que têm leitos (`sql/05`, etapas 6 a 8), com nota datada na `sql/05` (linha 84) e no log (linha 336 e decisão da mesma seção).
+- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados. No mesmo dia, depois da auditoria do projeto, a comparação do A3 foi verificada e restrita às habilitações que têm leitos (`sql/05`, etapas 6 a 8), com nota datada na `sql/05` (linha 84) e no log (linha 336 e decisão da mesma seção). Também depois da auditoria, a regra do A4 foi recalculada com leitos SUS (`sql/06`, etapa 10), com nota datada na `sql/06` (linha 174) e no log (linha 403).
 
 ### 7.5 Premissas adotadas
 
@@ -455,7 +455,7 @@ Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as 
 
 Os passos abaixo são o que viria depois deste diagnóstico, em ordem. Nenhum deles foi executado.
 
-1. **Validar as interpretações junto à fonte.** Consultar a documentação oficial ou a área responsável pelo CNES sobre o ano `9999`, o significado das duas quantidades de leitos, o de-para de UTI e o código 16 (R6 a R9). É o passo que pode transformar hipóteses em fatos ou descartá-las.
+1. **Validar as interpretações junto à fonte.** Consultar a documentação oficial ou a área responsável pelo CNES sobre o ano `9999`, o significado de `habilitacao.quantidade_leitos`, a habilitação extinta ainda registrada e o código 16 (R6 a R9). É o passo que pode transformar hipóteses em fatos ou descartá-las.
 2. **Testar a origem do `"nan"`** na região de saúde com o mesmo método usado para o código 16, com script versionado (R2).
 3. **Pilotar os controles de menor custo** em uma nova competência: tratamento do `"nan"` (R1), completude de `cnpj_mantenedora` sobre os Mantidos (R10) e teste de unicidade (R11).
 4. **Repetir a medição em outra competência**, para comparar resultados e ativar os controles que dependem de série histórica (framework, Regras 5 e 8).

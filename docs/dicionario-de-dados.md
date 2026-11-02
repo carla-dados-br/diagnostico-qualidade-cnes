@@ -73,7 +73,7 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 
 ### De-para semântico construído
 
-**12 pares diretos**, confirmados por igualdade semântica e mesma granularidade (a distinção tipo I/II/III existe nos dois lados):
+**10 pares diretos**, confirmados por igualdade semântica e mesma granularidade (a distinção tipo I/II/III existe nos dois lados):
 
 | Código leito | Descrição | Código habilitação |
 |---|---|---|
@@ -95,17 +95,18 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 | 81 (UTI neonatal tipo II) | 2602 **e** 2610 | 96 de 98 estabelecimentos (~98%) com habilitação 2610 também têm leito 81 cadastrado |
 | 82 (UTI neonatal tipo III) | 2605 **e** 2611 | 28 de 28 estabelecimentos (100%) com habilitação 2611 também têm leito 82 cadastrado |
 
-Os códigos 2610 e 2611 aparecem no dicionário oficial como entradas textualmente diferentes de 2602/2605. O cruzamento empírico mostra que quase todos os estabelecimentos com essas habilitações também têm o leito correspondente (96 de 98 e 28 de 28), o que é compatível com uso equivalente, mas não comprova que tenham a mesma função. Para fins desta regra, foram tratados como sinônimos; essa decisão é do projeto e não foi verificada junto à fonte.
+Os códigos 2610 e 2611 aparecem na tabela `dicionario` do conjunto como entradas textualmente diferentes de 2602 e 2605. A Portaria SAES/MS nº 2.902/2025 extinguiu 2602, 2605 e 2697 e vinculou o leito 81 à habilitação 2610 e o leito 82 à 2611; o cruzamento empírico (96 de 98 e 28 de 28) é coerente com isso. A 2602 ainda aparece em 1 estabelecimento no recorte (`sql/05`, etapa 7).
 
 **Códigos de habilitação sem uso no recorte (SP, nov/2025):** `2612`, `2613` (variantes rotuladas para SRAG/COVID-19), `2699` (UTI tipo I sem especificar público), `8217` (rede cegonha), `8218` (rede de urgência/emergência). Não é uma decisão editorial de exclusão — esses códigos simplesmente não ocorrem nos dados filtrados; podem ter uso relevante em outros recortes geográficos ou temporais.
 
 ### Resultado da regra (SP, nov/2025)
 
-| Combinações estabelecimento+categoria de UTI avaliadas | Sem habilitação correspondente | % | Leitos afetados | Estabelecimentos com algum tipo de UTI |
+| Leitos considerados | Combinações | Sem habilitação | Leitos sem habilitação | Estabelecimentos |
 |---|---|---|---|---|
-| 1.103 | 553 | 50,1% | 7.312 | 547 |
+| Todos (original, sem data) | 1.103 | 553 (50,1%) | 7.312 | 547 (298 com alguma combinação sem habilitação) |
+| Só SUS (02/11/2026) | 550 | 0 | 0 de 7.346 | 281 |
 
-Metade das combinações de leito de UTI por estabelecimento não tem habilitação correspondente registrada segundo o de-para construído pelo projeto (tabela acima), e o resultado depende desse de-para — resultado coerente com o achado da regra de divergência de quantidade de leitos (`leito.quantidade_total` sistematicamente maior que `habilitacao.quantidade_leitos`), agora visto em nível mais granular e clinicamente relevante.
+Com leitos SUS, toda combinação de UTI tem a habilitação correspondente segundo o de-para, que coincide com a correspondência oficial das Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025 (definida para leitos SUS). As 553 combinações sem habilitação são exatamente as que têm 0 leitos SUS (`sql/06`, etapa 10).
 
 - **Query de referência:** ver `sql/06-consistencia-uti-sem-habilitacao.sql`
 
