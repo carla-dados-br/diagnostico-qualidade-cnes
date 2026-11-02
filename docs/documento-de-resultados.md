@@ -187,6 +187,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Média. Em comparação com o A3 e o A4, a evidência do fato é mais forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é muito menor. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Diferente do A3, já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
 
+#### A7 — Ausência de duplicidade do identificador CNES
+
+- **Achado:** Nenhum valor de `id_estabelecimento_cnes` se repete no recorte: cada um dos 110.362 registros de SP em novembro de 2025 tem um identificador diferente. O identificador funciona como chave única no recorte, o que permite tratar cada registro como um estabelecimento nas contagens dos demais achados.
+
+- **Evidência:** `sql/13` (linhas 23–36), consulta que agrupa por `id_estabelecimento_cnes` e retorna os grupos com mais de um registro: 0 linhas. A mesma consulta e o resultado estão no log de queries (linhas 677–695). Não há data de execução registrada. O total de 110.362 registros vem da contagem do recorte na Fase 1 (log, linha 92). O mapeamento FHIR registra 110.362 registros e 110.362 identificadores distintos (`docs/mapeamento-cnes-fhir.md`, linhas 100–101), e a seção 4.3 deste documento informa que a unicidade foi refeita de forma independente em Python, com o mesmo resultado.
+
+- **Dimensão:** Unicidade. O teste verifica a repetição do identificador do estabelecimento, que é a definição de unicidade adotada no projeto (seção 4.1).
+
+- **Onde ocorre no processo:** Não há problema a localizar. O resultado descreve o dado no estado em que chegou ao projeto, depois da publicação pelo DATASUS e do tratamento pela Base dos Dados. O projeto não acompanhou o cadastramento na origem.
+
+- **Causa provável (hipótese):** Não se aplica, porque não foi encontrado problema. O resultado é compatível com a atribuição de um código CNES por estabelecimento no cadastro nacional, mas essa regra de atribuição não foi verificada junto à fonte.
+
+- **Alcance:** Os 110.362 registros do recorte (SP, novembro de 2025). O teste não verifica se um mesmo estabelecimento real foi cadastrado com dois códigos diferentes; essa forma de duplicidade não foi medida. O resultado não deve ser estendido a outras competências ou Unidades da Federação.
+
+- **Prioridade:** Baixa, como o A9: os dois registram que o dado atende ao critério testado. Diferente dos achados de prioridade Média, não há problema a controlar. A relevância do A7 está em sustentar as contagens dos outros achados, como os 5 estabelecimentos do A8.
+
 #### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
 
 - **Achado:** O campo `cnpj_mantenedora` apresenta 98.098 registros vazios, correspondentes a 88,89% dos 110.362 estabelecimentos analisados. Entretanto, o vazio bruto não representa, por si só, uma falha de completude, pois o preenchimento do campo depende da situação cadastral do estabelecimento. A análise identificou que os registros vazios correspondem aos estabelecimentos classificados como `tipo_grau_dependencia = 1` (Individual), enquanto os registros classificados como `tipo_grau_dependencia = 3` (Mantida) apresentam o CNPJ da mantenedora preenchido.
