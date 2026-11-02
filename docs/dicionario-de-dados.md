@@ -34,7 +34,7 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 - **Categorias observadas no campo, entre os registros com data definida (692 registros):**
   1. **Prazos longos plausíveis** — datas futuras distantes mas plausíveis (majoritariamente entre 2029 e 2099), refletindo habilitações de longa duração. Contagens relevantes em cada competência (ex.: 2029-10 com 20 registros), o que indica padrão real, não ruído.
   2. **Outlier isolado** — um único registro com `2999/12`. Aparece uma única vez; não é um segundo sentinela sistemático. **Os dados não permitem determinar a causa** (não documentar como erro de digitação ou qualquer outra causa específica sem confirmação da fonte).
-- **Impacto para a regra de consistência:** a regra "habilitação vencida" precisa excluir explicitamente o sentinela (`ano_competencia_final != 9999`) antes de comparar datas — caso contrário, a comparação `sentinela < competência_de_referência` nunca é verdadeira (9999 é sempre maior), mascarando o resultado real da regra como "zero vencidas" mesmo antes de qualquer habilitação real ser avaliada.
+- **Impacto para a regra de consistência:** a regra "habilitação vencida" exclui explicitamente o sentinela (`ano_competencia_final != 9999`) antes de comparar datas. No recorte, essa exclusão não altera a contagem de vencidas: como 9999 nunca é anterior à competência de referência, as consultas com e sem a exclusão (queries 1 e 4 de `sql/04-consistencia-habilitacao-vencida.sql`) resultaram em zero. A exclusão é necessária para que as 6.072 habilitações sem prazo definido não sejam tratadas como datas reais, o que inflaria o universo de habilitações avaliadas.
 - **Resultado da regra aplicada corretamente (SP, nov/2025):**
 
   | Total habilitações | Indeterminadas (sentinela) | Com data definida | Vencidas |
@@ -93,7 +93,7 @@ Para cada campo: tipo de dado, o que representa, e como valores ausentes se mani
 | 81 (UTI neonatal tipo II) | 2602 **e** 2610 | 96 de 98 estabelecimentos (~98%) com habilitação 2610 também têm leito 81 cadastrado |
 | 82 (UTI neonatal tipo III) | 2605 **e** 2611 | 28 de 28 estabelecimentos (100%) com habilitação 2611 também têm leito 82 cadastrado |
 
-Os códigos 2610 e 2611 aparecem no dicionário oficial como entradas textualmente diferentes de 2602/2605, mas o cruzamento empírico mostra que coexistem nos mesmos estabelecimentos com a mesma função — tratados como sinônimos para fins desta regra, não como categorias distintas.
+Os códigos 2610 e 2611 aparecem no dicionário oficial como entradas textualmente diferentes de 2602/2605. O cruzamento empírico mostra que quase todos os estabelecimentos com essas habilitações também têm o leito correspondente (96 de 98 e 28 de 28), o que é compatível com uso equivalente, mas não comprova que tenham a mesma função. Para fins desta regra, foram tratados como sinônimos; essa decisão é do projeto e não foi verificada junto à fonte.
 
 **Códigos de habilitação sem uso no recorte (SP, nov/2025):** `2612`, `2613` (variantes rotuladas para SRAG/COVID-19), `2699` (UTI tipo I sem especificar público), `8217` (rede cegonha), `8218` (rede de urgência/emergência). Não é uma decisão editorial de exclusão — esses códigos simplesmente não ocorrem nos dados filtrados; podem ter uso relevante em outros recortes geográficos ou temporais.
 
@@ -103,7 +103,7 @@ Os códigos 2610 e 2611 aparecem no dicionário oficial como entradas textualmen
 |---|---|---|---|---|
 | 1.103 | 553 | 50,1% | 7.312 | 547 |
 
-Metade das combinações de leito de UTI por estabelecimento não tem nenhuma habilitação formal correspondente registrada — resultado coerente com o achado da regra de divergência de quantidade de leitos (`leito.quantidade_total` sistematicamente maior que `habilitacao.quantidade_leitos`), agora visto em nível mais granular e clinicamente relevante.
+Metade das combinações de leito de UTI por estabelecimento não tem habilitação correspondente registrada segundo o de-para construído pelo projeto (tabela acima), e o resultado depende desse de-para — resultado coerente com o achado da regra de divergência de quantidade de leitos (`leito.quantidade_total` sistematicamente maior que `habilitacao.quantidade_leitos`), agora visto em nível mais granular e clinicamente relevante.
 
 - **Query de referência:** ver `sql/06-consistencia-uti-sem-habilitacao.sql`
 

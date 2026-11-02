@@ -447,7 +447,7 @@ Na tabela `habilitacao`, o valor:
 ano_competencia_final = 9999
 ```
 
-é utilizado para representar prazo final indeterminado. O mês associado não é fixo: `99` em 6.068 registros e `9` em 4 (ver etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`).
+aparece nos registros sem data final definida e é interpretado pelo projeto como prazo final indeterminado; essa interpretação não foi verificada junto à fonte. O mês associado não é fixo: `99` em 6.068 registros e `9` em 4 (ver etapa 7 de `sql/04-consistencia-habilitacao-vencida.sql`).
 
 No recorte, **6.072 de 6.764 habilitações (89,77%)** utilizam esse padrão.
 

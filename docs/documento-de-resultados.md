@@ -73,7 +73,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
 | A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
-| A3 | Divergência entre quantidades de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
+| A3 | Divergência entre quantidade de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | Leito de UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 combinações (50,1%); 7.312 leitos; universo de 547 estabelecimentos com UTI | Consistência | Fato; interpretação é hipótese | **Média** |
 | A8 | Código 16 de `tipo_unidade` sem significado semântico confirmado | 5 de 110.362 estabelecimentos; 37 de 38 códigos presentes no ValueSet FHIR e na tabela `dicionario` | Consistência | Fato; interpretação é hipótese | **Média** |
 | A7 | Ausência de duplicidade do identificador CNES | 0 duplicados em 110.362 registros | Unicidade | Fato | **Baixa** |
@@ -84,11 +84,17 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 #### A1 e A6 — Ausência de região de saúde e variação entre municípios
 
 - **Achado:** O campo região de saúde apresenta ausência de informação em mais da metade dos estabelecimentos analisados. A ausência é composta principalmente pelo texto `"nan"`: dos 60.366 registros classificados como ausentes, 60.361 estão representados como `"nan"`, 5 aparecem como texto em branco e nenhum foi identificado como campo sem valor. Isso mostra que a ausência está sendo representada principalmente como um valor textual, e não como um campo nulo convencional.
+
 - **Evidência:** A consulta `sql/03` identificou ausência de região de saúde em 60.366 dos 110.362 estabelecimentos (54,70%). A consulta `sql/09` mostrou que as taxas municipais de ausência variam de 0% a 99,18%. A análise municipal considerou 347 municípios do estado de São Paulo que possuíam pelo menos 20 estabelecimentos na base analisada; esse critério foi utilizado para evitar que municípios com poucos estabelecimentos produzissem proporções extremas que dificultassem a interpretação da variação observada.
+
 - **Dimensão:** Completude.
+
 - **Onde ocorre no processo:** O problema foi observado na base `br_ms_cnes`, disponibilizada pela Base dos Dados e consultada no Google BigQuery, após a publicação e o tratamento intermediário dos dados. Como o projeto não acompanhou diretamente o cadastramento nos estabelecimentos nem todas as etapas anteriores à disponibilização da base, não é possível afirmar em qual etapa a informação deixou de estar disponível ou passou a ser representada como texto.
-- **Causa provável (hipótese):** Uma hipótese é que os valores ausentes tenham sido convertidos para o texto `"nan"` em alguma etapa de tratamento ou transformação dos dados. Essa hipótese ainda não foi confirmada. Um caminho possível para investigar a proveniência, já utilizado no projeto para o código 16, é aplicar ao campo região de saúde o mesmo método da Fase 6, com o PySUS e `source="origin"`, verificando se o `"nan"` já está presente na origem ou se aparece posteriormente no processamento.
+
+- **Causa provável (hipótese):** Uma hipótese é que os valores ausentes tenham sido convertidos para o texto `"nan"` em alguma etapa de tratamento ou transformação dos dados. Essa hipótese não foi verificada: o projeto não testou se o `"nan"` já está presente na origem dos dados.
+
 - **Alcance:** O achado abrange o recorte estadual de São Paulo, com 60.366 estabelecimentos sem região de saúde identificada, e apresenta variação entre os 347 municípios avaliados, cujas taxas de ausência vão de 0% a 99,18%. O projeto mediu a distribuição da ausência, mas não quantificou seus efeitos sobre decisões ou serviços de saúde.
+
 - **Prioridade:** Alta, devido à magnitude da ausência identificada, à grande variação entre municípios e ao fato de que a representação como texto `"nan"` pode não ser reconhecida por verificações convencionais de valores nulos.
 
 #### A5 — Cadastros classificados como desatualizados
@@ -131,9 +137,9 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Dimensão:** Completude. O achado surgiu na construção de uma regra de consistência, mas descreve uma ausência mascarada, e não uma contradição entre campos. O uso do ano `9999` oculta o fato de que a habilitação não possui um prazo de validade definido, da mesma forma que o `"nan"` atua na ausência de região de saúde (achado A1). Se aceito de forma bruta, o sentinela inflaria falsamente a completude do campo com informações que não representam datas reais.
 
-- **Onde ocorre no processo:** O padrão foi identificado na Fase 3 (Indicadores e regras de consistência). O tratamento exigiu a exclusão explícita do ano `9999` antes de calcular a regra de habilitação vencida. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa específica.
+- **Onde ocorre no processo:** O sentinela já está presente na tabela `habilitacao` disponibilizada pela Base dos Dados, ou seja, foi registrado antes da coleta do projeto: no cadastramento, na consolidação pelo DATASUS ou no tratamento intermediário. O projeto não acompanhou o cadastramento na origem e, portanto, não atribui o padrão observado a uma etapa específica.
 
-- **Causa provável (hipótese):** O registro de um ano futuro extremado (`9999`) sugere o uso de uma convenção sistêmica pela origem para designar habilitações de prazo indeterminado. Essa interpretação foi deduzida pelo comportamento dos dados, sem confirmação na documentação oficial da fonte. A hipótese de convenção sistemática não explica, porém, por que 4 dos registros apresentam o mês `9`.
+- **Causa provável (hipótese):** O registro de um ano futuro extremado (`9999`) sugere o uso de uma convenção sistêmica pela origem para designar habilitações de prazo indeterminado. Essa interpretação foi deduzida pelo comportamento dos dados e não foi verificada junto à fonte. A hipótese de convenção sistemática não explica, porém, por que 4 dos registros apresentam o mês `9`.
 
 - **Alcance:** O sentinela afeta 6.072 (89,77%) das 6.764 habilitações no recorte de São Paulo (competência novembro/2025). O resultado de zero vencidas foi medido sobre o universo de 692 registros com data definida. O diagnóstico é estrito a este recorte e não deve ser extrapolado.
 
