@@ -1,8 +1,8 @@
 <p align="center">
   <b>Nexis — Dados em Saúde</b> · Projeto CNES<br/>
-  <img src="https://img.shields.io/badge/status-em%20andamento-ed93b1?style=flat-square" alt="Status: em andamento">
+  <img src="https://img.shields.io/badge/status-conclu%C3%ADdo-ed93b1?style=flat-square" alt="Status: concluído">
   <img src="https://img.shields.io/badge/dados-p%C3%BAblicos-f4c0d1?style=flat-square&labelColor=d4537e" alt="Dados públicos">
-  <img src="https://img.shields.io/badge/fases-6%20de%207%20conclu%C3%ADdas-d4537e?style=flat-square" alt="6 de 7 fases concluídas">
+  <img src="https://img.shields.io/badge/fases-7%20de%207%20conclu%C3%ADdas-d4537e?style=flat-square" alt="7 de 7 fases concluídas">
 </p>
 
 # Diagnóstico de Qualidade e Governança de Dados em Estabelecimentos de Saúde (CNES/DATASUS)
@@ -114,7 +114,7 @@ A Fase 2 reproduziu formalmente parte dos indicadores originalmente desenvolvido
 
 Notebook principal: [`python/fase2-limpeza-tratamento.ipynb`](python/fase2-limpeza-tratamento.ipynb).
 
-A reprodução das três regras de consistência e do indicador de atualidade em Python permanece como extensão futura e não bloqueia as próximas fases do projeto.
+A reprodução das três regras de consistência e do indicador de atualidade em Python não foi feita e está registrada como limitação (documento de resultados, seção 7.3).
 
 ### Dashboard (Fase 4)
 
@@ -198,9 +198,9 @@ Atividades já realizadas dentro da Fase 6:
 - [x] validar formalmente os recursos FHIR;
 - [x] documentar perdas semânticas e exceções.
 
-**Etapa final**
+**Fase 7 concluída**
 
-- [ ] Fase 7 — Consolidação e apresentação final do portfólio
+- [x] Fase 7 — Consolidação e apresentação final do portfólio: [`docs/documento-de-resultados.md`](docs/documento-de-resultados.md), com resumo executivo, 10 achados detalhados, 11 recomendações e limitações
 
 <details>
 <summary><b>Checklist técnico concluído</b></summary>
@@ -265,13 +265,15 @@ Atividades já realizadas dentro da Fase 6:
 │   └── 19-validacao-historico-tipo-unidade-16.sql
 │
 ├── docs/
+│   ├── documento-de-resultados.md
+│   ├── log-de-queries.md
 │   ├── decisao-recorte.md
 │   ├── achados-verificacao-estrutura.md
 │   ├── dicionario-de-dados.md
 │   ├── framework-governanca.md
 │   ├── investigacao-proveniencia-tipo-unidade-16.md
 │   ├── mapeamento-cnes-fhir.md
-│   └── demais decisões e documentos metodológicos
+│   └── projeto-portfolio-cnes-qualidade-dados-v2.md
 │
 ├── python/
 │   ├── fase2-limpeza-tratamento.ipynb
@@ -423,6 +425,8 @@ Essa separação evita transformar interpretações ainda não verificadas em re
 
 ## 8. Achados
 
+O [documento de resultados](docs/documento-de-resultados.md) consolida os 10 achados (A1 a A10), com evidência, prioridade, recomendações e limitações. Abaixo, um resumo dos principais.
+
 ### Ausência mascarada em `id_regiao_saude`
 
 O campo `id_regiao_saude` não representa ausência apenas com `NULL`.
@@ -543,7 +547,7 @@ Resultado: **5 de 5 registros apresentaram `TP_UNID = 16` na origem consultada.*
 Portanto, não foi encontrada evidência de que a transformação observada entre a origem consultada e a Base dos Dados tenha introduzido o valor `16`.
 
 > [!IMPORTANT]
-> Isso confirma sua proveniência dentro da cadeia investigada, mas não confirma seu significado semântico. O código continua sem significado oficial confirmado dentro das fontes utilizadas no projeto.
+> Isso mostra que o valor já estava presente na origem consultada, mas não confirma seu significado semântico. O código continua sem significado oficial confirmado dentro das fontes utilizadas no projeto.
 >
 > Por essa razão, `tipo_unidade = 16` não é exportado como `Coding` nesta versão. Sem significado semântico e sistema terminológico validados, não serão atribuídos `system`, `code` ou `display`.
 
@@ -670,7 +674,7 @@ A presença de um código nos dados não é suficiente para atribuir significado
 O código `tipo_unidade = 16` exemplifica essa diferença:
 
 ```text
-proveniência confirmada
+presença na origem consultada
 ≠
 semântica validada
 ```
@@ -705,17 +709,46 @@ A comparação SQL × Python permitiu identificar e corrigir divergências reais
 
 ## 12. Próximos passos
 
-A **Fase 6 — Interoperabilidade FHIR** foi concluída. A próxima etapa é a **Fase 7 — Consolidação e apresentação final do portfólio**.
+O projeto foi concluído na Fase 7. Os próximos passos recomendados, que não fazem parte desta versão, estão na seção 8 do [documento de resultados](docs/documento-de-resultados.md):
 
-Próximas atividades:
-
-1. iniciar a Fase 7 — Consolidação e apresentação final do portfólio.
+1. validar junto à fonte as interpretações ainda não confirmadas (ano `9999`, quantidades de leitos, de-para de UTI e código `16`);
+2. testar a origem do texto `"nan"` na região de saúde;
+3. pilotar os controles de menor custo em uma nova competência;
+4. repetir a medição em outra competência;
+5. reconstruir e versionar o teste de proveniência com PySUS.
 
 ---
 
 ## 13. Referências
 
-_Em construção — prevista para a Fase 7._
+Referências citadas na documentação do projeto.
+
+**Dados**
+
+- Base dos Dados. Conjunto `br_ms_cnes` (Cadastro Nacional de Estabelecimentos de Saúde), consultado no Google BigQuery. https://basedosdados.org
+- Ministério da Saúde. SCNES — Guia de Preenchimento. https://wiki.saude.gov.br/cnes/index.php/SCNES_-_Guia_de_Preenchimento
+
+**Normas**
+
+- Brasil. Ministério da Saúde. Portaria GM/MS nº 1.646, de 2 de outubro de 2015. Institui o Cadastro Nacional de Estabelecimentos de Saúde (CNES). https://bvsms.saude.gov.br/bvs/saudelegis/gm/2015/prt1646_02_10_2015.html
+- Brasil. Ministério da Saúde. Portaria de Consolidação GM/MS nº 1/2017, que incorpora a Portaria nº 1.646/2015.
+- Brasil. Ministério da Saúde. Portaria de Consolidação SAES/MS nº 1/2022 (citada em `docs/mapeamento-cnes-fhir.md`).
+- Brasil. Lei nº 14.195, de 26 de agosto de 2021. https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2021/lei/l14195.htm
+- DREI. Ofício Circular SEI nº 4856/2022. https://www.gov.br/empresas-e-negocios/pt-br/drei/legislacao/arquivos/oficios-circulares-drei/2022/SEI_30141120_Oficio_Circular_4856.pdf
+
+**Padrões e terminologias**
+
+- HL7. FHIR R4 (4.0.1) — Organization. https://hl7.org/fhir/R4/organization.html
+- HL7. FHIR R4 (4.0.1) — Data Types. https://hl7.org/fhir/R4/datatypes.html
+- Ministério da Saúde. ValueSet `BRTipoEstabelecimentoSaude`, versão 1.1.0. https://terminologia.saude.gov.br/fhir/ValueSet/BRTipoEstabelecimentoSaude
+- Ministério da Saúde. NamingSystem CNES. https://terminologia.saude.gov.br/fhir/NamingSystem/cnes
+- RNDS. CodeSystem `BRNaturezaJuridica`. https://rnds-fhir.saude.gov.br/CodeSystem-BRNaturezaJuridica.html
+- IBGE/CONCLA. Tabela de Natureza Jurídica 2021 — Notas Explicativas. https://concla.ibge.gov.br/images/concla/documentacao/CONCLA-TNJ2021-NotasExplicativas.pdf
+
+**Ferramentas**
+
+- PySUS 2.11.1. https://github.com/AlertaDengue/PySUS
+- FHIR Validator CLI 6.10.4 (HL7), usado na validação dos cinco exemplos FHIR R4.
 
 ---
 

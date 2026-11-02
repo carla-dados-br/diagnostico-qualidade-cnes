@@ -100,7 +100,7 @@ Isso sustenta a conclusão de que o fenômeno não é exclusivamente paulista
 nem restrito a um único estabelecimento ou município.
 
 Os dados, entretanto, não permitem determinar em qual processo anterior da
-cadeia o código foi originalmente criado nem qual é o seu significado.
+cadeia o código foi originalmente criado nem qual é o seu significado. A reprodução independente das consultas das seções 2 e 3 está em `sql/19-validacao-historico-tipo-unidade-16.sql`.
 
 ---
 
@@ -198,7 +198,7 @@ Até o encerramento desta investigação:
 - não foi confirmado um sistema terminológico que permita representá-lo
   como conceito validado no FHIR.
 
-Portanto, proveniência confirmada não significa semântica validada.
+Portanto, presença na origem consultada não significa semântica validada.
 
 ---
 
@@ -223,7 +223,7 @@ completo.
 - **Código:** `16`
 - **Registros afetados no recorte principal:** 5 de 110.362
 - **Cobertura do domínio observado:** 37 de 38 códigos com correspondência no dicionário
-- **Proveniência:** confirmada na origem consultada
+- **Proveniência:** valor presente na origem consultada (5 de 5)
 - **Semântica:** não resolvida
 - **Impacto FHIR:** exceção terminológica
 - **Status:** documentado; não bloqueia a continuidade do projeto, desde que tratado explicitamente
