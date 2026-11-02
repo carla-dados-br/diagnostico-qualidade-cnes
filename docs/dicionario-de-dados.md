@@ -137,7 +137,7 @@ Com leitos SUS, toda combinação de UTI tem a habilitação correspondente segu
 ## `ano_atualizacao` / `mes_atualizacao` — Indicador de Atualidade Cadastral
 
 - **Tipo:** INT64 (ambos)
-- **O que representa:** competência (ano/mês) da última alteração cadastral do estabelecimento. Base para a dimensão de qualidade "Atualidade" (distinta de Completude e Consistência, já medidas em outros campos).
+- **O que representa:** competência (ano/mês) da última alteração cadastral do estabelecimento. Base para a dimensão de qualidade "Atualidade" (distinta de Completude e Consistência, já medidas em outros campos). A definição não foi confirmada na fonte; o resultado da `sql/08`, etapa 6, é compatível com ela e incompatível com a data da transmissão exigida pela Portaria SAS/MS nº 118/2014.
 - **Padrão de ausência investigado:** nenhum nulo encontrado (0 de 110.362). Intervalo de valores: 2015 a 2025, sem sentinela aparente (diferente do padrão `9999`/`99` encontrado em `habilitacao`).
 
 ### Achado observacional (não uma regra de qualidade, mas relevante para interpretação)
@@ -148,7 +148,7 @@ Com leitos SUS, toda combinação de UTI tem a habilitação correspondente segu
 
 - **Data de referência:** 2025-11 — a competência do próprio snapshot analisado, não a data de execução da análise. Essa escolha torna o indicador uma característica do snapshot, reproduzível por qualquer pessoa que rode a mesma query sobre o mesmo arquivo, independentemente de quando a análise for executada.
 - **Janela de atualidade:** 24 meses anteriores à competência de referência (limite: 2023-11, incluído como "ainda atualizado").
-- **Justificativa:** 24 meses é uma convenção metodológica deste projeto, adotada por representar um intervalo operacional razoável para avaliar atualidade de um cadastro nacional de estabelecimentos de saúde, evitando classificar como desatualizados registros ainda dentro de um ciclo bienal de manutenção. **Não é uma definição normativa do DATASUS sobre prazo de validade cadastral** — nenhuma fonte oficial desse tipo foi verificada; o corte é uma decisão do projeto, documentada como tal.
+- **Justificativa:** 24 meses é uma convenção metodológica deste projeto, adotada por representar um intervalo operacional razoável para avaliar atualidade de um cadastro nacional de estabelecimentos de saúde, evitando classificar como desatualizados registros ainda dentro de um ciclo bienal de manutenção. **Não é a regra oficial:** a Portaria SAS/MS nº 118/2014 manda desativar estabelecimentos há mais de 6 meses sem transmissão à base nacional, o que este campo não mede; o corte de 24 meses é uma decisão do projeto, documentada como tal.
 - **Categorias:** "atualizado" (competência ≥ 2023-11), "desatualizado" (< 2023-11), "não informado" (ausência de ano/mês) — tratada separadamente, sem ser somada aos desatualizados.
 
 ### Resultado (SP, nov/2025)
@@ -157,7 +157,7 @@ Com leitos SUS, toda combinação de UTI tem a habilitação correspondente segu
 |---|---|---|---|---|
 | 110.362 | 87.494 | 22.868 | 0 | 20,72% |
 
-Cerca de 1 em cada 5 estabelecimentos do recorte não teve nenhuma atualização cadastral nos 24 meses anteriores à competência de referência.
+Cerca de 1 em cada 5 estabelecimentos do recorte não registra alteração cadastral nos 24 meses anteriores à competência de referência; com a janela de 6 meses, são 50.785 (46,02%; `sql/08`, etapa 6).
 
 - **Query de referência:** ver `sql/08-atualidade-cadastral.sql`
 

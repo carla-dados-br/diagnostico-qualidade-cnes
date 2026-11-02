@@ -17,12 +17,12 @@
 
 **Pergunta.** Em que medida o cadastro de estabelecimentos do CNES de São Paulo, em novembro de 2025, é completo, consistente, atual e único?
 
-**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco está sem atualização há mais de 24 meses e, nos leitos de UTI do SUS, toda categoria cadastrada tem a habilitação correspondente.
+**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco não registra alteração no cadastro há mais de 24 meses e, nos leitos de UTI do SUS, toda categoria cadastrada tem a habilitação correspondente.
 
 **Principais achados** (110.362 estabelecimentos):
 
 1. **Região de saúde ausente** em 60.366 estabelecimentos (54,70%). A ausência aparece como o texto `"nan"`, que verificações comuns de campo vazio não detectam, e varia de 0% a 99,18% entre municípios (A1, A6).
-2. **Cadastros desatualizados:** 22.868 estabelecimentos (20,72%) sem atualização há mais de 24 meses, segundo critério do projeto (A5).
+2. **Cadastros sem alteração registrada:** 22.868 estabelecimentos (20,72%) sem alteração cadastral registrada há mais de 24 meses, segundo critério do projeto. O dado não indica, por si só, descumprimento da regra de desativação da Portaria SAS/MS nº 118/2014 (A5).
 3. **Possível dado pessoal em base pública:** até 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` são compatíveis com CPF (A10).
 4. **Leitos de UTI do SUS com habilitação:** as 550 combinações estabelecimento + categoria de UTI com leitos SUS têm a habilitação correspondente; as 553 sem habilitação têm só leitos não SUS (A4). Na comparação agregada entre leitos e habilitações, restrita às habilitações que têm leitos, só 1 de 304 estabelecimentos tem mais leitos habilitados do que leitos SUS (A3).
 5. **Prazo final não informado:** 6.072 de 6.764 habilitações (89,77%) usam o ano `9999` no lugar de uma data (A2).
@@ -86,7 +86,7 @@ Os dados e o recorte utilizados estão descritos na seção 3. Esta seção expl
 
 **Consistência:** verifica se informações relacionadas são compatíveis entre si e se os códigos registrados pertencem às listas de códigos consultadas. Neste projeto, foi aplicada a três regras e a uma verificação dos códigos registrados no campo tipo de unidade; por exemplo, à comparação entre a quantidade total de leitos informada para o estabelecimento e a quantidade de leitos registrada nas habilitações correspondentes, para identificar diferenças que precisassem de investigação.
 
-**Atualidade:** verifica há quanto tempo o cadastro recebeu uma atualização registrada. Neste projeto, foi aplicada à data de atualização dos estabelecimentos, utilizando uma janela metodológica de 24 meses para classificar os registros.
+**Atualidade:** verifica há quanto tempo o cadastro não registra alteração. Neste projeto, foi aplicada à data de atualização dos estabelecimentos (`ano_atualizacao` e `mes_atualizacao`), utilizando uma janela metodológica de 24 meses para classificar os registros. Essa janela não corresponde à regra oficial de desativação, que trata da transmissão à base nacional (Portaria SAS/MS nº 118/2014; ver A5).
 
 **Unicidade:** verifica se cada estabelecimento aparece de forma única na identificação usada pelo projeto. Neste projeto, foi aplicada ao código CNES do estabelecimento, buscando identificar repetições desse identificador no recorte analisado.
 
@@ -111,9 +111,9 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | ID | Achado | Evidência | Dimensão | Confiança | Prioridade |
 |---|---|---|---|---|---|
 | A1 | Ausência mascarada em região de saúde | 60.366 de 110.362 (54,70%) | Completude | Fato | **Alta** |
-| A5 | Cadastros classificados como desatualizados | 22.868 de 110.362 (20,72%) | Atualidade | Fato segundo critério do projeto | **Alta** |
 | A6 | Variação municipal da ausência de região de saúde | 0% a 99,18% em 347 municípios avaliados | Completude | Fato | **Alta** |
 | A10 | Valores de `cpf_cnpj` com compatibilidade matemática com CPF | até 34.318 (33.368 + 950) de 98.559 preenchidos | Fora das quatro dimensões — privacidade e governança | Fato; interpretação é hipótese | **Alta** |
+| A5 | Cadastros sem alteração registrada há mais de 24 meses | 22.868 de 110.362 (20,72%); 50.785 (46,02%) sem alteração há mais de 6 meses | Atualidade | Fato segundo critério do projeto; significado do campo é hipótese | **Média** |
 | A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
 | A8 | Código 16 de `tipo_unidade` sem significado semântico confirmado | 5 de 110.362 estabelecimentos; 37 de 38 códigos presentes no ValueSet FHIR e na tabela `dicionario` | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | Correspondência entre leitos de UTI do SUS e habilitações | 550 de 550 combinações com leitos SUS têm habilitação; as 553 sem habilitação têm só leitos não SUS | Consistência | Fato | **Baixa** |
@@ -139,22 +139,6 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Alta, devido à magnitude da ausência identificada, à grande variação entre municípios e ao fato de que a representação como texto `"nan"` pode não ser reconhecida por verificações convencionais de valores nulos.
 
-#### A5 — Cadastros classificados como desatualizados
-
-- **Achado:** Foram identificados 22.868 estabelecimentos classificados como desatualizados, o que representa 20,72% dos 110.362 estabelecimentos do recorte. Como o projeto não identificou um critério oficial de validade cadastral, a classificação baseou-se em um critério metodológico próprio: foi considerado desatualizado o registro cuja última atualização informada é anterior a 24 meses em relação à competência do arquivo.
-
-- **Evidência:** A consulta `sql/08-atualidade-cadastral.sql` avaliou os campos `ano_atualizacao` e `mes_atualizacao` da tabela `estabelecimento`, tendo como referência a competência do próprio arquivo (2025-11), e não a data de execução da consulta. A janela de 24 meses fixou o corte em 2023-11, mês incluído como atualizado. O cálculo retornou 87.494 registros atualizados (79,28%), 22.868 desatualizados (20,72%) e nenhum registro sem data de atualização informada. O resultado está registrado também em `docs/log-de-queries.md`. A janela de 24 meses é uma convenção analítica adotada para o diagnóstico e não foi confirmada como norma oficial de validade cadastral do DATASUS.
-
-- **Dimensão:** Atualidade.
-
-- **Onde ocorre no processo:** O indicador foi medido sobre a tabela `estabelecimento` da base `br_ms_cnes`. Não é possível afirmar em qual etapa da origem a defasagem se acumula. A consulta também identificou uma anomalia de cronologia: 2.971 estabelecimentos (2,7%) apresentam data de atualização (2025-12) posterior à própria competência do arquivo (2025-11). Pela regra do corte (igual ou posterior a 2023-11), esses registros foram incluídos no grupo de atualizados e não afetam os 20,72% calculados para a desatualização. A anomalia levantou a hipótese de uma defasagem no fluxo de consolidação ou publicação pela fonte, mas essa causa não pôde ser confirmada pelos dados.
-
-- **Causa provável (hipótese):** A ausência de atualização por mais de 24 meses não comprova, isoladamente, que o dado esteja incorreto. As hipóteses principais são: (1) ausência real de alterações físicas, assistenciais ou administrativas que motivassem atualização no período; (2) falha na rotina de manutenção cadastral pelos responsáveis locais; ou (3) encerramento de atividades sem a devida baixa no sistema. O diagnóstico comprova a ausência de atualização registrada, mas não a sua causa operacional.
-
-- **Alcance:** O achado abrange 22.868 estabelecimentos do recorte de São Paulo, competência novembro de 2025, segundo o critério de 24 meses. O número depende diretamente da janela metodológica escolhida e não deve ser extrapolado para outras competências ou Unidades da Federação.
-
-- **Prioridade:** Alta. A classificação justifica-se pela magnitude do achado: mais de um quinto do recorte não registra atualização nos 24 meses anteriores à competência analisada. Esse volume gera incerteza sobre a atualidade das informações de uma parcela expressiva do cadastro, o que justifica a atenção no documento e o acompanhamento do indicador, independentemente dos efeitos que essa defasagem possa ou não causar no planejamento ou nos serviços de saúde.
-
 #### A10 — Valores de `cpf_cnpj` compatíveis com CPF
 
 - **Achado:** O campo `cpf_cnpj` apresenta valores matematicamente compatíveis com o algoritmo de dígitos verificadores do CPF. Dos 98.559 valores preenchidos, 33.368 passaram somente no algoritmo de CPF e 950 passaram nos algoritmos de CPF e de CNPJ. Por isso, o número de valores compatíveis com CPF varia de no mínimo 33.368 (33,86%) a no máximo 34.318 (34,82%), conforme os 950 valores ambíguos sejam ou não considerados. A compatibilidade matemática configura risco potencial de presença de dado pessoal, mas não comprova que os valores sejam CPFs de pessoas físicas.
@@ -170,6 +154,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 - **Alcance:** O achado abrange de 33.368 a 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` no recorte de São Paulo, competência novembro de 2025. A validação matemática não comprova existência cadastral, titularidade, situação cadastral nem tipo fiscal efetivo dos documentos. O resultado está restrito ao recorte analisado e não deve ser extrapolado para outras competências ou Unidades da Federação.
 
 - **Prioridade:** Alta. A classificação justifica-se pelo volume de valores compatíveis com CPF, cerca de um terço dos valores preenchidos, em uma base de acesso público, o que representa um risco potencial de presença de dados pessoais. Esse risco justifica a atenção no documento e o cuidado com o campo em todas as etapas que o utilizem, independentemente da confirmação de que os valores correspondam, de fato, a documentos de pessoas físicas.
+
+#### A5 — Cadastros sem alteração registrada há mais de 24 meses
+
+- **Achado:** 22.868 dos 110.362 estabelecimentos do recorte (20,72%) não registram alteração cadastral nos 24 meses anteriores à competência do arquivo; 50.785 (46,02%) não registram alteração nos 6 meses anteriores. A Portaria SAS/MS nº 118/2014 manda desativar automaticamente os estabelecimentos há mais de 6 meses sem atualização cadastral, mas define atualização como a exportação e transmissão sem rejeição da base local para a nacional, mesmo sem alteração de dados. Pelo resultado, o campo usado pelo projeto indica a data da última alteração do cadastro, e não a dessa transmissão. Por isso, o indicador mede tempo sem alteração registrada, e não o descumprimento da regra de desativação.
+
+- **Evidência:** `sql/08-atualidade-cadastral.sql`, etapa 5 (sem data de execução registrada): 87.494 registros (79,28%) com última alteração em 2023-11 ou depois, 22.868 (20,72%) antes de 2023-11 e nenhum sem data. A referência é a competência do arquivo (2025-11), e não a data de execução da consulta. A etapa 6, executada em 02/11/2026, depois da auditoria do projeto, contou 50.785 registros (46,02%) com última alteração antes de 2025-05 e mostrou que a tabela não tem coluna de situação ou de desativação. O resultado está também no `docs/log-de-queries.md` (linha 510, com nota datada). Norma: Portaria SAS/MS nº 118/2014, art. 1º, §§ 1º e 3º.
+
+- **Dimensão:** Atualidade, entendida como tempo desde a última alteração registrada no cadastro.
+
+- **Onde ocorre no processo:** O indicador foi medido sobre a tabela `estabelecimento` da base `br_ms_cnes`. Não é possível afirmar em qual etapa da origem a defasagem se acumula. A consulta também identificou uma anomalia de cronologia: 2.971 estabelecimentos (2,7%) apresentam data de atualização (2025-12) posterior à própria competência do arquivo (2025-11). Pela regra do corte (igual ou posterior a 2023-11), esses registros foram incluídos no grupo de atualizados e não afetam os 20,72% calculados para a desatualização. A anomalia levantou a hipótese de uma defasagem no fluxo de consolidação ou publicação pela fonte, mas essa causa não pôde ser confirmada pelos dados.
+
+- **Causa provável (hipótese):** A ausência de alteração por mais de 24 meses não comprova, isoladamente, que o dado esteja incorreto. As hipóteses principais são: (1) ausência real de mudanças físicas, assistenciais ou administrativas no período; (2) falha na rotina de manutenção cadastral pelos responsáveis locais; ou (3) encerramento de atividades sem a devida baixa no sistema. Que o campo registre a última alteração, e não a transmissão, é dedução a partir do resultado: a definição do campo não foi confirmada na fonte, e não foi verificado se o arquivo publicado inclui estabelecimentos desativados.
+
+- **Alcance:** 22.868 estabelecimentos do recorte de São Paulo, competência novembro de 2025, segundo o critério de 24 meses; 50.785 segundo a janela de 6 meses. Os números dependem da janela escolhida e não devem ser extrapolados para outras competências ou Unidades da Federação.
+
+- **Prioridade:** Média. Mais de um quinto do recorte não registra alteração há mais de 24 meses, o que justifica acompanhar o indicador. Como o campo não mede a transmissão exigida pela portaria, porém, cadastro sem alteração não equivale a cadastro desatualizado: o estabelecimento pode transmitir todo mês sem mudar nada. Como o A2, o A5 aponta um risco a acompanhar, sem erro comprovado.
 
 #### A2 — Valor sentinela nas habilitações
 
@@ -309,13 +309,13 @@ Três tipos de controle são usados: **preventivo**, que impede o problema antes
 
 - **Prazo sugerido:** a cada fechamento de competência.
 
-#### R4 — Monitorar a atualidade cadastral e ratificar o corte de 24 meses (A5)
+#### R4 — Monitorar o tempo sem alteração cadastral e confirmar o significado do campo (A5)
 
-- **Ação:** acompanhar a cada carga os estabelecimentos sem atualização há mais de 24 meses e submeter esse corte à área de gestão, porque ele é critério do projeto e não regra oficial.
+- **Ação:** acompanhar a cada carga os estabelecimentos sem alteração registrada há mais de 24 meses; confirmar junto à fonte o que `ano_atualizacao` registra e se o arquivo publicado inclui estabelecimentos desativados; submeter o corte de 24 meses à área de gestão, porque ele é critério do projeto e não a regra de 6 meses da Portaria SAS/MS nº 118/2014.
 
 - **Controle:** detectivo, mensal (framework, Regra 7).
 
-- **Indicador:** percentual de estabelecimentos desatualizados. Linha de base: 22.868 de 110.362 (20,72%).
+- **Indicador:** percentual de estabelecimentos sem alteração registrada há mais de 24 meses. Linha de base: 22.868 de 110.362 (20,72%); com a janela de 6 meses, 50.785 (46,02%).
 
 - **Responsável sugerido:** execução pela engenharia de dados; validação pela governança com a gestão em saúde.
 
@@ -424,7 +424,7 @@ Exceto pela correspondência entre leitos de UTI e habilitações (A4), confirma
 - A leitura das 553 combinações de UTI só com leitos não SUS como UTIs que atendem fora do SUS, e a presença da habilitação 2602 depois da extinção (A4).
 - O significado do código 16 de `tipo_unidade`. A ausência no ValueSet versão 1.1.0, ativo desde 2026-08-22, não prova ausência de significado em 2025-11 (A8).
 - A origem do texto `"nan"` na região de saúde (A1).
-- O corte de 24 meses para atualidade, que é critério do projeto e não regra oficial (A5).
+- O corte de 24 meses, que é critério do projeto e não a regra de 6 meses da Portaria SAS/MS nº 118/2014, e o que o campo `ano_atualizacao` registra (A5).
 
 ### 7.3 O que não foi medido
 
@@ -442,7 +442,7 @@ Exceto pela correspondência entre leitos de UTI e habilitações (A4), confirma
 - **Comparações manuais.** A correspondência de 37 dos 38 códigos de `tipo_unidade` com a tabela `dicionario` resultou da comparação manual de duas listas (`sql/07`, etapas 1 e 2), sem consulta que faça o cruzamento.
 - **Valores fora do log.** A média de 97,88 leitos de diferença no A3 só é calculada na `sql/05` (linha 152); a consulta registrada no log não a produz.
 - **Base sujeita a atualização.** A Base dos Dados pode reprocessar tabelas publicadas. Uma nova execução das consultas pode produzir números diferentes sem que o método tenha mudado.
-- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados. No mesmo dia, depois da auditoria do projeto, a comparação do A3 foi verificada e restrita às habilitações que têm leitos (`sql/05`, etapas 6 a 8), com nota datada na `sql/05` (linha 84) e no log (linha 336 e decisão da mesma seção). Também depois da auditoria, a regra do A4 foi recalculada com leitos SUS (`sql/06`, etapa 10), com nota datada na `sql/06` (linha 174) e no log (linha 403).
+- **Correções de registro.** Em 02/11/2026, duas descrições incorretas foram corrigidas com nota datada, mantendo o texto original: a origem da redução de 19 para 14 códigos de habilitação de UTI e a contagem de pares do de-para (`docs/log-de-queries.md`, linha 362; `sql/06`, linha 85). As notas foram escritas na própria linha corrigida, para não alterar a numeração citada nos achados. No mesmo dia, depois da auditoria do projeto, a comparação do A3 foi verificada e restrita às habilitações que têm leitos (`sql/05`, etapas 6 a 8), com nota datada na `sql/05` (linha 84) e no log (linha 336 e decisão da mesma seção). Também depois da auditoria, a regra do A4 foi recalculada com leitos SUS (`sql/06`, etapa 10), com nota datada na `sql/06` (linha 174) e no log (linha 403). Por fim, a atualidade do A5 foi comparada com a janela de 6 meses da Portaria SAS/MS nº 118/2014 (`sql/08`, etapa 6), com nota datada na `sql/08` (linha 104) e no log (linha 510).
 
 ### 7.5 Premissas adotadas
 

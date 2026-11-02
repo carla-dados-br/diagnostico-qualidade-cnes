@@ -558,22 +558,19 @@ Portanto, não foi encontrada evidência de que a transformação observada entr
 
 Investigação completa: [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs/investigacao-proveniencia-tipo-unidade-16.md).
 
-### Atualidade cadastral
+### Tempo sem alteração cadastral
 
-Foi adotada uma janela metodológica de **24 meses** anteriores à própria competência do snapshot.
+Foi adotada uma janela metodológica de **24 meses** anteriores à própria competência do snapshot (novembro de 2025), e não à data em que a análise foi executada.
 
-A referência utilizada é novembro de 2025, e não a data em que a análise foi executada.
-
-| Situação | Estabelecimentos |
+| Última alteração registrada | Estabelecimentos |
 |---|---:|
-| Atualizados | 87.494 |
-| Desatualizados | 22.868 |
-| Não informado | 0 |
-
-Percentual desatualizado: **20,72%**.
+| Nos últimos 24 meses | 87.494 |
+| Há mais de 24 meses | 22.868 (20,72%) |
+| Há mais de 6 meses (inclui os anteriores) | 50.785 (46,02%) |
+| Não informada | 0 |
 
 > [!IMPORTANT]
-> A janela de 24 meses é uma convenção metodológica deste projeto e não uma regra normativa atribuída ao DATASUS.
+> A Portaria SAS/MS nº 118/2014 manda desativar estabelecimentos há mais de 6 meses sem atualização cadastral, mas define atualização como a transmissão da base local para a nacional, mesmo sem mudança nos dados. O campo usado pelo projeto indica a última alteração do cadastro. Por isso, o indicador mede tempo sem alteração, e não o descumprimento dessa regra. A janela de 24 meses é critério do projeto.
 
 ### Distribuição regional
 
@@ -737,6 +734,7 @@ Referências citadas na documentação do projeto.
 
 - Brasil. Ministério da Saúde. Portaria GM/MS nº 1.646, de 2 de outubro de 2015. Institui o Cadastro Nacional de Estabelecimentos de Saúde (CNES). https://bvsms.saude.gov.br/bvs/saudelegis/gm/2015/prt1646_02_10_2015.html
 - Brasil. Ministério da Saúde. Portaria de Consolidação GM/MS nº 1/2017, que incorpora a Portaria nº 1.646/2015.
+- Brasil. Ministério da Saúde. Secretaria de Atenção à Saúde. Portaria SAS/MS nº 118, de 18 de fevereiro de 2014 (republicada). Desativação automática, no SCNES, de estabelecimentos há mais de 6 meses sem atualização cadastral. https://bvsms.saude.gov.br/bvs/sas/Links%20finalizados%20SAS%202014/prt0118_12_06_2014_rep.html (acesso em 02/11/2026)
 - Brasil. Ministério da Saúde. Portaria de Consolidação SAES/MS nº 1/2022 (citada em `docs/mapeamento-cnes-fhir.md`).
 - Brasil. Ministério da Saúde. Portaria SAES/MS nº 2.902, de 26 de junho de 2025. Exclui as habilitações 26.02, 26.05 e 26.97 e vincula os leitos 81 e 82 às habilitações 26.10 e 26.11. https://www.editoraroncarati.com.br/v2/Diario-Oficial/Diario-Oficial/PORTARIA-SAES-MS-N%C2%BA-2-902-DE-26-06-2025.html (acesso em 02/11/2026)
 - Brasil. Ministério da Saúde. Portaria SAES/MS nº 3.511, de 24 de novembro de 2025. Define o registro no CNES e a habilitação de leitos de UTI e UCI. https://ses.sp.bvs.br/wp-content/uploads/2025/12/U_PT-MS-SAES-3511_241125.pdf (acesso em 02/11/2026)
