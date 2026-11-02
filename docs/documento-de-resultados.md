@@ -75,7 +75,7 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 | A2 | Valor sentinela nas habilitações | 6.072 de 6.764 (89,77%); 0 vencidas após tratamento | Completude | Fato | **Média** |
 | A3 | Divergência entre quantidades de leitos e habilitações | 768 de 768; leitos maiores que habilitações em todos os casos | Consistência | Fato; interpretação é hipótese | **Média** |
 | A4 | Leito de UTI sem habilitação correspondente segundo o de-para | 553 de 1.103 combinações (50,1%); 7.312 leitos; universo de 547 estabelecimentos com UTI | Consistência | Fato; interpretação é hipótese | **Média** |
-| A8 | Código 16 sem significado semântico confirmado | 5 estabelecimentos; 37 de 38 códigos reconciliados | Consistência | Fato; interpretação é hipótese | **Média** |
+| A8 | Código 16 de `tipo_unidade` sem significado semântico confirmado | 5 de 110.362 estabelecimentos; 37 de 38 códigos presentes no ValueSet FHIR e na tabela `dicionario` | Consistência | Fato; interpretação é hipótese | **Média** |
 | A7 | Ausência de duplicidade do identificador CNES | 0 duplicados em 110.362 registros | Unicidade | Fato | **Baixa** |
 | A9 | Completude do CNPJ da mantenedora depende da aplicabilidade | 88,89% vazio bruto; 100% preenchido entre 12.264 mantidos | Completude | Fato | **Baixa** |
 
@@ -170,6 +170,22 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 - **Alcance:** 553 combinações e 7.312 leitos (44,86% dos leitos de UTI do recorte), dentro de um universo de 547 estabelecimentos com UTI, em São Paulo (competência novembro/2025). Os códigos de habilitação 2612, 2613, 2699, 8217 e 8218 não ocorrem no recorte (`sql/06`, linhas 102–106); em outros recortes, o de-para precisaria ser revisto. O diagnóstico não deve ser extrapolado.
 
 - **Prioridade:** Média. Comparado ao A3, que também é Consistência com interpretação em hipótese, o A4 tem maior relevância assistencial, porque trata de leitos de terapia intensiva em nível de categoria. No entanto, a força da sua evidência é menor: o A3 compara dois campos diretamente, enquanto o A4 depende de um de-para construído pelo próprio projeto. Assim como no A3, e diferente do A2, não há tratamento técnico que resolva o achado antes de esclarecer com a fonte o significado da correspondência. A prioridade não sobe para Alta porque a força da recomendação não pode exceder a força da evidência.
+
+#### A8 — Código 16 de `tipo_unidade` sem significado semântico confirmado
+
+- **Achado:** O código `16` aparece no campo `tipo_unidade` em 5 estabelecimentos do recorte, mas seu significado não está documentado em nenhuma das duas referências consultadas: a tabela `dicionario` da Base dos Dados e o ValueSet FHIR `BRTipoEstabelecimentoSaude` (versão 1.1.0). Dos 38 códigos observados no recorte, é o único sem correspondência nas duas.
+
+- **Evidência:** Presença no ValueSet: `sql/16`, resultados 1 e 2 (linhas 58–80; resultados registrados nas linhas 101–111), executada em 2026-10-04: 37 de 38 códigos presentes; o `16` ocorre em 5 estabelecimentos. Correspondência com a tabela `dicionario`: `sql/07`, etapas 1 e 2 (linhas 22–44), por comparação manual entre as duas listas, sem data de execução registrada. Histórico e ocorrência nacional: a query original não foi versionada; a `sql/19` é uma reprodução independente, executada em 2026-10-04, que chegou aos mesmos números registrados em `docs/investigacao-proveniencia-tipo-unidade-16.md` (seções 2 e 3). Presença na origem: mesmo documento, seções 4 e 5 (PySUS 2.11.1, `source="origin"`), sem script versionado e sem data registrada. Log de queries, nota na linha 432.
+
+- **Dimensão:** Consistência, entendida como consistência do valor com o domínio de referência do campo. O campo está 100% preenchido no recorte (`sql/07`, etapa 3), por isso o problema não é de completude. Se o `16` for um código válido ainda não documentado nas fontes consultadas, a inconsistência não está no dado, e sim na documentação de referência.
+
+- **Onde ocorre no processo:** O valor já está presente nos mesmos 5 estabelecimentos no arquivo da origem consultada (CNES/ST/SP/2025-11, obtido pelo PySUS com `source="origin"`), e não foi encontrada evidência de que a transformação da Base dos Dados o tenha introduzido. O problema surge, portanto, antes da publicação desse arquivo, no cadastramento ou no processamento da origem. O teste não determina em qual dessas etapas, e o projeto não acompanhou o cadastramento na origem.
+
+- **Causa provável (hipótese):** O padrão é compatível com uma alteração na origem, e não com uma ocorrência isolada: na janela de 2024-01 a 2026-02, o código aparece pela primeira vez em 2025-09 e passa de 10 estabelecimentos em 7 UFs para 86 em 18 UFs; os 5 estabelecimentos de SP vieram de tipos diferentes (22, 36, 4 e 2), e um deles voltou ao tipo anterior (36 → 16 → 36). Os dados não distinguem entre explicações alternativas: código novo ainda não incorporado às referências consultadas, uso indevido do código no cadastramento ou reclassificação temporária. A interpretação não foi verificada junto à fonte. A ausência no ValueSet versão 1.1.0, ativo desde 2026-08-22, não prova que o código não tivesse significado oficial em 2025-11.
+
+- **Alcance:** No recorte, 5 de 110.362 estabelecimentos (cerca de 0,005%). A contagem equivale a estabelecimentos porque não há duplicidade de `id_estabelecimento_cnes` no recorte (A7). Fora do recorte, 43 estabelecimentos em 15 UFs na mesma competência (2025-11) e 86 em 18 UFs em 2026-02. O universo nacional de estabelecimentos não foi calculado, por isso não há percentual nacional.
+
+- **Prioridade:** Média. Em comparação com o A3 e o A4, a evidência do fato é mais forte (duas referências, presença na origem e histórico reproduzido), mas o alcance no recorte é muito menor. Fica em Média, e não em Baixa, porque o código não tem significado conhecido, afeta diretamente a classificação do estabelecimento e o mapeamento FHIR (`Organization.type`), e cresce em escala nacional. Diferente do A3, já existe tratamento técnico: o projeto não atribui rótulo ao código no FHIR, o que limita o impacto dentro do projeto, mas não resolve o problema no dado.
 
 #### A9 — Completude do CNPJ da mantenedora depende da aplicabilidade
 
