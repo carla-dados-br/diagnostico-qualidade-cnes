@@ -400,7 +400,7 @@ SELECT COUNT(DISTINCT l.id_estabelecimento_cnes || l.categoria_uti) AS total_com
 FROM leitos_uti l LEFT JOIN habilitacoes_uti h
   ON l.id_estabelecimento_cnes = h.id_estabelecimento_cnes AND l.categoria_uti = h.categoria_uti;
 ```
-**Resultado:** 1.103 combinações avaliadas, 553 sem habilitação (50,1%), 7.312 leitos afetados.
+**Resultado:** 1.103 combinações avaliadas, 553 sem habilitação (50,1%), 7.312 leitos afetados. **[Nota de verificação, 02/11/2026:** as 553 combinações sem habilitação têm 0 leitos SUS; entre as 550 combinações com leitos SUS de UTI, 0 estão sem habilitação. A correspondência oficial (Portarias SAES/MS nº 2.902/2025 e nº 3.511/2025) vale para leitos SUS. Estabelecimentos com pelo menos uma combinação sem habilitação: 298 (`sql/06`, etapa 10).**]**
 
 **Query de verificação — `tipo_leito` nos códigos de UTI (executada em 01/11/2026):** a query final agrupa só por `tipo_especialidade_leito`, mas a decisão técnica da seção "Códigos de especialidade e tipo de leito (UTI)" exige também `tipo_leito`. Os códigos de UTI aparecem com mais de um `tipo_leito`?
 

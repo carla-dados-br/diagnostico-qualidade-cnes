@@ -171,7 +171,7 @@ WHERE l.sigla_uf = 'SP'
 -- de UTI agregadas pela mesma categoria (agrupando as correspondencias empiricamente sustentadas), e
 -- LEFT JOIN para achar combinacoes estabelecimento+categoria sem
 -- nenhuma habilitacao correspondente.
--- Resultado: 553 de 1.103 combinacoes (50,1%) sem habilitacao,
+-- Resultado: 553 de 1.103 combinacoes (50,1%) sem habilitacao, [NOTA 2026-11-02: com leitos SUS, 0 de 550; ver etapa 10]
 -- totalizando 7.312 leitos associados a essas combinacoes sem
 -- habilitacao correspondente segundo o de-para aplicado, em 547
 -- estabelecimentos com algum tipo de UTI cadastrado.
@@ -263,3 +263,80 @@ WHERE sigla_uf = 'SP'
   AND tipo_especialidade_leito IN ('74','75','76','77','78','79','80','81','82','83','85','86')
 GROUP BY tipo_especialidade_leito, tipo_leito
 ORDER BY tipo_especialidade_leito, tipo_leito;
+
+-- -----------------------------------------------------------------------
+-- 10. Verificacao pos-auditoria - regra da etapa 8 com leitos SUS
+-- (executada em 2026-11-02; job job_RXVxdwZ4lggfBkkS1OsDx39C-5m7)
+-- Motivo: a correspondencia oficial entre tipo de leito e habilitacao
+-- (Portarias SAES/MS n. 2.902/2025 e n. 3.511/2025, coluna "habilitacao
+-- relacionada aos leitos SUS") vale para leitos SUS. A etapa 8 usa
+-- quantidade_total, que inclui leitos nao SUS.
+-- Resultado:
+--   reproducao da etapa 8: 1.103 combinacoes, 553 sem habilitacao,
+--   7.312 leitos, 547 estabelecimentos com UTI (iguais ao original);
+--   estabelecimentos com pelo menos uma combinacao sem habilitacao: 298;
+--   combinacoes com leitos SUS > 0: 550, das quais 0 sem habilitacao;
+--   leitos SUS de UTI: 7.346, dos quais 0 sem habilitacao;
+--   estabelecimentos com UTI SUS: 281; quantidade_sus nula: 0.
+--   Como 550 + 553 = 1.103, as 553 combinacoes sem habilitacao sao
+--   exatamente as que tem 0 leitos SUS.
+-- Leitura: em todas as combinacoes com leitos SUS de UTI existe a
+-- habilitacao correspondente segundo o de-para, que coincide com o das
+-- portarias. As 553 combinacoes sem habilitacao tem so leitos nao SUS,
+-- para os quais as portarias consultadas nao definem habilitacao.
+-- -----------------------------------------------------------------------
+WITH leitos_uti AS (
+  SELECT
+    id_estabelecimento_cnes,
+    CASE tipo_especialidade_leito
+      WHEN '74' THEN 'uti_adulto_1'      WHEN '75' THEN 'uti_adulto_2'
+      WHEN '76' THEN 'uti_adulto_3'      WHEN '77' THEN 'uti_pediatrica_1'
+      WHEN '78' THEN 'uti_pediatrica_2'  WHEN '79' THEN 'uti_pediatrica_3'
+      WHEN '80' THEN 'uti_neonatal_1'    WHEN '81' THEN 'uti_neonatal_2'
+      WHEN '82' THEN 'uti_neonatal_3'    WHEN '83' THEN 'uti_queimados'
+      WHEN '85' THEN 'uti_coronariana_2' WHEN '86' THEN 'uti_coronariana_3'
+    END AS categoria_uti,
+    SUM(quantidade_total) AS leitos_total,
+    SUM(quantidade_sus)   AS leitos_sus
+  FROM `basedosdados.br_ms_cnes.leito`
+  WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11
+    AND tipo_especialidade_leito IN ('74','75','76','77','78','79','80','81','82','83','85','86')
+  GROUP BY 1, 2
+),
+habilitacoes_uti AS (
+  SELECT DISTINCT
+    id_estabelecimento_cnes,
+    CASE tipo_habilitacao
+      WHEN '2696' THEN 'uti_adulto_1'      WHEN '2601' THEN 'uti_adulto_2'
+      WHEN '2604' THEN 'uti_adulto_3'      WHEN '2698' THEN 'uti_pediatrica_1'
+      WHEN '2603' THEN 'uti_pediatrica_2'  WHEN '2606' THEN 'uti_pediatrica_3'
+      WHEN '2697' THEN 'uti_neonatal_1'    WHEN '2602' THEN 'uti_neonatal_2'
+      WHEN '2610' THEN 'uti_neonatal_2'    WHEN '2605' THEN 'uti_neonatal_3'
+      WHEN '2611' THEN 'uti_neonatal_3'    WHEN '2607' THEN 'uti_queimados'
+      WHEN '2608' THEN 'uti_coronariana_2' WHEN '2609' THEN 'uti_coronariana_3'
+    END AS categoria_uti
+  FROM `basedosdados.br_ms_cnes.habilitacao`
+  WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 11
+    AND tipo_habilitacao IN ('2696','2601','2604','2698','2603','2606','2697','2602','2610','2605','2611','2607','2608','2609')
+),
+j AS (
+  SELECT l.*, h.id_estabelecimento_cnes IS NULL AS sem_hab
+  FROM leitos_uti AS l
+  LEFT JOIN habilitacoes_uti AS h
+    ON l.id_estabelecimento_cnes = h.id_estabelecimento_cnes
+   AND l.categoria_uti = h.categoria_uti
+)
+SELECT
+  COUNT(*) AS combinacoes,
+  COUNTIF(sem_hab) AS combinacoes_sem_hab,
+  SUM(IF(sem_hab, leitos_total, 0)) AS leitos_total_sem_hab,
+  COUNT(DISTINCT id_estabelecimento_cnes) AS estab_com_uti,
+  COUNT(DISTINCT IF(sem_hab, id_estabelecimento_cnes, NULL)) AS estab_com_combinacao_sem_hab,
+  COUNTIF(leitos_sus > 0) AS combinacoes_sus,
+  COUNTIF(leitos_sus > 0 AND sem_hab) AS combinacoes_sus_sem_hab,
+  SUM(leitos_sus) AS leitos_sus_uti,
+  SUM(IF(sem_hab, leitos_sus, 0)) AS leitos_sus_sem_hab,
+  COUNT(DISTINCT IF(leitos_sus > 0, id_estabelecimento_cnes, NULL)) AS estab_com_uti_sus,
+  COUNT(DISTINCT IF(leitos_sus > 0 AND sem_hab, id_estabelecimento_cnes, NULL)) AS estab_sus_sem_hab,
+  COUNTIF(leitos_sus IS NULL) AS sus_nulo
+FROM j;
