@@ -15,7 +15,27 @@
 
 ## 1. Resumo executivo
 
-_Em construção._
+**Pergunta.** Em que medida o cadastro de estabelecimentos do CNES de São Paulo, em novembro de 2025, é completo, consistente, atual e único?
+
+**Resposta.** O identificador dos estabelecimentos é único, mas mais da metade dos cadastros não informa a região de saúde, um em cada cinco está sem atualização há mais de 24 meses e os dados de leitos e habilitações não podem ser cruzados com segurança sem confirmação junto à fonte.
+
+**Principais achados** (110.362 estabelecimentos):
+
+1. **Região de saúde ausente** em 60.366 estabelecimentos (54,70%). A ausência aparece como o texto `"nan"`, que verificações comuns de campo vazio não detectam, e varia de 0% a 99,18% entre municípios (A1, A6).
+2. **Cadastros desatualizados:** 22.868 estabelecimentos (20,72%) sem atualização há mais de 24 meses, segundo critério do projeto (A5).
+3. **Possível dado pessoal em base pública:** até 34.318 dos 98.559 valores preenchidos de `cpf_cnpj` são compatíveis com CPF (A10).
+4. **Leitos e habilitações não se correspondem:** em 768 de 768 estabelecimentos, o total de leitos supera o das habilitações; 553 de 1.103 combinações de UTI (50,1%) não têm habilitação correspondente segundo o de-para do projeto. A interpretação depende de confirmação junto à fonte (A3, A4).
+5. **Prazo final não informado:** 6.072 de 6.764 habilitações (89,77%) usam o ano `9999` no lugar de uma data (A2).
+
+**Impacto.** O impacto financeiro, clínico ou regulatório dos achados não foi medido neste projeto.
+
+**Recomendações prioritárias.**
+
+1. Tratar `"nan"` e texto em branco como ausência antes de qualquer indicador que use a região de saúde (R1).
+2. Restringir `cpf_cnpj` a resultados agregados, sem publicar valores individuais (R5).
+3. Confirmar junto à fonte o significado das quantidades de leitos e o de-para de UTI antes de usá-los como indicador de conformidade (R7, R8).
+
+**Decisão pedida ao leitor.** Validar com a área responsável pelo CNES as interpretações listadas na seção 7.2, incluindo o corte de 24 meses. Até essa validação, os achados A2, A3, A4 e A8 devem ser lidos como evidência para investigação, e não como erro confirmado.
 
 ## 2. Contexto e objetivo
 
