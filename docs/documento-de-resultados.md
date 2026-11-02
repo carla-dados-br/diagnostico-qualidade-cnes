@@ -2,7 +2,16 @@
 
 ## 0. Identificação
 
-_Em construção._
+| Campo | Informação |
+|---|---|
+| Projeto | Diagnóstico de Qualidade e Governança de Dados em Estabelecimentos de Saúde (CNES/DATASUS) |
+| Natureza | Projeto de portfólio, sem cliente. Os dados são públicos e reais, não sintéticos. |
+| Fonte | CNES/DATASUS, conjunto `br_ms_cnes` da Base dos Dados, consultado no Google BigQuery |
+| Recorte | São Paulo (SP), competência novembro de 2025, 110.362 estabelecimentos |
+| Versão | 1.0, novembro de 2026 |
+| Status | Finalizado |
+| Responsável | Carla (`carla-dados-br`), que acumula os papéis de dona do dado, analista e revisora |
+| Repositório | https://github.com/carla-dados-br/diagnostico-qualidade-cnes |
 
 ## 1. Resumo executivo
 
@@ -10,7 +19,20 @@ _Em construção._
 
 ## 2. Contexto e objetivo
 
-_Em construção._
+**Problema.** Gestores decidem sobre leitos, profissionais e planejamento regional com base em cadastros que podem estar incompletos, desatualizados ou inconsistentes. O CNES é a base cadastral que sustenta outros sistemas do SUS, como SIA, SIH e e-SUS AB; problemas de qualidade nele se propagam para esses sistemas.
+
+**Pergunta do projeto.** Em que medida o cadastro de estabelecimentos do CNES de São Paulo, em novembro de 2025, é completo, consistente, atual e único, e quais controles reduziriam os problemas encontrados?
+
+**Objetivos.**
+
+- Medir completude, consistência, atualidade e unicidade do cadastro de estabelecimentos.
+- Aplicar três regras de consistência baseadas na estrutura real do CNES, uma delas dependente de conhecimento clínico (leito de UTI e habilitação).
+- Propor regras mínimas de governança, com responsáveis e indicadores.
+- Mapear os dados para os recursos FHIR `Organization` e `Location`, com validação.
+
+**Fora do escopo.** A tabela `profissional`, por conter dado pessoal (nome, cartão nacional de saúde e município de residência); o envio de dados à RNDS; modelos preditivos; a integração com sistemas hospitalares; e a correção dos dados na fonte.
+
+**Leitores.** Gestores de saúde municipais e estaduais, equipes de dados de operadoras e hospitais e pesquisadores em saúde pública.
 
 ## 3. Processo estudado
 
@@ -411,8 +433,44 @@ Nenhuma documentação oficial do CNES/DATASUS foi consultada para confirmar as 
 
 ## 8. Próximos passos
 
-_Em construção._
+Os passos abaixo são o que viria depois deste diagnóstico, em ordem. Nenhum deles foi executado.
+
+1. **Validar as interpretações junto à fonte.** Consultar a documentação oficial ou a área responsável pelo CNES sobre o ano `9999`, o significado das duas quantidades de leitos, o de-para de UTI e o código 16 (R6 a R9). É o passo que pode transformar hipóteses em fatos ou descartá-las.
+2. **Testar a origem do `"nan"`** na região de saúde com o mesmo método usado para o código 16, com script versionado (R2).
+3. **Pilotar os controles de menor custo** em uma nova competência: tratamento do `"nan"` (R1), completude de `cnpj_mantenedora` sobre os Mantidos (R10) e teste de unicidade (R11).
+4. **Repetir a medição em outra competência**, para comparar resultados e ativar os controles que dependem de série histórica (framework, Regras 5 e 8).
+5. **Fechar as lacunas de registro** da seção 7.4: reconstruir e versionar o teste PySUS e registrar a data de execução de cada consulta reexecutada.
 
 ## 9. Anexos técnicos
 
-_Em construção._
+Todos os arquivos estão no repositório indicado na seção 0.
+
+| Arquivo | Conteúdo |
+|---|---|
+| `sql/01` a `sql/19` | Consultas SQL de exploração, indicadores, regras de consistência e validações |
+| `docs/log-de-queries.md` | Registro de cada consulta, do resultado e da decisão tomada |
+| `docs/dicionario-de-dados.md` | Dicionário dos campos analisados, derivado da tabela `dicionario` |
+| `docs/framework-governanca.md` | Regras de governança, responsáveis e indicadores (base da seção 6) |
+| `docs/mapeamento-cnes-fhir.md` | De-para CNES → FHIR e decisões de mapeamento |
+| `docs/investigacao-proveniencia-tipo-unidade-16.md` | Investigação do código 16 (A8) |
+| `docs/achados-verificacao-estrutura.md` | Achados da verificação de estrutura do conjunto |
+| `docs/decisao-recorte.md` | Justificativa do recorte SP + novembro de 2025 |
+| `docs/projeto-portfolio-cnes-qualidade-dados-v2.md` | Planejamento do projeto (versão 2) |
+| `python/fase2-limpeza-tratamento.ipynb` | Limpeza e tratamento dos dados (Fase 2) |
+| `python/fase6-conversor-fhir.py` e `tests/test_fase6_conversor_fhir.py` | Conversor para FHIR e seus testes |
+| `fhir/exemplos/` e `fhir/validacao/` | Cinco bundles FHIR de exemplo e o registro da validação |
+| `dashboard/` | Painéis de completude, atualidade e distribuição regional (PDF) |
+| `requirements.txt` | Versões das bibliotecas do ambiente de reprodução |
+
+**Glossário**
+
+| Termo | Significado |
+|---|---|
+| CNES | Cadastro Nacional de Estabelecimentos de Saúde, mantido pelo Ministério da Saúde |
+| DATASUS | Departamento de Informática do SUS, que publica os dados do CNES |
+| Competência | Mês de referência dos dados (aqui, novembro de 2025) |
+| Habilitação | Autorização formal de um estabelecimento para prestar um tipo de serviço pelo SUS |
+| Valor sentinela | Valor usado no lugar de uma informação ausente, como o ano `9999` |
+| De-para | Tabela de correspondência entre códigos de duas listas diferentes |
+| FHIR | Padrão internacional de troca de dados em saúde (HL7 FHIR) |
+| ValueSet | Lista oficial de códigos válidos para um campo, publicada em terminologia FHIR |
