@@ -807,6 +807,28 @@ Profissional em formação em Dados para Saúde · Biomedicina + Ciência de Dad
 
 As decisões de escopo, tratamento, qualidade, governança e interoperabilidade deste projeto são documentadas para tornar o processo reproduzível e auditável.
 
-**Autoria e apoio de IA:** este projeto foi idealizado, desenvolvido e executado pela autora, com auxílio de IA generativa como ferramenta de apoio: aprendizagem, orientação técnica, revisão, auditoria e apoio na redação de textos e scripts. A IA não executou o projeto de forma autônoma nem substituiu a decisão da autora: as consultas foram executadas por ela, e todas as análises, correções, decisões e textos publicados foram conferidos e aprovados por ela.
+#### Como este projeto foi feito: autoria e uso de IA
+
+Idealizei, investiguei e executei este projeto com apoio de IA generativa (Claude, da Anthropic). A IA não executou o projeto de forma autônoma nem tomou decisões por mim.
+
+**O que foi meu**
+
+- A ideia, o recorte e as perguntas do projeto.
+- A execução: todas as consultas no BigQuery, o notebook, o teste de proveniência com PySUS em Docker, a validação FHIR e os commits.
+- As decisões: escopo (incluindo deixar a tabela `profissional` fora por conter dado pessoal), critérios, prioridade de cada achado, o que corrigir e o que registrar como limitação.
+- A aprovação final de cada texto e de cada alteração antes de publicar.
+
+**O que foi da IA**
+
+- Orientação técnica e explicação de conceitos ao longo do aprendizado.
+- Proposta de consultas e scripts, que eu executei e conferi.
+- Redação de trechos da documentação, incluindo textos de achados, a partir das minhas decisões.
+- Revisão crítica, incluindo a auditoria de 02/11/2026, que levou à correção de três regras.
+
+**Como garanti a qualidade**
+
+- Nenhum número foi publicado sem que eu executasse a consulta que o produz. Os resultados estão no log de queries; quando a data de execução não foi registrada, isso está declarado nas limitações.
+- Toda alteração de arquivo foi conferida antes do commit, com checksum do trecho aprovado, `git diff --stat` e varredura de privacidade.
+- Correções preservam o registro original, com nota datada.
 
 [LinkedIn](https://linkedin.com/in/carla-rodrigues-br) · [GitHub](https://github.com/carla-dados-br)
