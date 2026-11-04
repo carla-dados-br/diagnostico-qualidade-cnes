@@ -126,6 +126,12 @@ Ferramenta utilizada:
 - imagem `alertadengue/pysus`
 - PySUS 2.11.1
 
+Limitação: os comandos deste teste não foram guardados em script versionado.
+A data de execução, a versão do Docker, o identificador exato (digest) da
+imagem e a versão do Python dentro dela não foram registrados. Por isso, o
+teste não pode ser reexecutado a partir do repositório; a reconstrução está
+prevista nos próximos passos do README.
+
 ### Consulta
 
 Foi utilizada a função CNES do namespace `pysus.ftp` com:

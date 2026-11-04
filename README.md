@@ -541,6 +541,8 @@ O uso de `source="origin"` no PySUS permite reduzir camadas intermediárias dura
 
 Entretanto, confirmar que determinado valor existe no conjunto disponibilizado pela origem consultada não significa determinar em qual sistema ou processo anterior ele foi originalmente criado.
 
+O teste de proveniência não pode ser reexecutado a partir do repositório: os comandos não foram guardados em script versionado, e a data de execução, a versão do Docker, o identificador exato (digest) da imagem e a versão do Python dentro dela não foram registrados (documento de resultados, seção 7.4).
+
 ### Semântica
 
 A presença de um código nos dados não é suficiente para atribuir significado a ele.
@@ -634,8 +636,11 @@ Foi executada separadamente com:
 | Ferramenta | Versão |
 |---|---|
 | Docker | versão não registrada na execução |
-| Python | 3.12 |
+| Imagem | `alertadengue/pysus`, sem digest registrado |
+| Python (na imagem) | versão não registrada; o PySUS 2.11.1 exige Python 3.11 ou superior e inferior a 3.14 |
 | PySUS | 2.11.1 |
+
+Não há script versionado nem data de execução registrada para este teste; ver a seção 8 (Proveniência).
 
 Os detalhes estão em [`docs/investigacao-proveniencia-tipo-unidade-16.md`](docs/investigacao-proveniencia-tipo-unidade-16.md).
 
