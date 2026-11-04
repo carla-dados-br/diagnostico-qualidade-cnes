@@ -48,7 +48,7 @@
 - Medir completude, consistência, atualidade e unicidade do cadastro de estabelecimentos.
 - Aplicar três regras de consistência baseadas na estrutura real do CNES, uma delas dependente de conhecimento clínico (leito de UTI e habilitação).
 - Propor regras mínimas de governança, com responsáveis e indicadores.
-- Mapear os dados para os recursos FHIR `Organization` e `Location`, com validação.
+- Mapear os dados para FHIR R4, com validação. O escopo inicial previa os recursos `Organization` e `Location`; a versão entregue gera apenas `Organization` (seção 5.3).
 
 **Fora do escopo.** A tabela `profissional`, por conter dado pessoal (nome, cartão nacional de saúde e município de residência); o envio de dados à RNDS; modelos preditivos; a integração com sistemas hospitalares; e a correção dos dados na fonte.
 
@@ -267,6 +267,16 @@ Nota sobre prioridade: A prioridade indica a necessidade de atenção no documen
 
 - **Prioridade:** Baixa. A classificação decorre do fato de que não foi identificada ausência de `cnpj_mantenedora` entre os estabelecimentos classificados como Mantidos no recorte analisado. O principal ponto de atenção é preservar a regra de negócio na definição e no monitoramento do indicador, evitando que estabelecimentos para os quais o campo não se aplica sejam tratados como registros incompletos.
 
+### 5.3 Mapeamento FHIR
+
+O mapeamento é um resultado de entrega, e não um achado de qualidade; por isso não entra na tabela 5.1.
+
+- **O que foi gerado:** recursos `Organization` em FHIR R4 (4.0.1), identificados pelo número CNES (Decisão 01 de `docs/mapeamento-cnes-fhir.md`), com o CEP em `Organization.address.postalCode`. `Location` foi avaliado e não é gerado como recurso independente nesta versão. Não são gerados identificadores de CPF ou CNPJ (A10).
+
+- **Validação:** os cinco bundles de exemplo em `fhir/exemplos/` passaram no FHIR Validator CLI 6.10.4: 5 de 5 aprovados, com 0 erros e 0 avisos (`fhir/validacao/validacao-cinco-bundles-cnes.log`). O conversor (`python/fase6-conversor-fhir.py`) tem 13 testes automatizados em `tests/test_fase6_conversor_fhir.py`.
+
+- **Limites:** ver seção 7.3.
+
 ## 6. Recomendações e controles
 
 As recomendações seguem a ordem de prioridade da tabela 5.1. Cada uma indica o achado que trata, o tipo de controle e o indicador de acompanhamento, com a linha de base medida no recorte. O detalhamento operacional (gatilho, responsáveis pela execução e pela validação, ação em caso de violação) está em `docs/framework-governanca.md`, na regra indicada.
@@ -433,6 +443,7 @@ Exceto pela correspondência entre leitos de UTI e habilitações (A4), confirma
 - O impacto financeiro, clínico ou regulatório de qualquer achado.
 - A inspeção individual, por amostra, dos estabelecimentos apontados nas regras de consistência, prevista no planejamento: este documento não apresenta o resultado dessa inspeção.
 - A reprodução independente em Python dos resultados de consistência e atualidade (seção 4.3).
+- A validação FHIR além dos cinco bundles de exemplo e das regras do FHIR R4 base. A validação foi executada com `-tx n/a`, sem consulta a servidor de terminologia, e não verifica a conformidade com perfis da RNDS nem os 110.362 registros do recorte. O recurso `Location` não foi gerado (seção 5.3).
 
 ### 7.4 Rastreabilidade e reprodutibilidade
 
